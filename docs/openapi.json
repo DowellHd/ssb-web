@@ -1,0 +1,1075 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Smart Strategies Builder API",
+    "description": "AI-powered financial decision intelligence platform API. Provides risk analytics, market regime detection, portfolio insights, and subscription management.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "SSB Support"
+    },
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register new user",
+        "operationId": "register",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SignupRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SignupResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login user",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/verify": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Verify MFA code",
+        "operationId": "verifyMfa",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MFAVerifyRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MFA verified",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Refresh access token",
+        "operationId": "refreshToken",
+        "responses": {
+          "200": {
+            "description": "Token refreshed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Logout user",
+        "operationId": "logout",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Logged out",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Verify email address",
+        "operationId": "verifyEmail",
+        "responses": {
+          "200": {
+            "description": "Email verified",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Request password reset",
+        "operationId": "forgotPassword",
+        "responses": {
+          "200": {
+            "description": "Reset email sent",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Reset password with token",
+        "operationId": "resetPassword",
+        "responses": {
+          "200": {
+            "description": "Password reset",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Change password",
+        "operationId": "changePassword",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Password changed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get current user",
+        "operationId": "getCurrentUser",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/enable": {
+      "post": {
+        "tags": ["MFA"],
+        "summary": "Enable MFA",
+        "operationId": "enableMfa",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "MFA setup info",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MFAEnableResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/confirm": {
+      "post": {
+        "tags": ["MFA"],
+        "summary": "Confirm MFA setup",
+        "operationId": "confirmMfa",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "MFA enabled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/disable": {
+      "post": {
+        "tags": ["MFA"],
+        "summary": "Disable MFA",
+        "operationId": "disableMfa",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "MFA disabled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/status": {
+      "get": {
+        "tags": ["MFA"],
+        "summary": "Get MFA status",
+        "operationId": "getMfaStatus",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "MFA status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MFAStatusResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "tags": ["Sessions"],
+        "summary": "List active sessions",
+        "operationId": "listSessions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Sessions list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SessionListResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions/{session_id}/revoke": {
+      "post": {
+        "tags": ["Sessions"],
+        "summary": "Revoke a session",
+        "operationId": "revokeSession",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session revoked",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/billing/plans": {
+      "get": {
+        "tags": ["Billing"],
+        "summary": "List subscription plans",
+        "operationId": "listPlans",
+        "responses": {
+          "200": {
+            "description": "Available plans",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SubscriptionPlanListResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/billing/subscription": {
+      "get": {
+        "tags": ["Billing"],
+        "summary": "Get current subscription",
+        "operationId": "getSubscription",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Current subscription",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SubscriptionResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/billing/checkout": {
+      "post": {
+        "tags": ["Billing"],
+        "summary": "Create checkout session",
+        "operationId": "createCheckout",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Checkout session created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CheckoutResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/billing/cancel": {
+      "post": {
+        "tags": ["Billing"],
+        "summary": "Cancel subscription",
+        "operationId": "cancelSubscription",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Subscription canceled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CancelSubscriptionResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/billing/portal": {
+      "post": {
+        "tags": ["Billing"],
+        "summary": "Get billing portal URL",
+        "operationId": "getBillingPortal",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Portal URL",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BillingPortalResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/billing/webhooks/stripe": {
+      "post": {
+        "tags": ["Billing"],
+        "summary": "Stripe webhook endpoint",
+        "operationId": "stripeWebhook",
+        "responses": {
+          "200": {
+            "description": "Webhook processed"
+          }
+        }
+      }
+    },
+    "/api/v1/market-data/quote/{symbol}": {
+      "get": {
+        "tags": ["Market Data"],
+        "summary": "Get quote for symbol",
+        "operationId": "getQuote",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quote data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/QuoteResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market-data/quotes": {
+      "get": {
+        "tags": ["Market Data"],
+        "summary": "Get quotes for multiple symbols",
+        "operationId": "getQuotes",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "symbols",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quotes data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/QuoteResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market-data/bars/{symbol}": {
+      "get": {
+        "tags": ["Market Data"],
+        "summary": "Get historical bars",
+        "operationId": "getHistoricalBars",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical bars",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HistoricalBarsResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market-data/status": {
+      "get": {
+        "tags": ["Market Data"],
+        "summary": "Get market status",
+        "operationId": "getMarketStatus",
+        "responses": {
+          "200": {
+            "description": "Market status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketStatusResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/generate": {
+      "post": {
+        "tags": ["Signals"],
+        "summary": "Generate trading signal",
+        "operationId": "generateSignal",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Signal generated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SignalResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/bulk": {
+      "post": {
+        "tags": ["Signals"],
+        "summary": "Generate bulk signals",
+        "operationId": "generateBulkSignals",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Bulk signals",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BulkSignalResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/delay-info": {
+      "get": {
+        "tags": ["Signals"],
+        "summary": "Get signal delay info",
+        "operationId": "getDelayInfo",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Delay information"
+          }
+        }
+      }
+    },
+    "/api/v1/trading/orders": {
+      "get": {
+        "tags": ["Trading"],
+        "summary": "List orders",
+        "operationId": "listOrders",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Orders list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/OrderResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Trading"],
+        "summary": "Create order",
+        "operationId": "createOrder",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": {
+            "description": "Order created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trading/orders/{order_id}": {
+      "get": {
+        "tags": ["Trading"],
+        "summary": "Get order by ID",
+        "operationId": "getOrder",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Trading"],
+        "summary": "Cancel order",
+        "operationId": "cancelOrder",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order canceled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CancelOrderResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trading/positions": {
+      "get": {
+        "tags": ["Trading"],
+        "summary": "List positions",
+        "operationId": "listPositions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Positions list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PositionResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trading/positions/sync": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "Sync positions",
+        "operationId": "syncPositions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Positions synced"
+          }
+        }
+      }
+    },
+    "/api/v1/trading/account": {
+      "get": {
+        "tags": ["Trading"],
+        "summary": "Get account info",
+        "operationId": "getAccount",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Account info",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccountResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trading/portfolio": {
+      "get": {
+        "tags": ["Trading"],
+        "summary": "Get portfolio summary",
+        "operationId": "getPortfolio",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Portfolio summary",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PortfolioSummary" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy/export": {
+      "get": {
+        "tags": ["Privacy"],
+        "summary": "Export user data (GDPR)",
+        "operationId": "exportData",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Data export",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DataExportResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy/account": {
+      "delete": {
+        "tags": ["Privacy"],
+        "summary": "Delete account (GDPR)",
+        "operationId": "deleteAccount",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Account deleted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy/preferences": {
+      "get": {
+        "tags": ["Privacy"],
+        "summary": "Get privacy preferences",
+        "operationId": "getPreferences",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Preferences",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PreferencesResponse" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Privacy"],
+        "summary": "Update privacy preferences",
+        "operationId": "updatePreferences",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Preferences updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PreferencesResponse" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        }
+      },
+      "SignupRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 8 }
+        }
+      },
+      "SignupResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "user_id": { "type": "string" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "token_type": { "type": "string" },
+          "requires_mfa": { "type": "boolean" }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "token_type": { "type": "string" }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "email": { "type": "string" },
+          "is_verified": { "type": "boolean" },
+          "mfa_enabled": { "type": "boolean" },
+          "subscription_tier": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "MFAVerifyRequest": {
+        "type": "object",
+        "required": ["code"],
+        "properties": {
+          "code": { "type": "string" }
+        }
+      },
+      "MFAEnableResponse": {
+        "type": "object",
+        "properties": {
+          "secret": { "type": "string" },
+          "qr_code": { "type": "string" }
+        }
+      },
+      "MFAStatusResponse": {
+        "type": "object",
+        "properties": {
+          "enabled": { "type": "boolean" }
+        }
+      },
+      "SessionListResponse": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "created_at": { "type": "string", "format": "date-time" },
+                "last_active": { "type": "string", "format": "date-time" },
+                "user_agent": { "type": "string" },
+                "ip_address": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "SubscriptionPlanListResponse": {
+        "type": "object",
+        "properties": {
+          "plans": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SubscriptionPlan" }
+          }
+        }
+      },
+      "SubscriptionPlan": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "display_name": { "type": "string" },
+          "price_monthly": { "type": "number" },
+          "price_yearly": { "type": "number" },
+          "features": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "SubscriptionResponse": {
+        "type": "object",
+        "properties": {
+          "plan": { "type": "string" },
+          "status": { "type": "string" },
+          "current_period_end": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CheckoutResponse": {
+        "type": "object",
+        "properties": {
+          "checkout_url": { "type": "string" }
+        }
+      },
+      "CancelSubscriptionResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "effective_date": { "type": "string", "format": "date-time" }
+        }
+      },
+      "BillingPortalResponse": {
+        "type": "object",
+        "properties": {
+          "portal_url": { "type": "string" }
+        }
+      },
+      "QuoteResponse": {
+        "type": "object",
+        "properties": {
+          "symbol": { "type": "string" },
+          "bid": { "type": "number" },
+          "ask": { "type": "number" },
+          "last": { "type": "number" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "HistoricalBarsResponse": {
+        "type": "object",
+        "properties": {
+          "symbol": { "type": "string" },
+          "bars": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timestamp": { "type": "string", "format": "date-time" },
+                "open": { "type": "number" },
+                "high": { "type": "number" },
+                "low": { "type": "number" },
+                "close": { "type": "number" },
+                "volume": { "type": "integer" }
+              }
+            }
+          }
+        }
+      },
+      "MarketStatusResponse": {
+        "type": "object",
+        "properties": {
+          "is_open": { "type": "boolean" },
+          "next_open": { "type": "string", "format": "date-time" },
+          "next_close": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SignalResponse": {
+        "type": "object",
+        "properties": {
+          "symbol": { "type": "string" },
+          "signal": { "type": "string", "enum": ["buy", "sell", "hold"] },
+          "confidence": { "type": "number" },
+          "explanation": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "BulkSignalResponse": {
+        "type": "object",
+        "properties": {
+          "signals": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SignalResponse" }
+          }
+        }
+      },
+      "OrderResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "symbol": { "type": "string" },
+          "side": { "type": "string", "enum": ["buy", "sell"] },
+          "qty": { "type": "number" },
+          "type": { "type": "string" },
+          "status": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CancelOrderResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "order_id": { "type": "string" }
+        }
+      },
+      "PositionResponse": {
+        "type": "object",
+        "properties": {
+          "symbol": { "type": "string" },
+          "qty": { "type": "number" },
+          "avg_entry_price": { "type": "number" },
+          "current_price": { "type": "number" },
+          "market_value": { "type": "number" },
+          "unrealized_pl": { "type": "number" }
+        }
+      },
+      "AccountResponse": {
+        "type": "object",
+        "properties": {
+          "equity": { "type": "number" },
+          "cash": { "type": "number" },
+          "buying_power": { "type": "number" }
+        }
+      },
+      "PortfolioSummary": {
+        "type": "object",
+        "properties": {
+          "total_value": { "type": "number" },
+          "cash": { "type": "number" },
+          "positions_value": { "type": "number" },
+          "unrealized_pl": { "type": "number" },
+          "unrealized_pl_percent": { "type": "number" }
+        }
+      },
+      "DataExportResponse": {
+        "type": "object",
+        "properties": {
+          "user": { "type": "object" },
+          "subscriptions": { "type": "array" },
+          "orders": { "type": "array" },
+          "exported_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PreferencesResponse": {
+        "type": "object",
+        "properties": {
+          "marketing_emails": { "type": "boolean" },
+          "analytics_tracking": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}
