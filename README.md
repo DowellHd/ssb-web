@@ -100,6 +100,63 @@ ssb-web/
 └── public/               # Static assets
 ```
 
+## Local Login Debug
+
+If you're having trouble with authentication during local development, follow these steps:
+
+### Prerequisites
+
+1. **Backend running** at `http://localhost:8000`
+2. **Frontend running** at `http://localhost:3000`
+3. **`.env.local`** configured (see below)
+
+### Required `.env.local` Configuration
+
+```bash
+# Create .env.local from example
+cp .env.example .env.local
+
+# Verify these values are set:
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_PREFIX=/api/v1
+NEXT_PUBLIC_DEMO_MODE=false
+```
+
+### Testing the Connection
+
+```bash
+# 1. Check backend is running and CORS is configured
+curl -i http://localhost:8000/api/v1/docs
+
+# 2. Test login endpoint directly
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+```
+
+### Common Failure Cases
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `Network Error` / `ERR_CONNECTION_REFUSED` | Backend not running | Start backend: `cd ssb-api && uvicorn app.main:app --reload` |
+| `CORS error` in browser console | Backend CORS misconfigured | Ensure `ALLOWED_ORIGINS=http://localhost:3000` in backend `.env` |
+| `401 Unauthorized` on `/auth/me` | Token not being sent | Check localStorage has `access_token`; verify `withCredentials: true` in api-client |
+| `401` on token refresh | Refresh cookie not sent | Browser may block third-party cookies; ensure same-site context |
+| Login succeeds but redirects fail | Missing token storage | Check browser console for errors in login response handling |
+
+### Auth Flow Summary
+
+1. **Login**: `POST /api/v1/auth/login` → returns `access_token` (stored in localStorage) + sets `refresh_token` cookie (httpOnly)
+2. **Authenticated requests**: Send `Authorization: Bearer <access_token>` header (handled by api-client)
+3. **Token refresh**: `POST /api/v1/auth/refresh` uses the httpOnly cookie to get a new access token
+
+### Debug Tips
+
+- Open browser DevTools → Network tab → check request/response headers
+- Look for `Set-Cookie` header in login response
+- Verify `Authorization` header is sent on subsequent requests
+- Use Demo Mode (`NEXT_PUBLIC_DEMO_MODE=true`) to test UI without backend
+
 ## Documentation
 
 - [Architecture Overview](docs/architecture-overview.md) — System design and data flow
