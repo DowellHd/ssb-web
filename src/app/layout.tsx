@@ -6,10 +6,10 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Smart Stock Bot - Intelligent Trading Platform',
-  description: 'Production-ready stock trading and portfolio management application with AI-powered insights',
-  keywords: ['stock trading', 'portfolio management', 'AI trading', 'investment'],
-  authors: [{ name: 'Smart Stock Bot Team' }],
+  title: 'Smart Strategies Builder - Financial Intelligence Platform',
+  description: 'AI-powered financial intelligence platform for risk analysis, regime detection, and strategy backtesting',
+  keywords: ['risk analytics', 'regime detection', 'backtesting', 'financial intelligence', 'portfolio analysis'],
+  authors: [{ name: 'Smart Strategies Builder Team' }],
   viewport: 'width=device-width, initial-scale=1',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },

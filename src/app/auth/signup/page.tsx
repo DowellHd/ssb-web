@@ -53,7 +53,7 @@ export default function SignupPage() {
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Start building strategies with Smart Strategies Builder
+            Start analyzing with Smart Strategies Builder
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export default function SignupPage() {
         </form>
 
         <div className="mt-6 rounded-lg bg-warning/10 p-4 text-sm text-warning-foreground">
-          <strong>Disclaimer:</strong> Trading involves risk. This platform is for educational purposes only.
+          <strong>Important:</strong> This platform does not execute trades or provide buy/sell recommendations. All analytics are for educational and informational purposes only.
         </div>
       </div>
     </div>

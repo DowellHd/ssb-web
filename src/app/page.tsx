@@ -6,11 +6,11 @@ export default function Home() {
       <div className="max-w-5xl w-full">
         <div className="text-center space-y-8">
           <h1 className="text-6xl font-bold tracking-tight">
-            Smart Stock Bot
+            Smart Strategies Builder
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Production-ready stock trading and portfolio management platform
-            with AI-powered insights and real-time market data.
+            AI-powered financial intelligence platform for risk analysis,
+            regime detection, and strategy backtesting with explainable insights.
           </p>
 
           <div className="flex gap-4 justify-center mt-8">
@@ -30,29 +30,30 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
             <div className="border rounded-lg p-6 space-y-2">
-              <div className="text-2xl font-semibold">Secure Trading</div>
+              <div className="text-2xl font-semibold">Secure & Auditable</div>
               <p className="text-muted-foreground">
-                Multi-factor authentication, encrypted data, and industry-standard security practices.
+                Multi-factor authentication, encrypted data, and full audit logging for compliance.
               </p>
             </div>
             <div className="border rounded-lg p-6 space-y-2">
-              <div className="text-2xl font-semibold">Real-Time Data</div>
+              <div className="text-2xl font-semibold">Risk Intelligence</div>
               <p className="text-muted-foreground">
-                Live market quotes, interactive charts, and instant order execution.
+                Market regime detection, portfolio risk analytics, and stress testing scenarios.
               </p>
             </div>
             <div className="border rounded-lg p-6 space-y-2">
-              <div className="text-2xl font-semibold">Smart AI Bot</div>
+              <div className="text-2xl font-semibold">Simulation & Backtesting</div>
               <p className="text-muted-foreground">
-                AI-powered trade suggestions with backtesting and risk management.
+                Deterministic strategy simulations with historical data and explainable results.
               </p>
             </div>
           </div>
 
           <div className="mt-12 p-4 bg-warning/10 border border-warning rounded-lg">
             <p className="text-sm text-warning-foreground">
-              <strong>Disclaimer:</strong> Trading stocks involves risk. This platform is for educational
-              and informational purposes only. Not financial advice.
+              <strong>Important:</strong> This platform is a read-only analytical tool. It does not
+              execute trades, provide buy/sell recommendations, or guarantee profits. All outputs
+              are for educational and informational purposes only. Not financial advice.
             </p>
           </div>
         </div>
