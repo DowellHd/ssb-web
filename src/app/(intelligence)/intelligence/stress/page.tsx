@@ -43,6 +43,34 @@ export default function StressTestingPage() {
         </p>
       </div>
 
+      {/* Worst-case scenario highlight */}
+      {scenarios.length > 0 && (() => {
+        const worstCase = scenarios.reduce((max, s) =>
+          s.portfolio_impact.estimated_loss_pct > max.portfolio_impact.estimated_loss_pct ? s : max
+        );
+        return (
+          <div className="rounded-lg border-2 border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20 p-4">
+            <div className="flex items-start gap-3">
+              <div className="rounded-lg bg-red-100 dark:bg-red-900/30 p-2">
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-red-800 dark:text-red-300">
+                  Worst-Case Scenario: {worstCase.scenario_name}
+                </h3>
+                <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+                  Under this scenario, the portfolio could experience a{' '}
+                  <span className="font-bold">
+                    {worstCase.portfolio_impact.estimated_loss_pct.toFixed(1)}%
+                  </span>{' '}
+                  decline based on historical data. Stress test results are illustrative and not predictive of future outcomes.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Scenario impact comparison chart */}
       <div className="rounded-lg border bg-card p-6">
         <h3 className="font-semibold mb-4">Scenario Impact Comparison</h3>
