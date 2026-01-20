@@ -100,61 +100,77 @@ ssb-web/
 └── public/               # Static assets
 ```
 
-## Local Login Debug
-
-If you're having trouble with authentication during local development, follow these steps:
+## Local Auth Setup
 
 ### Prerequisites
 
-1. **Backend running** at `http://localhost:8000`
-2. **Frontend running** at `http://localhost:3000`
-3. **`.env.local`** configured (see below)
+1. **Backend running** via Docker at `http://localhost:8000`
+2. **Database migrations applied** (required for login to work)
+3. **Frontend** `.env.local` configured
 
-### Required `.env.local` Configuration
+### Step-by-Step Setup
 
 ```bash
-# Create .env.local from example
-cp .env.example .env.local
+# 1. Start backend (from ssb-api directory)
+cd ../ssb-api
+docker compose up -d
 
-# Verify these values are set:
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_API_PREFIX=/api/v1
-NEXT_PUBLIC_DEMO_MODE=false
+# 2. Run database migrations (first time only)
+docker compose exec api alembic upgrade head
+
+# 3. Create .env.local in ssb-web
+cd ../ssb-web
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
+
+# 4. Start frontend
+npm run dev
 ```
+
+### Allowed Dev Ports
+
+The backend CORS is configured to allow:
+- `http://localhost:3000`
+- `http://localhost:3001`
+
+If port 3000 is busy, Next.js will use 3001 automatically.
 
 ### Testing the Connection
 
 ```bash
-# 1. Check backend is running and CORS is configured
-curl -i http://localhost:8000/api/v1/docs
+# 1. Verify backend health
+curl http://localhost:8000/healthz
 
-# 2. Test login endpoint directly
+# 2. Test login endpoint (register a user first via /auth/signup page)
 curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password123"}'
+  --data-raw '{"email":"youruser@example.com","password":"YourPass123@"}'
+
+# 3. Test /me with the returned token
+curl http://localhost:8000/api/v1/auth/me \
+  -H "Authorization: Bearer <access_token_from_login>"
 ```
 
-### Common Failure Cases
+### Common Failure Modes
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `Network Error` / `ERR_CONNECTION_REFUSED` | Backend not running | Start backend: `cd ssb-api && uvicorn app.main:app --reload` |
-| `CORS error` in browser console | Backend CORS misconfigured | Ensure `ALLOWED_ORIGINS=http://localhost:3000` in backend `.env` |
-| `401 Unauthorized` on `/auth/me` | Token not being sent | Check localStorage has `access_token`; verify `withCredentials: true` in api-client |
-| `401` on token refresh | Refresh cookie not sent | Browser may block third-party cookies; ensure same-site context |
-| Login succeeds but redirects fail | Missing token storage | Check browser console for errors in login response handling |
+| `Network Error` / `ERR_CONNECTION_REFUSED` | Backend not running | `docker compose up -d` in ssb-api |
+| `500 Internal Server Error` on login | Database migrations not applied | `docker compose exec api alembic upgrade head` |
+| `CORS error` in browser console | Origin not in ALLOWED_ORIGINS | Add your port to `ALLOWED_ORIGINS` in ssb-api/.env |
+| `401 Unauthorized` on `/auth/me` | Token not being sent | Check localStorage has `access_token` |
+| Login works but page doesn't redirect | Frontend routing issue | Check browser console for JS errors |
 
 ### Auth Flow Summary
 
 1. **Login**: `POST /api/v1/auth/login` → returns `access_token` (stored in localStorage) + sets `refresh_token` cookie (httpOnly)
-2. **Authenticated requests**: Send `Authorization: Bearer <access_token>` header (handled by api-client)
+2. **Authenticated requests**: `Authorization: Bearer <access_token>` header (handled by api-client)
 3. **Token refresh**: `POST /api/v1/auth/refresh` uses the httpOnly cookie to get a new access token
 
 ### Debug Tips
 
-- Open browser DevTools → Network tab → check request/response headers
-- Look for `Set-Cookie` header in login response
-- Verify `Authorization` header is sent on subsequent requests
+- Browser DevTools → Network tab → verify request/response headers
+- Check for `Set-Cookie: refresh_token=...` in login response
+- Verify `Authorization` header is present on subsequent requests
 - Use Demo Mode (`NEXT_PUBLIC_DEMO_MODE=true`) to test UI without backend
 
 ## Documentation
