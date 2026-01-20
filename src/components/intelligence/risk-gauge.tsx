@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type RiskLevel = 'low' | 'moderate' | 'high' | 'extreme';
@@ -103,10 +105,25 @@ export function RiskGauge({
 
 interface RiskLevelBadgeProps {
   level: RiskLevel;
+  showTooltip?: boolean;
   className?: string;
 }
 
-export function RiskLevelBadge({ level, className }: RiskLevelBadgeProps) {
+const riskDescriptions: Record<RiskLevel, string> = {
+  low: 'Portfolio volatility and drawdown potential are below historical averages for this asset mix.',
+  moderate:
+    'Portfolio risk is within typical ranges. Some positions may contribute disproportionately to overall risk.',
+  high: 'Elevated volatility detected. The portfolio may experience larger swings than historical norms.',
+  extreme:
+    'Risk metrics are significantly elevated. Historical drawdowns suggest substantial loss potential.',
+};
+
+export function RiskLevelBadge({
+  level,
+  showTooltip = true,
+  className,
+}: RiskLevelBadgeProps) {
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const config = riskConfig[level];
 
   const badgeClasses: Record<RiskLevel, string> = {
@@ -117,14 +134,45 @@ export function RiskLevelBadge({ level, className }: RiskLevelBadgeProps) {
   };
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full',
-        badgeClasses[level],
-        className
+    <div className={cn('relative inline-flex items-center', className)}>
+      <span
+        className={cn(
+          'inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full',
+          badgeClasses[level]
+        )}
+      >
+        {config.label}
+        {showTooltip && (
+          <button
+            type="button"
+            onMouseEnter={() => setIsTooltipVisible(true)}
+            onMouseLeave={() => setIsTooltipVisible(false)}
+            onFocus={() => setIsTooltipVisible(true)}
+            onBlur={() => setIsTooltipVisible(false)}
+            className="outline-none ml-0.5"
+            aria-label="What does this risk level mean?"
+          >
+            <HelpCircle className="h-3 w-3" />
+          </button>
+        )}
+      </span>
+
+      {/* Tooltip */}
+      {showTooltip && isTooltipVisible && (
+        <div
+          className="absolute left-0 top-full z-50 mt-2 w-64 rounded-lg border bg-popover p-3 shadow-lg"
+          role="tooltip"
+        >
+          <div className="space-y-1.5">
+            <p className={cn('text-xs font-medium', config.bgColor)}>{config.label}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {riskDescriptions[level]}
+            </p>
+          </div>
+          {/* Arrow */}
+          <div className="absolute -top-1.5 left-4 h-3 w-3 rotate-45 border-l border-t bg-popover" />
+        </div>
       )}
-    >
-      {config.label}
-    </span>
+    </div>
   );
 }
