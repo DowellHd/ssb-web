@@ -12,7 +12,7 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 import { IntelligenceProvider } from '@/contexts/intelligence-context';
-import { DemoBanner } from '@/components/intelligence';
+import { DemoBanner, TierNotice } from '@/components/intelligence';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -111,7 +111,11 @@ export default function IntelligenceLayout({
           </header>
 
           {/* Main content */}
-          <main className="container mx-auto px-4 py-6">{children}</main>
+          <main className="container mx-auto px-4 py-6">
+            {/* Tier notice for free users */}
+            <TierNotice className="mb-6" />
+            {children}
+          </main>
         </div>
       </IntelligenceProvider>
     </Suspense>
