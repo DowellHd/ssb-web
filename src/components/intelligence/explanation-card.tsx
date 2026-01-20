@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Info, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, AlertCircle, Code2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Explanation } from '@/lib/demo-data/regime-analysis';
 
@@ -26,8 +26,15 @@ export function ExplanationCard({
           <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
             <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </div>
-          <div className="flex-1 space-y-1">
-            <h4 className="text-sm font-medium">Analysis Summary</h4>
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="text-sm font-medium">Analysis Summary</h4>
+              {/* Model version badge for audit transparency */}
+              <span className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                <Code2 className="h-2.5 w-2.5" />
+                {explanation.model_info.model_type} v{explanation.model_info.version}
+              </span>
+            </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {explanation.summary}
             </p>
