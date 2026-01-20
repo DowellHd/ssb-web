@@ -77,6 +77,9 @@ export default function RiskAnalyticsPage() {
                 {formatCurrency(-parseFloat(data.risk_metrics.var_95_1day))}
               </p>
             )}
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed border-t pt-2">
+              On 95% of trading days, losses are expected to stay below this amount.
+            </p>
           </div>
         )}
 
@@ -94,6 +97,9 @@ export default function RiskAnalyticsPage() {
                 {formatCurrency(-parseFloat(data.risk_metrics.cvar_95_1day))}
               </p>
             )}
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed border-t pt-2">
+              Average loss during the worst 5% of trading days historically.
+            </p>
           </div>
         )}
 
@@ -221,6 +227,43 @@ export default function RiskAnalyticsPage() {
           </div>
         </GatedFeature>
       </div>
+
+      {/* Top Risk Drivers - shows top 3 contributors */}
+      {data.risk_contribution && data.risk_contribution.length > 0 && (
+        <div className="rounded-lg border bg-card p-6">
+          <h3 className="font-semibold mb-4">Top Risk Drivers</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            These positions contribute the most to portfolio risk based on their weight and volatility.
+          </p>
+          <div className="space-y-4">
+            {data.risk_contribution.slice(0, 3).map((item, index) => (
+              <div key={item.symbol} className="flex items-center gap-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-sm font-bold text-red-700 dark:text-red-400">
+                  {index + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{item.symbol}</span>
+                    <span className="text-sm font-medium text-red-600">
+                      {item.contribution_pct.toFixed(1)}% of risk
+                    </span>
+                  </div>
+                  <div className="mt-1 h-2 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-red-500 transition-all"
+                      style={{ width: `${item.contribution_pct}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>{formatPercent(item.weight * 100, 1)} weight</span>
+                    <span>Marginal VaR: {formatCurrency(parseFloat(item.marginal_var))}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Key factors */}
       <div className="rounded-lg border bg-card p-6">
