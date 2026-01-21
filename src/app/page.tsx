@@ -49,8 +49,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-12 p-4 bg-warning/10 border border-warning rounded-lg">
-            <p className="text-sm text-warning-foreground">
+          <div className="mt-12 p-4 bg-amber-50 border border-amber-300 rounded-lg">
+            <p className="text-sm text-slate-800">
               <strong>Important:</strong> This platform is a read-only analytical tool. It does not
               execute trades, provide buy/sell recommendations, or guarantee profits. All outputs
               are for educational and informational purposes only. Not financial advice.
