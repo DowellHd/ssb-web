@@ -39,9 +39,18 @@ export default function SignupPage() {
       });
 
       toast.success('Account created successfully! Please check your email to verify your account.');
-      router.push('/auth/verify-email-sent');
-    } catch (error) {
-      toast.error(getErrorMessage(error));
+      router.push(`/auth/verify-email-sent?email=${encodeURIComponent(formData.email)}`);
+    } catch (error: any) {
+      // Handle specific error codes
+      const status = error?.response?.status;
+      const message = getErrorMessage(error);
+
+      if (status === 503) {
+        // Email service unavailable
+        toast.error(message || 'Email service unavailable. Please contact support.');
+      } else {
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -122,7 +131,7 @@ export default function SignupPage() {
           </p>
         </form>
 
-        <div className="mt-6 rounded-lg bg-warning/10 p-4 text-sm text-warning-foreground">
+        <div className="mt-6 rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
           <strong>Important:</strong> This platform does not execute trades or provide buy/sell recommendations. All analytics are for educational and informational purposes only.
         </div>
       </div>
