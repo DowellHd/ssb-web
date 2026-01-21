@@ -36,7 +36,7 @@ export default function LoginPage() {
         toast.info('Please enter your MFA code');
       } else {
         toast.success('Login successful!');
-        router.push('/dashboard');
+        router.push('/app');
       }
     } catch (error) {
       toast.error(getErrorMessage(error));
