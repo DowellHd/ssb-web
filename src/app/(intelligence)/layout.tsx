@@ -92,7 +92,7 @@ export default function IntelligenceLayout({
               <div className="flex h-16 items-center justify-between">
                 <div className="flex items-center gap-4">
                   <Link
-                    href="/dashboard"
+                    href="/app"
                     className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <ChevronLeft className="h-4 w-4" />
