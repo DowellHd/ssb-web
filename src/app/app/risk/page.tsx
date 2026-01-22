@@ -1,28 +1,253 @@
 'use client';
 
-import { Shield, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Shield, RefreshCw, AlertCircle, TrendingDown, Activity, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { analyzePortfolioRisk, getIntelligenceEntitlements, type RiskReport, type EntitlementsInfo } from '@/lib/api/intelligence';
 
 export default function RiskPage() {
+  const [riskReport, setRiskReport] = useState<RiskReport | null>(null);
+  const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [symbols, setSymbols] = useState('SPY,QQQ,IWM');
+
+  useEffect(() => {
+    getIntelligenceEntitlements()
+      .then(setEntitlements)
+      .catch(() => {});
+  }, []);
+
+  const analyzeRisk = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const symbolList = symbols.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      if (symbolList.length === 0) {
+        setError('Please enter at least one symbol');
+        setLoading(false);
+        return;
+      }
+
+      const weight = 1 / symbolList.length;
+      const holdings = symbolList.map(symbol => ({
+        symbol,
+        weight,
+        asset_class: 'us_equities',
+      }));
+
+      const report = await analyzePortfolioRisk(holdings);
+      setRiskReport(report);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to analyze portfolio risk');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRiskLevelColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case 'low': return 'text-green-600 bg-green-100';
+      case 'moderate': return 'text-yellow-600 bg-yellow-100';
+      case 'high': return 'text-orange-600 bg-orange-100';
+      case 'extreme': return 'text-red-600 bg-red-100';
+      default: return 'text-slate-600 bg-slate-100';
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] gap-6 text-center">
-      <div className="relative">
-        <div className="p-4 rounded-full bg-green-100">
-          <Shield className="h-12 w-12 text-green-600" />
-        </div>
-        <div className="absolute -top-1 -right-1 p-1 rounded-full bg-amber-100">
-          <Clock className="h-5 w-5 text-amber-600" />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Risk Analytics</h1>
-        <p className="text-muted-foreground max-w-md">
-          Portfolio risk metrics, VaR analysis, and risk attribution are coming soon.
-          Stay tuned for powerful risk management tools.
+    <div className="space-y-6 max-w-4xl">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold flex items-center gap-3">
+          <Shield className="h-7 w-7 text-green-600" />
+          Risk Analytics
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Analyze portfolio risk metrics including VaR, volatility, and risk attribution.
         </p>
       </div>
-      <div className="px-4 py-2 rounded-full bg-muted text-muted-foreground text-sm">
-        Coming Soon
+
+      {/* Input form */}
+      <div className="rounded-lg border bg-card p-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="symbols">Portfolio Symbols (comma-separated)</Label>
+            <div className="flex gap-2 mt-1">
+              <Input
+                id="symbols"
+                value={symbols}
+                onChange={(e) => setSymbols(e.target.value)}
+                placeholder="SPY, QQQ, IWM"
+                className="flex-1"
+              />
+              <Button onClick={analyzeRisk} disabled={loading}>
+                {loading ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Analyze Risk
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Equal-weighted portfolio will be analyzed. Analytics level: {entitlements?.risk_analytics_level || 'basic'}
+            </p>
+          </div>
+        </div>
       </div>
+
+      {/* Error state */}
+      {error && (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive" />
+          <p className="text-destructive">{error}</p>
+        </div>
+      )}
+
+      {/* Results */}
+      {riskReport && (
+        <div className="space-y-6">
+          {/* Risk Level Banner */}
+          <div className={`rounded-lg p-6 ${getRiskLevelColor(riskReport.risk_level)}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium opacity-80">Overall Risk Level</p>
+                <p className="text-3xl font-bold capitalize">{riskReport.risk_level}</p>
+              </div>
+              <Shield className="h-12 w-12 opacity-50" />
+            </div>
+          </div>
+
+          {/* Key Metrics */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Annual Volatility</p>
+              </div>
+              <p className="text-2xl font-bold">
+                {(riskReport.risk_metrics.volatility_annual * 100).toFixed(1)}%
+              </p>
+            </div>
+
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">VaR (95%, 1-day)</p>
+              </div>
+              <p className="text-2xl font-bold text-red-600">
+                {riskReport.risk_metrics.var_95_1day_pct
+                  ? `${(riskReport.risk_metrics.var_95_1day_pct * 100).toFixed(2)}%`
+                  : '—'}
+              </p>
+            </div>
+
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Max Drawdown</p>
+              </div>
+              <p className="text-2xl font-bold text-red-600">
+                {riskReport.risk_metrics.max_drawdown_historical
+                  ? `${(riskReport.risk_metrics.max_drawdown_historical * 100).toFixed(1)}%`
+                  : '—'}
+              </p>
+            </div>
+          </div>
+
+          {/* Advanced Metrics (Pro+) */}
+          {(riskReport.risk_metrics.sharpe_ratio !== undefined ||
+            riskReport.risk_metrics.sortino_ratio !== undefined) && (
+            <div className="rounded-lg border bg-card p-6">
+              <h3 className="font-semibold mb-4">Risk-Adjusted Returns</h3>
+              <div className="grid gap-4 md:grid-cols-3">
+                {riskReport.risk_metrics.sharpe_ratio !== undefined && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Sharpe Ratio</p>
+                    <p className="text-xl font-bold">
+                      {riskReport.risk_metrics.sharpe_ratio.toFixed(2)}
+                    </p>
+                  </div>
+                )}
+                {riskReport.risk_metrics.sortino_ratio !== undefined && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Sortino Ratio</p>
+                    <p className="text-xl font-bold">
+                      {riskReport.risk_metrics.sortino_ratio.toFixed(2)}
+                    </p>
+                  </div>
+                )}
+                {riskReport.risk_metrics.beta_to_benchmark !== undefined && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Beta to SPY</p>
+                    <p className="text-xl font-bold">
+                      {riskReport.risk_metrics.beta_to_benchmark.toFixed(2)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Explanation */}
+          {riskReport.explanation && (
+            <div className="rounded-lg border bg-card p-6">
+              <h3 className="font-semibold mb-3">Analysis Summary</h3>
+              <p className="text-muted-foreground mb-4">{riskReport.explanation.summary}</p>
+
+              {riskReport.explanation.key_factors.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-sm font-medium mb-2">Key Factors:</p>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                    {riskReport.explanation.key_factors.map((factor, i) => (
+                      <li key={i}>{factor}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {riskReport.explanation.limitations.length > 0 && (
+                <div className="text-xs text-muted-foreground border-t pt-3 mt-3">
+                  <p className="font-medium mb-1">Limitations:</p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    {riskReport.explanation.limitations.map((limitation, i) => (
+                      <li key={i}>{limitation}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Metadata */}
+          <div className="text-xs text-muted-foreground flex flex-wrap gap-4">
+            <span>Analysis Date: {new Date(riskReport.analysis_date).toLocaleString()}</span>
+            <span>Holdings: {riskReport.holdings_count}</span>
+            <span>Tier: {riskReport.tier}</span>
+            <span>Analytics: {riskReport.analytics_level}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && !error && !riskReport && (
+        <div className="rounded-lg border border-dashed bg-muted/50 p-12 text-center">
+          <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="font-semibold mb-2">Analyze Your Portfolio</h3>
+          <p className="text-muted-foreground text-sm max-w-md mx-auto">
+            Enter stock symbols above and click &quot;Analyze Risk&quot; to calculate
+            portfolio risk metrics including VaR, volatility, and drawdown analysis.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
