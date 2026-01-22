@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
@@ -10,7 +10,11 @@ export const metadata: Metadata = {
   description: 'AI-powered financial intelligence platform for risk analysis, regime detection, and strategy backtesting',
   keywords: ['risk analytics', 'regime detection', 'backtesting', 'financial intelligence', 'portfolio analysis'],
   authors: [{ name: 'Smart Strategies Builder Team' }],
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
     { media: '(prefers-color-scheme: dark)', color: 'black' },

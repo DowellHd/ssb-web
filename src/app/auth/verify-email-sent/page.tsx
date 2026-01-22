@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { resendVerification } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
 
-export default function VerifyEmailSentPage() {
+function VerifyEmailSentContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
   const [isResending, setIsResending] = useState(false);
@@ -73,5 +73,19 @@ export default function VerifyEmailSentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailSentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="text-muted-foreground">Loading...</div>
+        </div>
+      }
+    >
+      <VerifyEmailSentContent />
+    </Suspense>
   );
 }
