@@ -158,7 +158,7 @@ export default function AppDashboardPage() {
       {/* Account status */}
       <div className="rounded-lg border bg-card p-6">
         <h2 className="text-xl font-semibold mb-4">Account Status</h2>
-        <div className="grid gap-6 md:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-5">
           <div>
             <p className="text-sm text-muted-foreground">Email</p>
             <p className="font-medium">{dashboard?.email || '—'}</p>
@@ -172,6 +172,16 @@ export default function AppDashboardPage() {
                 <CheckCircle className="h-3 w-3" /> Verified
               </p>
             )}
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Analysis as of</p>
+            <p className="font-medium">
+              {new Date().toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Plan</p>
