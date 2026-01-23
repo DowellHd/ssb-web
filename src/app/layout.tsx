@@ -10,6 +10,15 @@ export const metadata: Metadata = {
   description: 'AI-powered financial intelligence platform for risk analysis, regime detection, and strategy backtesting',
   keywords: ['risk analytics', 'regime detection', 'backtesting', 'financial intelligence', 'portfolio analysis'],
   authors: [{ name: 'Smart Strategies Builder Team' }],
+  icons: {
+    icon: [
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', type: 'image/png' },
+    ],
+    shortcut: '/icon.png',
+  },
 };
 
 export const viewport: Viewport = {
