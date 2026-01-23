@@ -67,7 +67,14 @@ export default function RegimeAnalysisPage() {
             <p>
               Analysis as of:{' '}
               <span className="font-medium text-foreground">
-                {new Date(data.analysis_date).toLocaleDateString()}
+                {new Date(data.analysis_date).toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  timeZoneName: 'short',
+                })}
               </span>
             </p>
             <p>

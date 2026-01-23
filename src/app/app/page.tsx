@@ -176,10 +176,13 @@ export default function AppDashboardPage() {
           <div>
             <p className="text-sm text-muted-foreground">Analysis as of</p>
             <p className="font-medium">
-              {new Date().toLocaleDateString('en-US', {
-                month: 'long',
+              {new Date().toLocaleString('en-US', {
+                month: 'short',
                 day: 'numeric',
                 year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                timeZoneName: 'short',
               })}
             </p>
           </div>
