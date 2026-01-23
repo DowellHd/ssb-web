@@ -1,19 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCapabilities, type Capabilities } from '@/lib/api/meta';
-import { getSubscription, listPlans, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
+import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
 
 export default function BillingPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
   const [plans, setPlans] = useState<PlanListResponse | null>(null);
   const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [canceledMessage, setCanceledMessage] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -40,6 +47,52 @@ export default function BillingPage() {
     loadData();
   }, []);
 
+  // Handle success/canceled query params from Stripe redirect
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+
+    if (success === '1') {
+      setSuccessMessage('Payment successful! Your subscription is now active. It may take a moment to update.');
+      // Clear the query params from URL
+      router.replace('/app/billing', { scroll: false });
+      // Reload data to get updated subscription
+      loadData();
+    } else if (canceled === '1') {
+      setCanceledMessage('Payment was canceled. No charges were made.');
+      router.replace('/app/billing', { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  const handleUpgrade = async (planName: string) => {
+    setCheckoutLoading(planName);
+    setError(null);
+    try {
+      const result = await createCheckoutSession({
+        plan_name: planName,
+        billing_cycle: 'monthly',
+      });
+      // Redirect to Stripe Checkout
+      window.location.href = result.checkout_url;
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to create checkout session');
+      setCheckoutLoading(null);
+    }
+  };
+
+  const handleManageBilling = async () => {
+    setPortalLoading(true);
+    setError(null);
+    try {
+      const result = await getBillingPortal();
+      // Redirect to Stripe Customer Portal
+      window.location.href = result.portal_url;
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to open billing portal');
+      setPortalLoading(false);
+    }
+  };
+
   const getPlanIcon = (planName: string) => {
     switch (planName.toLowerCase()) {
       case 'pro':
@@ -62,7 +115,7 @@ export default function BillingPage() {
     );
   }
 
-  if (error) {
+  if (error && !subscription && !plans) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertCircle className="h-12 w-12 text-destructive" />
@@ -76,6 +129,8 @@ export default function BillingPage() {
   }
 
   const billingEnabled = capabilities?.billing_enabled;
+  const hasActiveSubscription = subscription?.subscription?.status === 'active';
+  const currentPlanName = entitlements?.plan_name || 'free';
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -95,6 +150,33 @@ export default function BillingPage() {
         </Button>
       </div>
 
+      {/* Success Message */}
+      {successMessage && (
+        <div className="rounded-lg bg-green-50 border border-green-300 p-4 text-sm text-green-800 flex items-center gap-3">
+          <CheckCircle className="h-5 w-5 text-green-600" />
+          <div className="flex-1">{successMessage}</div>
+          <Button variant="ghost" size="sm" onClick={() => setSuccessMessage(null)}>Dismiss</Button>
+        </div>
+      )}
+
+      {/* Canceled Message */}
+      {canceledMessage && (
+        <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-amber-800 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-amber-600" />
+          <div className="flex-1">{canceledMessage}</div>
+          <Button variant="ghost" size="sm" onClick={() => setCanceledMessage(null)}>Dismiss</Button>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-300 p-4 text-sm text-red-800 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-red-600" />
+          <div className="flex-1">{error}</div>
+          <Button variant="ghost" size="sm" onClick={() => setError(null)}>Dismiss</Button>
+        </div>
+      )}
+
       {/* Billing not enabled banner */}
       {!billingEnabled && (
         <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
@@ -109,13 +191,13 @@ export default function BillingPage() {
         <h2 className="text-lg font-semibold mb-4">Current Plan</h2>
         <div className="flex items-center gap-4">
           <div className="p-3 rounded-lg bg-primary/10">
-            {getPlanIcon(entitlements?.plan_name || 'free')}
+            {getPlanIcon(currentPlanName)}
           </div>
           <div className="flex-1">
             <p className="text-xl font-bold">{entitlements?.plan_display_name || 'Free'}</p>
             <p className="text-sm text-muted-foreground">
-              {subscription?.subscription?.status === 'active'
-                ? `Active subscription`
+              {hasActiveSubscription
+                ? 'Active subscription'
                 : 'No active paid subscription'}
             </p>
           </div>
@@ -130,6 +212,27 @@ export default function BillingPage() {
             </div>
           )}
         </div>
+
+        {/* Manage Billing Button for paid users */}
+        {hasActiveSubscription && billingEnabled && (
+          <div className="mt-4 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={handleManageBilling}
+              disabled={portalLoading}
+            >
+              {portalLoading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <ExternalLink className="h-4 w-4 mr-2" />
+              )}
+              Manage Billing
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              Update payment method, view invoices, or cancel subscription
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Plan Features */}
@@ -203,7 +306,7 @@ export default function BillingPage() {
 
       {/* Upgrade Benefits */}
       {entitlements?.can_upgrade && entitlements?.upgrade_benefits && entitlements.upgrade_benefits.length > 0 && (
-        <div className="rounded-lg border bg-gradient-to-r from-blue-50 to-purple-50 p-6">
+        <div className="rounded-lg border bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Zap className="h-5 w-5 text-blue-500" />
             Upgrade Benefits
@@ -216,9 +319,6 @@ export default function BillingPage() {
               </li>
             ))}
           </ul>
-          <Button disabled={!billingEnabled}>
-            {billingEnabled ? 'Upgrade Now' : 'Upgrade Coming Soon'}
-          </Button>
         </div>
       )}
 
@@ -227,41 +327,64 @@ export default function BillingPage() {
         <div className="rounded-lg border bg-card p-6">
           <h2 className="text-lg font-semibold mb-4">Available Plans</h2>
           <div className="grid gap-4 md:grid-cols-3">
-            {plans.plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={`rounded-lg border p-4 ${
-                  plan.name === entitlements?.plan_name
-                    ? 'border-primary bg-primary/5'
-                    : 'hover:border-primary/50'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  {getPlanIcon(plan.name)}
-                  <h3 className="font-semibold">{plan.display_name}</h3>
+            {plans.plans.map((plan) => {
+              const isCurrentPlan = plan.name === currentPlanName;
+              const canUpgrade = !isCurrentPlan && plan.price_monthly > 0;
+              const isLoading = checkoutLoading === plan.name;
+
+              return (
+                <div
+                  key={plan.id}
+                  className={`rounded-lg border p-4 ${
+                    isCurrentPlan
+                      ? 'border-primary bg-primary/5'
+                      : 'hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {getPlanIcon(plan.name)}
+                    <h3 className="font-semibold">{plan.display_name}</h3>
+                  </div>
+                  <p className="text-2xl font-bold mb-2">
+                    ${plan.price_monthly}
+                    <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                  </p>
+                  {plan.description && (
+                    <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+                  )}
+                  {isCurrentPlan ? (
+                    <span className="text-sm text-primary font-medium">Current Plan</span>
+                  ) : canUpgrade ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!billingEnabled || isLoading}
+                      className="w-full"
+                      onClick={() => handleUpgrade(plan.name)}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Loading...
+                        </>
+                      ) : billingEnabled ? (
+                        `Upgrade to ${plan.display_name}`
+                      ) : (
+                        'Coming Soon'
+                      )}
+                    </Button>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Free tier</span>
+                  )}
                 </div>
-                <p className="text-2xl font-bold mb-2">
-                  ${plan.price_monthly}
-                  <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                </p>
-                {plan.description && (
-                  <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
-                )}
-                {plan.name === entitlements?.plan_name ? (
-                  <span className="text-sm text-primary font-medium">Current Plan</span>
-                ) : (
-                  <Button variant="outline" size="sm" disabled={!billingEnabled} className="w-full">
-                    {billingEnabled ? 'Select' : 'Coming Soon'}
-                  </Button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Info banner */}
-      <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-slate-800">
+      <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-4 text-sm text-slate-800 dark:text-slate-200">
         <strong>Secure Payments:</strong> All payments are processed securely through Stripe.
         We never store your payment information on our servers.
       </div>
