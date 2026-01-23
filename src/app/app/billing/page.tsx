@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2 } from 'lucide-react';
+import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCapabilities, type Capabilities } from '@/lib/api/meta';
 import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
@@ -95,6 +95,8 @@ export default function BillingPage() {
 
   const getPlanIcon = (planName: string) => {
     switch (planName.toLowerCase()) {
+      case 'founder':
+        return <Sparkles className="h-6 w-6 text-amber-500" />;
       case 'pro':
         return <Zap className="h-6 w-6 text-blue-500" />;
       case 'institutional':
@@ -190,15 +192,17 @@ export default function BillingPage() {
       <div className="rounded-lg border bg-card p-6">
         <h2 className="text-lg font-semibold mb-4">Current Plan</h2>
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-primary/10">
+          <div className={`p-3 rounded-lg ${currentPlanName === 'founder' ? 'bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30' : 'bg-primary/10'}`}>
             {getPlanIcon(currentPlanName)}
           </div>
           <div className="flex-1">
             <p className="text-xl font-bold">{entitlements?.plan_display_name || 'Free'}</p>
             <p className="text-sm text-muted-foreground">
-              {hasActiveSubscription
-                ? 'Active subscription'
-                : 'No active paid subscription'}
+              {currentPlanName === 'founder'
+                ? 'Founder access - All features unlocked'
+                : hasActiveSubscription
+                  ? 'Active subscription'
+                  : 'No active paid subscription'}
             </p>
           </div>
           {subscription?.subscription && (

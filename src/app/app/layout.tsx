@@ -16,6 +16,7 @@ import {
   LogOut,
   Menu,
   X,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser, logout, type User } from '@/lib/api/auth';
@@ -150,7 +151,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* User section */}
           <div className="border-t p-4">
             <div className="mb-3 px-3">
-              <p className="text-sm font-medium truncate">{user.full_name || user.email}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium truncate">{user.full_name || user.email}</p>
+                {user.is_founder && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    <Sparkles className="h-3 w-3" />
+                    Founder
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
             <Button

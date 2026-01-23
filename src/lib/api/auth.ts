@@ -27,6 +27,7 @@ export interface User {
   preferences: Record<string, any>;
   created_at: string;
   last_login_at?: string;
+  is_founder?: boolean;
 }
 
 export interface LoginResponse {
