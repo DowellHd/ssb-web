@@ -134,7 +134,9 @@ export default function RiskPage() {
                 <p className="text-sm text-muted-foreground">Annual Volatility</p>
               </div>
               <p className="text-2xl font-bold">
-                {(riskReport.risk_metrics.volatility_annual * 100).toFixed(1)}%
+                {riskReport.risk_metrics?.volatility_annual != null
+                  ? `${(riskReport.risk_metrics.volatility_annual * 100).toFixed(1)}%`
+                  : '—'}
               </p>
             </div>
 
@@ -144,7 +146,7 @@ export default function RiskPage() {
                 <p className="text-sm text-muted-foreground">VaR (95%, 1-day)</p>
               </div>
               <p className="text-2xl font-bold text-red-600">
-                {riskReport.risk_metrics.var_95_1day_pct
+                {riskReport.risk_metrics?.var_95_1day_pct != null
                   ? `${(riskReport.risk_metrics.var_95_1day_pct * 100).toFixed(2)}%`
                   : '—'}
               </p>
@@ -156,7 +158,7 @@ export default function RiskPage() {
                 <p className="text-sm text-muted-foreground">Max Drawdown</p>
               </div>
               <p className="text-2xl font-bold text-red-600">
-                {riskReport.risk_metrics.max_drawdown_historical
+                {riskReport.risk_metrics?.max_drawdown_historical != null
                   ? `${(riskReport.risk_metrics.max_drawdown_historical * 100).toFixed(1)}%`
                   : '—'}
               </p>
@@ -164,12 +166,12 @@ export default function RiskPage() {
           </div>
 
           {/* Advanced Metrics (Pro+) */}
-          {(riskReport.risk_metrics.sharpe_ratio !== undefined ||
-            riskReport.risk_metrics.sortino_ratio !== undefined) && (
+          {riskReport.risk_metrics && (riskReport.risk_metrics.sharpe_ratio != null ||
+            riskReport.risk_metrics.sortino_ratio != null) && (
             <div className="rounded-lg border bg-card p-6">
               <h3 className="font-semibold mb-4">Risk-Adjusted Returns</h3>
               <div className="grid gap-4 md:grid-cols-3">
-                {riskReport.risk_metrics.sharpe_ratio !== undefined && (
+                {riskReport.risk_metrics.sharpe_ratio != null && (
                   <div>
                     <p className="text-sm text-muted-foreground">Sharpe Ratio</p>
                     <p className="text-xl font-bold">
@@ -177,7 +179,7 @@ export default function RiskPage() {
                     </p>
                   </div>
                 )}
-                {riskReport.risk_metrics.sortino_ratio !== undefined && (
+                {riskReport.risk_metrics.sortino_ratio != null && (
                   <div>
                     <p className="text-sm text-muted-foreground">Sortino Ratio</p>
                     <p className="text-xl font-bold">
@@ -185,7 +187,7 @@ export default function RiskPage() {
                     </p>
                   </div>
                 )}
-                {riskReport.risk_metrics.beta_to_benchmark !== undefined && (
+                {riskReport.risk_metrics.beta_to_benchmark != null && (
                   <div>
                     <p className="text-sm text-muted-foreground">Beta to SPY</p>
                     <p className="text-xl font-bold">
@@ -203,7 +205,7 @@ export default function RiskPage() {
               <h3 className="font-semibold mb-3">Analysis Summary</h3>
               <p className="text-muted-foreground mb-4">{riskReport.explanation.summary}</p>
 
-              {riskReport.explanation.key_factors.length > 0 && (
+              {riskReport.explanation.key_factors && riskReport.explanation.key_factors.length > 0 && (
                 <div className="mb-4">
                   <p className="text-sm font-medium mb-2">Key Factors:</p>
                   <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
@@ -214,7 +216,7 @@ export default function RiskPage() {
                 </div>
               )}
 
-              {riskReport.explanation.limitations.length > 0 && (
+              {riskReport.explanation.limitations && riskReport.explanation.limitations.length > 0 && (
                 <div className="text-xs text-muted-foreground border-t pt-3 mt-3">
                   <p className="font-medium mb-1">Limitations:</p>
                   <ul className="list-disc list-inside space-y-0.5">
