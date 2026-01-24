@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { getCapabilities, type Capabilities } from '@/lib/api/meta';
 import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
+import { getPlanConfig, getPlanDisplayName, isFounderPlan } from '@/lib/plan-config';
 
 export default function BillingPage() {
   const searchParams = useSearchParams();
@@ -94,16 +95,30 @@ export default function BillingPage() {
   };
 
   const getPlanIcon = (planName: string) => {
+    const config = getPlanConfig(planName);
     switch (planName.toLowerCase()) {
       case 'founder':
-        return <Sparkles className="h-6 w-6 text-amber-500" />;
+        return <Sparkles className={`h-6 w-6 ${config.iconClassName}`} />;
       case 'pro':
-        return <Zap className="h-6 w-6 text-blue-500" />;
+        return <Zap className={`h-6 w-6 ${config.iconClassName}`} />;
       case 'institutional':
-        return <Building className="h-6 w-6 text-purple-500" />;
+        return <Building className={`h-6 w-6 ${config.iconClassName}`} />;
+      case 'starter':
+        return <Crown className={`h-6 w-6 ${config.iconClassName}`} />;
       default:
-        return <Crown className="h-6 w-6 text-slate-500" />;
+        return <Crown className={`h-6 w-6 ${config.iconClassName}`} />;
     }
+  };
+
+  const PlanBadge = ({ planName }: { planName: string }) => {
+    const config = getPlanConfig(planName);
+    const isFounder = isFounderPlan(planName);
+    return (
+      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${config.badgeClassName}`}>
+        {isFounder && <Crown className="h-3 w-3" />}
+        {config.badgeLabel}
+      </span>
+    );
   };
 
   if (loading) {
@@ -192,13 +207,16 @@ export default function BillingPage() {
       <div className="rounded-lg border bg-card p-6">
         <h2 className="text-lg font-semibold mb-4">Current Plan</h2>
         <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-lg ${currentPlanName === 'founder' ? 'bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30' : 'bg-primary/10'}`}>
+          <div className={`p-3 rounded-lg ${isFounderPlan(currentPlanName) ? 'bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30' : 'bg-primary/10'}`}>
             {getPlanIcon(currentPlanName)}
           </div>
           <div className="flex-1">
-            <p className="text-xl font-bold">{entitlements?.plan_display_name || 'Free'}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-xl font-bold">{getPlanDisplayName(currentPlanName)}</p>
+              <PlanBadge planName={currentPlanName} />
+            </div>
             <p className="text-sm text-muted-foreground">
-              {currentPlanName === 'founder'
+              {isFounderPlan(currentPlanName)
                 ? 'Founder access - All features unlocked'
                 : hasActiveSubscription
                   ? 'Active subscription'
@@ -347,7 +365,8 @@ export default function BillingPage() {
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {getPlanIcon(plan.name)}
-                    <h3 className="font-semibold">{plan.display_name}</h3>
+                    <h3 className="font-semibold">{getPlanDisplayName(plan.name)}</h3>
+                    {isCurrentPlan && <PlanBadge planName={plan.name} />}
                   </div>
                   <p className="text-2xl font-bold mb-2">
                     ${plan.price_monthly}
@@ -372,7 +391,7 @@ export default function BillingPage() {
                           Loading...
                         </>
                       ) : billingEnabled ? (
-                        `Upgrade to ${plan.display_name}`
+                        `Upgrade to ${getPlanDisplayName(plan.name)}`
                       ) : (
                         'Coming Soon'
                       )}
