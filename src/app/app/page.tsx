@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import {
   TrendingUp,
   Shield,
@@ -13,6 +14,7 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
+  Mail,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getDashboardSummary, getCapabilities, type DashboardSummary, type Capabilities } from '@/lib/api/meta';
@@ -76,10 +78,12 @@ export default function AppDashboardPage() {
     try {
       await resendVerification(dashboard.email);
       setVerificationSent(true);
-      setVerificationCooldown(60); // 60 second cooldown
+      setVerificationCooldown(30); // 30 second cooldown
+      toast.success('Verification email sent! Check your inbox.');
     } catch (err: any) {
       const errorMessage = err?.response?.data?.detail || 'Failed to send verification email';
       setVerificationError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setVerificationSending(false);
     }
@@ -196,28 +200,27 @@ export default function AppDashboardPage() {
             <p className="text-sm text-muted-foreground">Email</p>
             <p className="font-medium">{dashboard?.email || '—'}</p>
             {dashboard && !dashboard.email_verified && (
-              <div className="mt-1 space-y-1">
+              <div className="mt-2 space-y-2">
                 <p className="text-xs text-yellow-600 flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" /> Not verified
                 </p>
-                {verificationSent ? (
-                  <p className="text-xs text-green-600">
-                    Verification email sent! Check your inbox.
-                  </p>
-                ) : verificationError ? (
+                <button
+                  onClick={handleResendVerification}
+                  disabled={verificationSending || verificationCooldown > 0}
+                  className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary px-2 py-1 rounded hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Mail className="h-3 w-3" />
+                  {verificationSending
+                    ? 'Sending...'
+                    : verificationCooldown > 0
+                      ? `Resend in ${verificationCooldown}s`
+                      : 'Resend verification email'}
+                </button>
+                {verificationSent && (
+                  <p className="text-xs text-green-600">Check your inbox!</p>
+                )}
+                {verificationError && (
                   <p className="text-xs text-red-600">{verificationError}</p>
-                ) : (
-                  <button
-                    onClick={handleResendVerification}
-                    disabled={verificationSending || verificationCooldown > 0}
-                    className="text-xs text-primary hover:underline disabled:opacity-50 disabled:no-underline"
-                  >
-                    {verificationSending
-                      ? 'Sending...'
-                      : verificationCooldown > 0
-                        ? `Resend in ${verificationCooldown}s`
-                        : 'Send verification email'}
-                  </button>
                 )}
               </div>
             )}
