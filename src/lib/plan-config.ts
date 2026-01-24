@@ -43,7 +43,7 @@ export const PLAN_CONFIG: Record<PlanKey, PlanConfig> = {
   },
   founder: {
     displayName: 'Founder',
-    badgeLabel: 'Founder',
+    badgeLabel: 'All Access',
     badgeClassName: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white',
     iconClassName: 'text-amber-500',
   },

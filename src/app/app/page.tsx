@@ -17,6 +17,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { getDashboardSummary, getCapabilities, type DashboardSummary, type Capabilities } from '@/lib/api/meta';
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
+import { resendVerification } from '@/lib/api/auth';
+import { getPlanDisplayName } from '@/lib/plan-config';
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(' ');
@@ -28,6 +30,10 @@ export default function AppDashboardPage() {
   const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [verificationSending, setVerificationSending] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationCooldown, setVerificationCooldown] = useState(0);
 
   const loadData = async () => {
     setLoading(true);
@@ -51,6 +57,33 @@ export default function AppDashboardPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Cooldown timer for verification resend
+  useEffect(() => {
+    if (verificationCooldown > 0) {
+      const timer = setTimeout(() => setVerificationCooldown(c => c - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [verificationCooldown]);
+
+  const handleResendVerification = async () => {
+    if (!dashboard?.email || verificationSending || verificationCooldown > 0) return;
+
+    setVerificationSending(true);
+    setVerificationError(null);
+    setVerificationSent(false);
+
+    try {
+      await resendVerification(dashboard.email);
+      setVerificationSent(true);
+      setVerificationCooldown(60); // 60 second cooldown
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.detail || 'Failed to send verification email';
+      setVerificationError(errorMessage);
+    } finally {
+      setVerificationSending(false);
+    }
+  };
 
   const features = [
     {
@@ -163,9 +196,30 @@ export default function AppDashboardPage() {
             <p className="text-sm text-muted-foreground">Email</p>
             <p className="font-medium">{dashboard?.email || '—'}</p>
             {dashboard && !dashboard.email_verified && (
-              <p className="text-xs text-yellow-600 mt-1 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" /> Not verified
-              </p>
+              <div className="mt-1 space-y-1">
+                <p className="text-xs text-yellow-600 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> Not verified
+                </p>
+                {verificationSent ? (
+                  <p className="text-xs text-green-600">
+                    Verification email sent! Check your inbox.
+                  </p>
+                ) : verificationError ? (
+                  <p className="text-xs text-red-600">{verificationError}</p>
+                ) : (
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={verificationSending || verificationCooldown > 0}
+                    className="text-xs text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+                  >
+                    {verificationSending
+                      ? 'Sending...'
+                      : verificationCooldown > 0
+                        ? `Resend in ${verificationCooldown}s`
+                        : 'Send verification email'}
+                  </button>
+                )}
+              </div>
             )}
             {dashboard?.email_verified && (
               <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
@@ -188,7 +242,7 @@ export default function AppDashboardPage() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Plan</p>
-            <p className="font-medium">{entitlements?.plan_display_name || 'Free'}</p>
+            <p className="font-medium">{getPlanDisplayName(entitlements?.plan_name)}</p>
             {entitlements?.can_upgrade && (
               <Link href="/app/billing" className="text-xs text-primary hover:underline">
                 Upgrade

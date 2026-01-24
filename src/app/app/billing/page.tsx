@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, Sparkles } from 'lucide-react';
+import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCapabilities, type Capabilities } from '@/lib/api/meta';
 import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
@@ -98,13 +98,11 @@ export default function BillingPage() {
     const config = getPlanConfig(planName);
     switch (planName.toLowerCase()) {
       case 'founder':
-        return <Sparkles className={`h-6 w-6 ${config.iconClassName}`} />;
+        return <Crown className={`h-6 w-6 ${config.iconClassName}`} />;
       case 'pro':
         return <Zap className={`h-6 w-6 ${config.iconClassName}`} />;
       case 'institutional':
         return <Building className={`h-6 w-6 ${config.iconClassName}`} />;
-      case 'starter':
-        return <Crown className={`h-6 w-6 ${config.iconClassName}`} />;
       default:
         return <Crown className={`h-6 w-6 ${config.iconClassName}`} />;
     }
