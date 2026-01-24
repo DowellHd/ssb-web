@@ -7,10 +7,10 @@ const nextConfig = {
   // Redirects for legacy or alternative routes
   async redirects() {
     return [
-      // Handle /verify-email without /auth prefix
+      // Redirect legacy /auth/verify-email to canonical /verify-email
       {
-        source: '/verify-email',
-        destination: '/auth/verify-email',
+        source: '/auth/verify-email',
+        destination: '/verify-email',
         permanent: true,
       },
       // Handle /reset-password without /auth prefix

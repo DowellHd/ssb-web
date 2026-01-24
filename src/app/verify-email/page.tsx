@@ -17,6 +17,7 @@ function VerifyEmailContent() {
 
   const [status, setStatus] = useState<VerificationStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     if (!token) {
@@ -44,6 +45,23 @@ function VerifyEmailContent() {
     verify();
   }, [token]);
 
+  // Auto-redirect after success
+  useEffect(() => {
+    if (status === 'success') {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            router.push('/app');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [status, router]);
+
   if (status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -68,10 +86,13 @@ function VerifyEmailContent() {
             <p className="text-muted-foreground">
               Your email has been successfully verified. You can now access all features of your account.
             </p>
+            <p className="text-sm text-muted-foreground">
+              Redirecting to dashboard in {countdown}...
+            </p>
           </div>
           <div className="space-y-3">
             <Button asChild className="w-full">
-              <Link href="/app">Go to Dashboard</Link>
+              <Link href="/app">Go to Dashboard Now</Link>
             </Button>
             <Button variant="ghost" asChild className="w-full">
               <Link href="/auth/login">Sign In</Link>
