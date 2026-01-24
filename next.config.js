@@ -4,6 +4,24 @@ const nextConfig = {
   swcMinify: true,
   output: 'standalone', // Required for Docker production builds
 
+  // Redirects for legacy or alternative routes
+  async redirects() {
+    return [
+      // Handle /verify-email without /auth prefix
+      {
+        source: '/verify-email',
+        destination: '/auth/verify-email',
+        permanent: true,
+      },
+      // Handle /reset-password without /auth prefix
+      {
+        source: '/reset-password',
+        destination: '/auth/reset-password',
+        permanent: true,
+      },
+    ];
+  },
+
   // Security headers
   async headers() {
     return [
