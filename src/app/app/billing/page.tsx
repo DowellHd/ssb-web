@@ -8,19 +8,7 @@ import { getCapabilities, type Capabilities } from '@/lib/api/meta';
 import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
 import { getPlanConfig, getPlanDisplayName, isFounderPlan } from '@/lib/plan-config';
-
-// Threshold for treating values as "unlimited" (matches backend UNLIMITED_VALUE)
-const UNLIMITED_THRESHOLD = 100_000;
-
-function isUnlimited(value: number | null | undefined): boolean {
-  return value != null && value >= UNLIMITED_THRESHOLD;
-}
-
-function formatLimit(value: number | null | undefined, suffix: string = ''): string {
-  if (value == null) return '—';
-  if (isUnlimited(value)) return 'Unlimited';
-  return `${value.toLocaleString()}${suffix}`;
-}
+import { isUnlimited, formatLimit } from '@/lib/utils';
 
 export default function BillingPage() {
   const searchParams = useSearchParams();

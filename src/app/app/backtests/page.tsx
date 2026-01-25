@@ -4,21 +4,10 @@ import { useEffect, useState } from 'react';
 import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { listBacktests, getBacktestEntitlements, type BacktestSummary, type BacktestEntitlements } from '@/lib/api/backtests';
-
-// Threshold for treating values as "unlimited" (matches backend UNLIMITED_BACKTESTS)
-const UNLIMITED_THRESHOLD = 100_000;
-
-function isUnlimited(value: number | null | undefined): boolean {
-  return value != null && value >= UNLIMITED_THRESHOLD;
-}
-
-function formatLimit(value: number | null | undefined): string {
-  if (value == null) return '—';
-  return isUnlimited(value) ? 'Unlimited' : String(value);
-}
+import { isValidNumber, isUnlimited, formatLimit, safeToFixed } from '@/lib/utils';
 
 function formatDateRange(days: number | null | undefined): string {
-  if (days == null || days <= 0) return '—';
+  if (!isValidNumber(days) || days <= 0) return '—';
   if (isUnlimited(days)) return 'Unlimited';
   const years = Math.floor(days / 365);
   return years === 1 ? '1 year' : `${years} years`;
@@ -173,22 +162,22 @@ export default function BacktestsPage() {
                     </div>
                   </td>
                   <td className="p-4">
-                    {backtest.total_return_pct !== undefined ? (
+                    {isValidNumber(backtest.total_return_pct) ? (
                       <span className={`flex items-center gap-1 ${backtest.total_return_pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {backtest.total_return_pct >= 0 ? (
                           <TrendingUp className="h-4 w-4" />
                         ) : (
                           <TrendingDown className="h-4 w-4" />
                         )}
-                        {backtest.total_return_pct.toFixed(2)}%
+                        {safeToFixed(backtest.total_return_pct, 2)}%
                       </span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </td>
                   <td className="p-4">
-                    {backtest.max_drawdown !== undefined ? (
-                      <span className="text-red-600">{(backtest.max_drawdown * 100).toFixed(1)}%</span>
+                    {isValidNumber(backtest.max_drawdown) ? (
+                      <span className="text-red-600">{safeToFixed(backtest.max_drawdown * 100, 1)}%</span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
