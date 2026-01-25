@@ -9,6 +9,19 @@ import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, ty
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
 import { getPlanConfig, getPlanDisplayName, isFounderPlan } from '@/lib/plan-config';
 
+// Threshold for treating values as "unlimited" (matches backend UNLIMITED_VALUE)
+const UNLIMITED_THRESHOLD = 100_000;
+
+function isUnlimited(value: number | null | undefined): boolean {
+  return value != null && value >= UNLIMITED_THRESHOLD;
+}
+
+function formatLimit(value: number | null | undefined, suffix: string = ''): string {
+  if (value == null) return '—';
+  if (isUnlimited(value)) return 'Unlimited';
+  return `${value.toLocaleString()}${suffix}`;
+}
+
 export default function BillingPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -284,9 +297,9 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Simulations</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.simulation_limit === -1 || entitlements?.is_founder
+                {entitlements?.is_founder || isUnlimited(entitlements?.simulation_limit)
                   ? 'Unlimited'
-                  : `Up to ${entitlements?.simulation_limit?.toLocaleString() || '100'} runs`}
+                  : `Up to ${formatLimit(entitlements?.simulation_limit)} runs`}
               </p>
             </div>
           </div>
@@ -315,9 +328,9 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">API Requests</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.daily_api_requests_limit === -1 || entitlements?.is_founder
+                {entitlements?.is_founder || isUnlimited(entitlements?.daily_api_requests_limit)
                   ? 'Unlimited'
-                  : `${entitlements?.daily_api_requests_limit?.toLocaleString() || '100'}/day`}
+                  : `${formatLimit(entitlements?.daily_api_requests_limit)}/day`}
               </p>
             </div>
           </div>

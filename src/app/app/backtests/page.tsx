@@ -5,6 +5,25 @@ import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Cale
 import { Button } from '@/components/ui/button';
 import { listBacktests, getBacktestEntitlements, type BacktestSummary, type BacktestEntitlements } from '@/lib/api/backtests';
 
+// Threshold for treating values as "unlimited" (matches backend UNLIMITED_BACKTESTS)
+const UNLIMITED_THRESHOLD = 100_000;
+
+function isUnlimited(value: number | null | undefined): boolean {
+  return value != null && value >= UNLIMITED_THRESHOLD;
+}
+
+function formatLimit(value: number | null | undefined): string {
+  if (value == null) return '—';
+  return isUnlimited(value) ? 'Unlimited' : String(value);
+}
+
+function formatDateRange(days: number | null | undefined): string {
+  if (days == null || days <= 0) return '—';
+  if (isUnlimited(days)) return 'Unlimited';
+  const years = Math.floor(days / 365);
+  return years === 1 ? '1 year' : `${years} years`;
+}
+
 export default function BacktestsPage() {
   const [backtests, setBacktests] = useState<BacktestSummary[]>([]);
   const [entitlements, setEntitlements] = useState<BacktestEntitlements | null>(null);
@@ -88,7 +107,7 @@ export default function BacktestsPage() {
           <Button onClick={loadData} variant="ghost" size="icon">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button disabled={!entitlements || (entitlements.monthly_limit !== -1 && entitlements.monthly_remaining <= 0)}>
+          <Button disabled={!entitlements || (!isUnlimited(entitlements.monthly_limit) && (entitlements.monthly_remaining ?? 0) <= 0)}>
             <Plus className="h-4 w-4 mr-2" />
             New Backtest
           </Button>
@@ -101,28 +120,26 @@ export default function BacktestsPage() {
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Monthly Used</p>
             <p className="text-2xl font-bold">
-              {entitlements.monthly_limit === -1
-                ? `${entitlements.monthly_used} / Unlimited`
-                : `${entitlements.monthly_used} / ${entitlements.monthly_limit}`}
+              {isUnlimited(entitlements.monthly_limit)
+                ? `${entitlements.monthly_used ?? 0} / Unlimited`
+                : `${entitlements.monthly_used ?? 0} / ${formatLimit(entitlements.monthly_limit)}`}
             </p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Remaining</p>
             <p className="text-2xl font-bold text-green-600">
-              {entitlements.monthly_limit === -1 ? 'Unlimited' : entitlements.monthly_remaining}
+              {formatLimit(entitlements.monthly_remaining)}
             </p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Max Range</p>
             <p className="text-2xl font-bold">
-              {entitlements.max_date_range_days === -1 || !entitlements.max_date_range_days
-                ? 'Unlimited'
-                : `${Math.floor(entitlements.max_date_range_days / 365)} years`}
+              {formatDateRange(entitlements.max_date_range_days)}
             </p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Asset Classes</p>
-            <p className="text-lg font-bold">{entitlements.allowed_asset_classes.length}</p>
+            <p className="text-lg font-bold">{entitlements.allowed_asset_classes?.length ?? 0}</p>
           </div>
         </div>
       )}
@@ -190,7 +207,7 @@ export default function BacktestsPage() {
             Create your first backtest to simulate strategy performance using historical market data.
             Results are 100% deterministic and reproducible.
           </p>
-          <Button disabled={!entitlements || (entitlements.monthly_limit !== -1 && entitlements.monthly_remaining <= 0)}>
+          <Button disabled={!entitlements || (!isUnlimited(entitlements.monthly_limit) && (entitlements.monthly_remaining ?? 0) <= 0)}>
             <Plus className="h-4 w-4 mr-2" />
             Create Backtest
           </Button>
