@@ -85,17 +85,18 @@ export interface EntitlementsInfo {
   user_id: string;
   plan_name: string;
   plan_display_name: string;
-  regime_insights_delay_days: number;
+  regime_insights_delay_days: number; // 0 = real-time
   risk_analytics_level: string;
   asset_classes: string[];
-  simulation_limit: number;
+  simulation_limit: number; // -1 = unlimited
   stress_test_enabled: boolean;
   stress_test_tier: string;
   api_access_level: string;
-  daily_api_requests_limit: number;
+  daily_api_requests_limit: number; // -1 = unlimited
   daily_api_requests_used: number;
   can_upgrade: boolean;
   upgrade_benefits: string[];
+  is_founder: boolean; // Full access, unlimited limits
 }
 
 // ============================================================================

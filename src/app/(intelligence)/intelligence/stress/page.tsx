@@ -12,13 +12,14 @@ import { formatCurrency, formatPercent } from '@/lib/utils';
 import { demoStressResults } from '@/lib/demo-data';
 
 export default function StressTestingPage() {
-  const { isProOrHigher } = useIntelligence();
+  const { hasStressTesting, isProOrHigher } = useIntelligence();
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(
     demoStressResults.scenarios[0]?.scenario_id || null
   );
 
-  // Limit scenarios for free tier
-  const scenarios = isProOrHigher
+  // hasStressTesting = true for Pro, Institutional, and Founder
+  // Limit scenarios for free tier (who shouldn't have access anyway, but just in case)
+  const scenarios = hasStressTesting
     ? demoStressResults.scenarios
     : demoStressResults.scenarios.slice(0, 3);
 
@@ -87,7 +88,7 @@ export default function StressTestingPage() {
           <div className="rounded-lg border bg-card">
             <div className="p-4 border-b">
               <h3 className="font-semibold">Available Scenarios</h3>
-              {!isProOrHigher && (
+              {!hasStressTesting && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Upgrade to Pro for all {demoStressResults.scenarios.length} scenarios
                 </p>
@@ -129,7 +130,7 @@ export default function StressTestingPage() {
               ))}
 
               {/* Locked scenarios for free tier */}
-              {!isProOrHigher && (
+              {!hasStressTesting && (
                 <GatedFeature requiredTier="pro">
                   <div className="p-4 text-sm text-muted-foreground">
                     +{demoStressResults.scenarios.length - 3} more scenarios

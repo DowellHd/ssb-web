@@ -16,6 +16,7 @@ interface GatedFeatureProps {
 /**
  * Wraps content that requires a specific tier level.
  * Shows upgrade CTA for users below the required tier.
+ * Founder tier has access to everything.
  */
 export function GatedFeature({
   children,
@@ -24,9 +25,15 @@ export function GatedFeature({
   className,
   blurContent = true,
 }: GatedFeatureProps) {
-  const { tier } = useIntelligence();
+  const { tier, isFounder } = useIntelligence();
 
-  const tierOrder: UserTier[] = ['free', 'pro', 'institutional'];
+  // Founder has access to everything
+  if (isFounder) {
+    return <>{children}</>;
+  }
+
+  // Tier order for comparison (founder handled above)
+  const tierOrder: UserTier[] = ['free', 'pro', 'institutional', 'founder'];
   const userTierIndex = tierOrder.indexOf(tier);
   const requiredTierIndex = tierOrder.indexOf(requiredTier);
 
