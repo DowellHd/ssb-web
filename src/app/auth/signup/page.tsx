@@ -57,16 +57,16 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
+    <div className="w-full max-w-md">
+      <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-lg">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold tracking-tight">Create an account</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Start analyzing with Smart Strategies Builder
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
@@ -77,6 +77,7 @@ export default function SignupPage() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="mt-1"
               />
             </div>
 
@@ -88,6 +89,7 @@ export default function SignupPage() {
                 placeholder="John Doe"
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                className="mt-1"
               />
             </div>
 
@@ -100,6 +102,7 @@ export default function SignupPage() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="mt-1"
               />
               <p className="mt-1 text-xs text-muted-foreground">
                 Must be at least 8 characters with uppercase, lowercase, number, and special character
@@ -115,25 +118,26 @@ export default function SignupPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                className="mt-1"
               />
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full mt-6" disabled={loading}>
             {loading ? 'Creating account...' : 'Sign up'}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground pt-4">
             Already have an account?{' '}
             <Link href="/auth/login" className="font-medium text-primary hover:underline">
               Sign in
             </Link>
           </p>
         </form>
+      </div>
 
-        <div className="mt-6 rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
-          <strong>Important:</strong> This platform does not execute trades or provide buy/sell recommendations. All analytics are for educational and informational purposes only.
-        </div>
+      <div className="mt-6 rounded-lg bg-amber-900/50 border border-amber-700 p-4 text-sm text-amber-100">
+        <strong>Important:</strong> This platform does not execute trades or provide buy/sell recommendations. All analytics are for educational and informational purposes only.
       </div>
     </div>
   );

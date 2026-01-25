@@ -40,11 +40,15 @@ function VerifyEmailSentContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-8 text-center">
+    <div className="w-full max-w-md">
+      <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-lg text-center">
         <div className="space-y-4">
-          <div className="text-6xl">📧</div>
-          <h1 className="text-3xl font-bold tracking-tight">Check your email</h1>
+          <div className="flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <span className="text-3xl">📧</span>
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
           <p className="text-muted-foreground">
             We&apos;ve sent a verification link to{' '}
             {email ? <strong>{email}</strong> : 'your email address'}. Please check
@@ -52,7 +56,7 @@ function VerifyEmailSentContent() {
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mt-6">
           <p className="text-sm text-muted-foreground">
             Didn&apos;t receive the email? Check your spam folder or
           </p>
@@ -80,8 +84,10 @@ export default function VerifyEmailSentPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background">
-          <div className="text-muted-foreground">Loading...</div>
+        <div className="w-full max-w-md">
+          <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-lg text-center">
+            <div className="text-muted-foreground">Loading...</div>
+          </div>
         </div>
       }
     >

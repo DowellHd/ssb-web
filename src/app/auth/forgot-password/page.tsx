@@ -31,18 +31,22 @@ export default function ForgotPasswordPage() {
 
   if (submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="w-full max-w-md space-y-8 text-center">
+      <div className="w-full max-w-md">
+        <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-lg text-center">
           <div className="space-y-4">
-            <div className="text-6xl">📧</div>
-            <h1 className="text-3xl font-bold tracking-tight">Check your email</h1>
+            <div className="flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <span className="text-3xl">📧</span>
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
             <p className="text-muted-foreground">
               If an account exists for {email}, we&apos;ve sent a password reset link to that
               address.
             </p>
           </div>
 
-          <Button variant="outline" asChild className="w-full">
+          <Button variant="outline" asChild className="w-full mt-6">
             <Link href="/auth/login">Back to sign in</Link>
           </Button>
         </div>
@@ -51,16 +55,16 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Forgot password?</h1>
+    <div className="w-full max-w-md">
+      <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-lg">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold tracking-tight">Forgot password?</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Enter your email and we&apos;ll send you a reset link
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -70,14 +74,15 @@ export default function ForgotPasswordPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="mt-1"
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full mt-6" disabled={loading}>
             {loading ? 'Sending...' : 'Send reset link'}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground pt-4">
             Remember your password?{' '}
             <Link href="/auth/login" className="font-medium text-primary hover:underline">
               Sign in

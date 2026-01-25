@@ -46,16 +46,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Sign in</h1>
+    <div className="w-full max-w-md">
+      <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-lg">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Welcome back to Smart Strategies Builder
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
@@ -67,6 +67,7 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 disabled={requiresMFA}
+                className="mt-1"
               />
             </div>
 
@@ -88,6 +89,7 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 disabled={requiresMFA}
+                className="mt-1"
               />
             </div>
 
@@ -103,6 +105,7 @@ export default function LoginPage() {
                   value={formData.mfa_code}
                   onChange={(e) => setFormData({ ...formData, mfa_code: e.target.value })}
                   autoFocus
+                  className="mt-1"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
                   Enter the 6-digit code from your authenticator app
@@ -111,11 +114,11 @@ export default function LoginPage() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full mt-6" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign in'}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground pt-4">
             Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className="font-medium text-primary hover:underline">
               Sign up
