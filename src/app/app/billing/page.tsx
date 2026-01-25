@@ -264,7 +264,7 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Regime Analysis</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.regime_insights_delay_days === 0
+                {entitlements?.regime_insights_delay_days === 0 || entitlements?.is_founder
                   ? 'Real-time access'
                   : `${entitlements?.regime_insights_delay_days || 7}-day delayed data`}
               </p>
@@ -275,7 +275,7 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Risk Analytics</p>
               <p className="text-sm text-muted-foreground capitalize">
-                {entitlements?.risk_analytics_level || 'basic'} tier
+                {entitlements?.is_founder ? 'Full' : (entitlements?.risk_analytics_level || 'basic')} tier
               </p>
             </div>
           </div>
@@ -284,21 +284,19 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Simulations</p>
               <p className="text-sm text-muted-foreground">
-                Up to {entitlements?.simulation_limit?.toLocaleString() || '100'} runs
+                {entitlements?.simulation_limit === -1 || entitlements?.is_founder
+                  ? 'Unlimited'
+                  : `Up to ${entitlements?.simulation_limit?.toLocaleString() || '100'} runs`}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {entitlements?.stress_test_enabled ? (
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            ) : (
-              <AlertCircle className="h-5 w-5 text-muted-foreground" />
-            )}
+            <CheckCircle className="h-5 w-5 text-green-500" />
             <div>
               <p className="font-medium">Stress Testing</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.stress_test_enabled
-                  ? `${entitlements?.stress_test_tier} tier`
+                {entitlements?.stress_test_enabled || entitlements?.is_founder
+                  ? (entitlements?.is_founder ? 'Full access' : `${entitlements?.stress_test_tier} tier`)
                   : 'Requires Pro plan'}
               </p>
             </div>
@@ -308,7 +306,7 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Asset Classes</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.asset_classes?.length || 1} available
+                {entitlements?.is_founder ? 'All' : `${entitlements?.asset_classes?.length || 1} available`}
               </p>
             </div>
           </div>
@@ -317,7 +315,9 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">API Requests</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.daily_api_requests_limit?.toLocaleString() || '100'}/day
+                {entitlements?.daily_api_requests_limit === -1 || entitlements?.is_founder
+                  ? 'Unlimited'
+                  : `${entitlements?.daily_api_requests_limit?.toLocaleString() || '100'}/day`}
               </p>
             </div>
           </div>

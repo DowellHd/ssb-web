@@ -23,10 +23,21 @@ export default function RiskPage() {
   const analyzeRisk = async () => {
     setLoading(true);
     setError(null);
+    setRiskReport(null);
     try {
-      const symbolList = symbols.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      const symbolList = symbols
+        .split(',')
+        .map(s => s.trim().toUpperCase().replace(/[^A-Z0-9.]/g, ''))
+        .filter(s => s.length > 0 && s.length <= 10);
+
       if (symbolList.length === 0) {
-        setError('Please enter at least one symbol');
+        setError('Please enter at least one valid symbol');
+        setLoading(false);
+        return;
+      }
+
+      if (symbolList.length > 50) {
+        setError('Maximum 50 symbols allowed');
         setLoading(false);
         return;
       }
@@ -39,15 +50,24 @@ export default function RiskPage() {
       }));
 
       const report = await analyzePortfolioRisk(holdings);
+
+      // Validate response has required fields
+      if (!report || typeof report !== 'object') {
+        setError('Invalid response from server');
+        return;
+      }
+
       setRiskReport(report);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to analyze portfolio risk');
+      const message = err?.response?.data?.detail || err?.message || 'Failed to analyze portfolio risk';
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
-  const getRiskLevelColor = (level: string) => {
+  const getRiskLevelColor = (level: string | undefined | null) => {
+    if (!level) return 'text-slate-600 bg-slate-100';
     switch (level.toLowerCase()) {
       case 'low': return 'text-green-600 bg-green-100';
       case 'moderate': return 'text-yellow-600 bg-yellow-100';
@@ -120,7 +140,7 @@ export default function RiskPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium opacity-80">Overall Risk Level</p>
-                <p className="text-3xl font-bold capitalize">{riskReport.risk_level}</p>
+                <p className="text-3xl font-bold capitalize">{riskReport.risk_level || 'Unknown'}</p>
               </div>
               <Shield className="h-12 w-12 opacity-50" />
             </div>

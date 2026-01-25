@@ -1,24 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { login } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [requiresMFA, setRequiresMFA] = useState(false);
+  const [showVerifiedBanner, setShowVerifiedBanner] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     mfa_code: '',
   });
+
+  useEffect(() => {
+    if (searchParams.get('verified') === '1') {
+      setShowVerifiedBanner(true);
+      toast.success('Email verified! You can now sign in.');
+      // Clear the param from URL without reload
+      window.history.replaceState({}, '', '/auth/login');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +59,14 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-md">
+      {showVerifiedBanner && (
+        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800 p-3 flex items-center gap-2">
+          <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
+          <p className="text-sm text-green-800 dark:text-green-300">
+            Email verified successfully! You can now sign in.
+          </p>
+        </div>
+      )}
       <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-lg">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
@@ -127,5 +147,21 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full max-w-md">
+          <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-lg text-center">
+            <div className="text-muted-foreground">Loading...</div>
+          </div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -88,7 +88,7 @@ export default function BacktestsPage() {
           <Button onClick={loadData} variant="ghost" size="icon">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button disabled>
+          <Button disabled={!entitlements || (entitlements.monthly_limit !== -1 && entitlements.monthly_remaining <= 0)}>
             <Plus className="h-4 w-4 mr-2" />
             New Backtest
           </Button>
@@ -100,15 +100,25 @@ export default function BacktestsPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Monthly Used</p>
-            <p className="text-2xl font-bold">{entitlements.monthly_used} / {entitlements.monthly_limit}</p>
+            <p className="text-2xl font-bold">
+              {entitlements.monthly_limit === -1
+                ? `${entitlements.monthly_used} / Unlimited`
+                : `${entitlements.monthly_used} / ${entitlements.monthly_limit}`}
+            </p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Remaining</p>
-            <p className="text-2xl font-bold text-green-600">{entitlements.monthly_remaining}</p>
+            <p className="text-2xl font-bold text-green-600">
+              {entitlements.monthly_limit === -1 ? 'Unlimited' : entitlements.monthly_remaining}
+            </p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Max Range</p>
-            <p className="text-2xl font-bold">{Math.floor(entitlements.max_date_range_days / 365)} years</p>
+            <p className="text-2xl font-bold">
+              {entitlements.max_date_range_days === -1 || !entitlements.max_date_range_days
+                ? 'Unlimited'
+                : `${Math.floor(entitlements.max_date_range_days / 365)} years`}
+            </p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">Asset Classes</p>
@@ -180,7 +190,7 @@ export default function BacktestsPage() {
             Create your first backtest to simulate strategy performance using historical market data.
             Results are 100% deterministic and reproducible.
           </p>
-          <Button disabled>
+          <Button disabled={!entitlements || (entitlements.monthly_limit !== -1 && entitlements.monthly_remaining <= 0)}>
             <Plus className="h-4 w-4 mr-2" />
             Create Backtest
           </Button>
