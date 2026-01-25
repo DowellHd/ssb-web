@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { listBacktests, getBacktestEntitlements, type BacktestSummary, type BacktestEntitlements } from '@/lib/api/backtests';
@@ -14,10 +15,17 @@ function formatDateRange(days: number | null | undefined): string {
 }
 
 export default function BacktestsPage() {
+  const router = useRouter();
   const [backtests, setBacktests] = useState<BacktestSummary[]>([]);
   const [entitlements, setEntitlements] = useState<BacktestEntitlements | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const canCreateBacktest = entitlements && (isUnlimited(entitlements.monthly_limit) || (entitlements.monthly_remaining ?? 0) > 0);
+
+  const handleCreateBacktest = () => {
+    router.push('/app/backtests/new');
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -96,7 +104,10 @@ export default function BacktestsPage() {
           <Button onClick={loadData} variant="ghost" size="icon">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button disabled={!entitlements || (!isUnlimited(entitlements.monthly_limit) && (entitlements.monthly_remaining ?? 0) <= 0)}>
+          <Button
+            onClick={handleCreateBacktest}
+            disabled={!canCreateBacktest}
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Backtest
           </Button>
@@ -196,7 +207,10 @@ export default function BacktestsPage() {
             Create your first backtest to simulate strategy performance using historical market data.
             Results are 100% deterministic and reproducible.
           </p>
-          <Button disabled={!entitlements || (!isUnlimited(entitlements.monthly_limit) && (entitlements.monthly_remaining ?? 0) <= 0)}>
+          <Button
+            onClick={handleCreateBacktest}
+            disabled={!canCreateBacktest}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Create Backtest
           </Button>
