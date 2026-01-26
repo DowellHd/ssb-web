@@ -10,6 +10,9 @@ import {
   AlertTriangle,
   RefreshCw,
   Info,
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
@@ -52,6 +55,7 @@ export default function RegimePage() {
   const [data, setData] = useState<RegimeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showMethodology, setShowMethodology] = useState(false);
 
   const fetchRegimeData = async () => {
     setLoading(true);
@@ -145,6 +149,77 @@ export default function RegimePage() {
           <RefreshCw className="h-4 w-4" />
           Refresh
         </Button>
+      </div>
+
+      {/* Methodology info panel */}
+      <div className="rounded-lg border bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+        <button
+          onClick={() => setShowMethodology(!showMethodology)}
+          className="w-full flex items-center justify-between p-4 text-left"
+        >
+          <div className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="font-medium text-blue-900 dark:text-blue-100">
+              What is Market Regime Detection?
+            </span>
+          </div>
+          {showMethodology ? (
+            <ChevronUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          )}
+        </button>
+        {showMethodology && (
+          <div className="px-4 pb-4 space-y-3">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              SSB doesn&apos;t use a single &quot;trend&quot; indicator. Instead, it performs{' '}
+              <strong>market regime detection</strong> — a multi-factor classification
+              approach that determines the current market environment.
+            </p>
+            <div className="text-sm text-blue-800 dark:text-blue-200">
+              <p className="font-medium mb-2">How it works:</p>
+              <ul className="space-y-1.5 ml-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                  <span>
+                    <strong>Price Direction:</strong> Analyzes multiple moving average
+                    crosses and momentum indicators
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                  <span>
+                    <strong>Volatility:</strong> Evaluates historical volatility and VIX
+                    levels relative to historical norms
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                  <span>
+                    <strong>Mean-Reversion:</strong> Detects whether markets are
+                    trending or reverting to mean
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                  <span>
+                    <strong>Breadth &amp; Macro:</strong> Incorporates market breadth and
+                    yield curve signals
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <div className="text-sm text-blue-800 dark:text-blue-200">
+              <p className="font-medium mb-2">Output:</p>
+              <p>
+                A regime classification (<strong>Bull</strong>, <strong>Bear</strong>,{' '}
+                <strong>Sideways</strong>, or <strong>High Volatility</strong>) with a
+                confidence score, rather than a simple up/down trend signal. This helps
+                you understand the broader market context for strategy selection.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Regime header card */}
