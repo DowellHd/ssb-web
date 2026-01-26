@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { getCapabilities, type Capabilities } from '@/lib/api/meta';
 import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
-import { getPlanConfig, getPlanDisplayName, isFounderPlan } from '@/lib/plan-config';
+import { getPlanConfig, getPlanDisplayName, isFounderPlan, hasUnlimitedAccess } from '@/lib/plan-config';
 import { isUnlimited, formatLimit } from '@/lib/utils';
 
 export default function BillingPage() {
@@ -206,7 +206,7 @@ export default function BillingPage() {
       <div className="rounded-lg border bg-card p-6">
         <h2 className="text-lg font-semibold mb-4">Current Plan</h2>
         <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-lg ${isFounderPlan(currentPlanName) ? 'bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30' : 'bg-primary/10'}`}>
+          <div className={`p-3 rounded-lg ${hasUnlimitedAccess(currentPlanName) ? 'bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30' : 'bg-primary/10'}`}>
             {getPlanIcon(currentPlanName)}
           </div>
           <div className="flex-1">
@@ -215,8 +215,8 @@ export default function BillingPage() {
               <PlanBadge planName={currentPlanName} />
             </div>
             <p className="text-sm text-muted-foreground">
-              {isFounderPlan(currentPlanName)
-                ? 'Founder access - All features unlocked'
+              {hasUnlimitedAccess(currentPlanName)
+                ? 'Full access - All features unlocked'
                 : hasActiveSubscription
                   ? 'Active subscription'
                   : 'No active paid subscription'}
@@ -265,7 +265,7 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Regime Analysis</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.regime_insights_delay_days === 0 || entitlements?.is_founder
+                {entitlements?.regime_insights_delay_days === 0 || entitlements?.is_founder || entitlements?.is_full_access
                   ? 'Real-time access'
                   : `${entitlements?.regime_insights_delay_days || 7}-day delayed data`}
               </p>
@@ -276,7 +276,7 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Risk Analytics</p>
               <p className="text-sm text-muted-foreground capitalize">
-                {entitlements?.is_founder ? 'Full' : (entitlements?.risk_analytics_level || 'basic')} tier
+                {(entitlements?.is_founder || entitlements?.is_full_access) ? 'Full' : (entitlements?.risk_analytics_level || 'basic')} tier
               </p>
             </div>
           </div>
@@ -285,7 +285,7 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Simulations</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.is_founder || isUnlimited(entitlements?.simulation_limit)
+                {entitlements?.is_founder || entitlements?.is_full_access || isUnlimited(entitlements?.simulation_limit)
                   ? 'Unlimited'
                   : `Up to ${formatLimit(entitlements?.simulation_limit)} runs`}
               </p>
@@ -296,8 +296,8 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Stress Testing</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.stress_test_enabled || entitlements?.is_founder
-                  ? (entitlements?.is_founder ? 'Full access' : `${entitlements?.stress_test_tier} tier`)
+                {entitlements?.stress_test_enabled || entitlements?.is_founder || entitlements?.is_full_access
+                  ? ((entitlements?.is_founder || entitlements?.is_full_access) ? 'Full access' : `${entitlements?.stress_test_tier} tier`)
                   : 'Requires Pro plan'}
               </p>
             </div>
@@ -307,7 +307,7 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">Asset Classes</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.is_founder ? 'All' : `${entitlements?.asset_classes?.length || 1} available`}
+                {(entitlements?.is_founder || entitlements?.is_full_access) ? 'All' : `${entitlements?.asset_classes?.length || 1} available`}
               </p>
             </div>
           </div>
@@ -316,7 +316,7 @@ export default function BillingPage() {
             <div>
               <p className="font-medium">API Requests</p>
               <p className="text-sm text-muted-foreground">
-                {entitlements?.is_founder || isUnlimited(entitlements?.daily_api_requests_limit)
+                {entitlements?.is_founder || entitlements?.is_full_access || isUnlimited(entitlements?.daily_api_requests_limit)
                   ? 'Unlimited'
                   : `${formatLimit(entitlements?.daily_api_requests_limit)}/day`}
               </p>

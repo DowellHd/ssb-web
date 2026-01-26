@@ -88,15 +88,16 @@ export interface EntitlementsInfo {
   regime_insights_delay_days: number; // 0 = real-time
   risk_analytics_level: string;
   asset_classes: string[];
-  simulation_limit: number; // -1 = unlimited
+  simulation_limit: number; // large value = unlimited
   stress_test_enabled: boolean;
   stress_test_tier: string;
   api_access_level: string;
-  daily_api_requests_limit: number; // -1 = unlimited
+  daily_api_requests_limit: number; // large value = unlimited
   daily_api_requests_used: number;
   can_upgrade: boolean;
   upgrade_benefits: string[];
-  is_founder: boolean; // Full access, unlimited limits
+  is_founder: boolean; // Founder access, unlimited limits
+  is_full_access?: boolean; // Full access (non-founder), unlimited limits
 }
 
 // ============================================================================

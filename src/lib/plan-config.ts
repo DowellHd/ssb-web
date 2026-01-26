@@ -3,7 +3,7 @@
  * Single source of truth for plan names, badges, and styling.
  */
 
-export type PlanKey = 'free' | 'starter' | 'pro' | 'institutional' | 'founder';
+export type PlanKey = 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access';
 
 export interface PlanConfig {
   displayName: string;
@@ -47,6 +47,12 @@ export const PLAN_CONFIG: Record<PlanKey, PlanConfig> = {
     badgeClassName: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white',
     iconClassName: 'text-amber-500',
   },
+  full_access: {
+    displayName: 'Full Access',
+    badgeLabel: 'Full Access',
+    badgeClassName: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white',
+    iconClassName: 'text-emerald-500',
+  },
 };
 
 /**
@@ -70,4 +76,20 @@ export function getPlanDisplayName(planName: string | undefined): string {
  */
 export function isFounderPlan(planName: string | undefined): boolean {
   return planName?.toLowerCase() === 'founder';
+}
+
+/**
+ * Check if a plan is the full_access plan.
+ */
+export function isFullAccessPlan(planName: string | undefined): boolean {
+  return planName?.toLowerCase() === 'full_access';
+}
+
+/**
+ * Check if a plan has unlimited access (founder or full_access).
+ * Use this for feature checks where both tiers should have full access.
+ */
+export function hasUnlimitedAccess(planName: string | undefined): boolean {
+  const lower = planName?.toLowerCase();
+  return lower === 'founder' || lower === 'full_access';
 }
