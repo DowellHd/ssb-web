@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { RefreshCw, Plus, TrendingUp, TrendingDown, DollarSign, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAccount, usePositions, useOrders, useTierLimits } from '@/hooks/use-paper-trading';
-import { cn, formatCurrency, formatPercent, isUnlimited, formatLimit } from '@/lib/utils';
+import { cn, formatCurrency, formatPercent, isUnlimited, safeNumber } from '@/lib/utils';
 import { AccountSummaryCard } from '@/components/paper/account-summary-card';
 import { PositionsTable } from '@/components/paper/positions-table';
 import { OrdersList } from '@/components/paper/orders-list';
@@ -144,7 +144,7 @@ export default function PaperTradingPage() {
         onClose={() => setIsOrderModalOpen(false)}
         defaultSymbol={orderSymbol}
         defaultSide={orderSide}
-        currentCash={account?.current_cash || 0}
+        currentCash={safeNumber(account?.current_cash, 0)}
         positions={positions?.positions || []}
       />
     </div>

@@ -25,6 +25,8 @@ export interface Account {
   name: string;
   starting_balance: number;
   current_cash: number;
+  positions_value: number;
+  equity: number;
   total_value: number;
   total_return: number;
   total_return_pct: number;
