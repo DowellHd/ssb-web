@@ -124,11 +124,17 @@ export const useAssistantStore = create<AssistantState>()(
             isLoading: false,
           }));
         } catch (error: any) {
-          // Add error message
+          // Extract error detail from backend response
+          const errorDetail =
+            error?.response?.data?.detail ||
+            error?.message ||
+            'An unexpected error occurred. Please try again.';
+
+          // Add error message with backend detail
           const errorMessage: Message = {
             id: generateMessageId(),
             role: 'assistant',
-            content: 'Sorry, I encountered an error processing your request. Please try again.',
+            content: errorDetail,
             timestamp: new Date(),
             isError: true,
           };
@@ -136,7 +142,7 @@ export const useAssistantStore = create<AssistantState>()(
           set((state) => ({
             messages: [...state.messages, errorMessage],
             isLoading: false,
-            error: error?.response?.data?.detail || error?.message || 'An error occurred',
+            error: errorDetail,
           }));
         }
       },
