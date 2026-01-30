@@ -240,6 +240,226 @@ class APIClient {
       };
     }
 
+    // Paper trading endpoints
+    if (url.includes('/paper/account') && method === 'get') {
+      return {
+        id: 'demo-paper-account',
+        user_id: 'demo-user',
+        name: 'Default',
+        starting_balance: 100000,
+        current_cash: 87500.25,
+        created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+        updated_at: new Date().toISOString(),
+        is_active: true,
+        total_value: 112450.75,
+        positions_value: 24950.50,
+        total_pl: 12450.75,
+        total_pl_pct: 12.45,
+      };
+    }
+
+    if (url.includes('/paper/account') && method === 'post') {
+      const body = config.data ? JSON.parse(config.data) : {};
+      return {
+        id: 'demo-paper-account-new',
+        user_id: 'demo-user',
+        name: body.name || 'Default',
+        starting_balance: body.starting_balance || 100000,
+        current_cash: body.starting_balance || 100000,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_active: true,
+        total_value: body.starting_balance || 100000,
+        positions_value: 0,
+        total_pl: 0,
+        total_pl_pct: 0,
+      };
+    }
+
+    if (url.includes('/paper/limits')) {
+      return {
+        plan_name: 'free',
+        max_positions: 5,
+        current_positions: 3,
+        positions_remaining: 2,
+        orders_per_day: 10,
+        orders_today: 4,
+        orders_remaining_today: 6,
+        history_days: 30,
+        is_unlimited: false,
+      };
+    }
+
+    if (url.includes('/paper/positions')) {
+      return [
+        {
+          id: 'pos-1',
+          account_id: 'demo-paper-account',
+          symbol: 'AAPL',
+          quantity: 50,
+          avg_cost: 178.50,
+          current_price: 185.25,
+          market_value: 9262.50,
+          unrealized_pl: 337.50,
+          unrealized_pl_pct: 3.78,
+          last_price_update: new Date().toISOString(),
+        },
+        {
+          id: 'pos-2',
+          account_id: 'demo-paper-account',
+          symbol: 'GOOGL',
+          quantity: 30,
+          avg_cost: 142.75,
+          current_price: 148.90,
+          market_value: 4467.00,
+          unrealized_pl: 184.50,
+          unrealized_pl_pct: 4.31,
+          last_price_update: new Date().toISOString(),
+        },
+        {
+          id: 'pos-3',
+          account_id: 'demo-paper-account',
+          symbol: 'MSFT',
+          quantity: 25,
+          avg_cost: 415.20,
+          current_price: 448.84,
+          market_value: 11221.00,
+          unrealized_pl: 841.00,
+          unrealized_pl_pct: 8.11,
+          last_price_update: new Date().toISOString(),
+        },
+      ];
+    }
+
+    if (url.match(/\/paper\/orders\/[a-zA-Z0-9-]+$/) && method === 'delete') {
+      return { success: true };
+    }
+
+    if (url.includes('/paper/orders') && method === 'get') {
+      return [
+        {
+          id: 'order-1',
+          account_id: 'demo-paper-account',
+          symbol: 'AAPL',
+          side: 'buy',
+          quantity: 50,
+          order_type: 'market',
+          limit_price: null,
+          status: 'filled',
+          filled_quantity: 50,
+          avg_fill_price: 178.50,
+          created_at: new Date(Date.now() - 7 * 86400000).toISOString(),
+          filled_at: new Date(Date.now() - 7 * 86400000).toISOString(),
+        },
+        {
+          id: 'order-2',
+          account_id: 'demo-paper-account',
+          symbol: 'NVDA',
+          side: 'buy',
+          quantity: 10,
+          order_type: 'limit',
+          limit_price: 875.00,
+          status: 'pending',
+          filled_quantity: 0,
+          avg_fill_price: null,
+          created_at: new Date(Date.now() - 3600000).toISOString(),
+          filled_at: null,
+        },
+        {
+          id: 'order-3',
+          account_id: 'demo-paper-account',
+          symbol: 'TSLA',
+          side: 'sell',
+          quantity: 15,
+          order_type: 'market',
+          limit_price: null,
+          status: 'filled',
+          filled_quantity: 15,
+          avg_fill_price: 245.30,
+          created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+          filled_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+        },
+      ];
+    }
+
+    if (url.includes('/paper/orders') && method === 'post') {
+      const body = config.data ? JSON.parse(config.data) : {};
+      return {
+        id: 'order-new-' + Date.now(),
+        account_id: 'demo-paper-account',
+        symbol: body.symbol,
+        side: body.side,
+        quantity: body.quantity,
+        order_type: body.order_type,
+        limit_price: body.limit_price,
+        status: body.order_type === 'market' ? 'filled' : 'pending',
+        filled_quantity: body.order_type === 'market' ? body.quantity : 0,
+        avg_fill_price: body.order_type === 'market' ? 150.00 : null,
+        created_at: new Date().toISOString(),
+        filled_at: body.order_type === 'market' ? new Date().toISOString() : null,
+      };
+    }
+
+    if (url.includes('/paper/performance')) {
+      const days = 30;
+      const snapshots = [];
+      let value = 100000;
+      for (let i = days; i >= 0; i--) {
+        const date = new Date(Date.now() - i * 86400000);
+        value = value * (1 + (Math.random() - 0.48) * 0.02);
+        snapshots.push({
+          date: date.toISOString().split('T')[0],
+          total_value: Math.round(value * 100) / 100,
+          cash_value: Math.round(value * 0.7 * 100) / 100,
+        });
+      }
+      return {
+        period: '30d',
+        starting_value: 100000,
+        current_value: value,
+        total_return: value - 100000,
+        total_return_pct: ((value - 100000) / 100000) * 100,
+        snapshots,
+      };
+    }
+
+    // Assistant endpoints
+    if (url.includes('/assistant/chat') && method === 'post') {
+      const body = config.data ? JSON.parse(config.data) : {};
+      const message = body.message?.toLowerCase() || '';
+
+      let reply = "I'm here to help you learn about markets and trading concepts. What would you like to know?";
+
+      if (message.includes('market regime')) {
+        reply = "A market regime refers to the prevailing conditions or state of the market over a period. Common regimes include:\n\n• **Bull Market**: Extended period of rising prices\n• **Bear Market**: Extended period of declining prices\n• **High Volatility**: Large price swings, often during uncertainty\n• **Low Volatility**: Stable, range-bound prices\n\nUnderstanding the current regime can help inform investment strategies, though past patterns don't guarantee future performance.\n\n*This is educational information only, not financial advice.*";
+      } else if (message.includes('var') || message.includes('value at risk')) {
+        reply = "**Value at Risk (VaR)** is a statistical measure of the potential loss in value of a portfolio over a defined period for a given confidence interval.\n\nFor example, a 1-day 95% VaR of $10,000 means there's a 95% confidence that the portfolio won't lose more than $10,000 in one day.\n\nLimitations:\n• Doesn't predict maximum loss\n• Assumes normal market conditions\n• Historical data may not reflect future risks\n\n*This is educational information only, not financial advice.*";
+      } else if (message.includes('paper trading')) {
+        reply = "**Paper trading** is a simulated trading practice where you can:\n\n• Practice buying and selling without real money\n• Test strategies in real market conditions\n• Learn how order types work\n• Track performance over time\n\nIt's a great way to build confidence before trading with real capital. Your paper trading account starts with virtual funds that you can use to place simulated trades.";
+      } else if (message.includes('entitlement') || message.includes('plan')) {
+        reply = "SSB offers different subscription tiers with varying features:\n\n• **Free**: Basic access with usage limits\n• **Pro**: Enhanced features and higher limits\n• **Institutional**: Full access for professional use\n\nYou can view and manage your subscription in the Billing section of your account settings.";
+      }
+
+      return {
+        reply,
+        thread_id: body.thread_id || 'demo-thread-' + Date.now(),
+        citations: [],
+        safety_flags: [],
+      };
+    }
+
+    if (url.includes('/assistant/account-summary')) {
+      return {
+        plan_name: 'free',
+        billing_portal_url: '/app/billing',
+        last_invoice_date: null,
+      };
+    }
+
+    if (url.match(/\/assistant\/thread\/[a-zA-Z0-9-]+$/) && method === 'delete') {
+      return { success: true };
+    }
+
     // Default: return null to proceed with actual request
     return null;
   }

@@ -17,7 +17,9 @@ import {
   Menu,
   X,
   Crown,
+  CandlestickChart,
 } from 'lucide-react';
+import { ChatBubble } from '@/components/assistant';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser, logout, type User } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
@@ -28,6 +30,7 @@ const navItems = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/app/regime', label: 'Regime Analysis', icon: TrendingUp },
   { href: '/app/risk', label: 'Risk Analytics', icon: Shield },
+  { href: '/app/paper', label: 'Paper Trading', icon: CandlestickChart },
   { href: '/app/backtests', label: 'Backtests', icon: LineChart },
   { href: '/app/audit', label: 'Audit Log', icon: ClipboardList },
   { href: '/app/billing', label: 'Billing', icon: CreditCard },
@@ -192,6 +195,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Page content */}
         <main className="p-6">{children}</main>
       </div>
+
+      {/* SSB Assistant Chat Widget */}
+      <ChatBubble />
     </div>
   );
 }
