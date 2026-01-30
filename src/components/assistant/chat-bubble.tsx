@@ -25,6 +25,7 @@ export function ChatBubble() {
           'transition-all duration-200',
           'hover:scale-105 active:scale-95',
           'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+          'overflow-hidden p-0',
           isOpen && 'scale-0 opacity-0'
         )}
         aria-label={isOpen ? 'Close SSB Assistant' : 'Open SSB Assistant'}
@@ -33,13 +34,13 @@ export function ChatBubble() {
           <Image
             src="/SSBAssistant.png"
             alt="SSB Assistant"
-            width={32}
-            height={32}
-            className="h-8 w-8"
+            width={56}
+            height={56}
+            className="h-full w-full object-cover"
             onError={() => setImageError(true)}
           />
         ) : (
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-7 w-7" />
         )}
       </button>
 
