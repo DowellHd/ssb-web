@@ -11,6 +11,7 @@ import {
   getPerformance,
   placeOrder,
   cancelOrder,
+  resetAccount,
   type Account,
   type TierLimits,
   type OrdersListResponse,
@@ -18,6 +19,7 @@ import {
   type Performance,
   type PlaceOrderRequest,
   type Order,
+  type ResetAccountResponse,
 } from '@/lib/api/paper';
 import { getErrorMessage } from '@/lib/api-client';
 
@@ -123,6 +125,26 @@ export function useCancelOrder() {
       queryClient.invalidateQueries({ queryKey: paperQueryKeys.limits() });
 
       toast.success('Order canceled');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+}
+
+/**
+ * Hook to reset paper trading account.
+ */
+export function useResetAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ResetAccountResponse, Error, void>({
+    mutationFn: resetAccount,
+    onSuccess: () => {
+      // Invalidate all paper trading queries
+      queryClient.invalidateQueries({ queryKey: paperQueryKeys.all });
+
+      toast.success('Account reset successfully. Starting fresh with $100,000.');
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

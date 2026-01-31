@@ -1,15 +1,38 @@
 'use client';
 
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight } from 'lucide-react';
+import { AlertTriangle, ArrowRight, RotateCcw, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { TierLimits } from '@/lib/api/paper';
+import { useResetAccount } from '@/hooks/use-paper-trading';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface TierLimitsBannerProps {
   limits: TierLimits;
 }
 
+function formatCooldownTime(hours: number | null): string {
+  if (hours === null || hours <= 0) return 'Available now';
+  if (hours < 24) return `${hours}h remaining`;
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+  if (remainingHours === 0) return `${days}d remaining`;
+  return `${days}d ${remainingHours}h remaining`;
+}
+
 export function TierLimitsBanner({ limits }: TierLimitsBannerProps) {
+  const resetMutation = useResetAccount();
+
   const isPositionsLow = limits.positions_remaining <= 1 && limits.positions_remaining < limits.max_positions;
   const isOrdersLow = limits.orders_remaining_today <= 2;
   const showWarning = isPositionsLow || isOrdersLow;
@@ -17,6 +40,10 @@ export function TierLimitsBanner({ limits }: TierLimitsBannerProps) {
   if (limits.is_unlimited) {
     return null;
   }
+
+  const handleReset = () => {
+    resetMutation.mutate();
+  };
 
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -79,13 +106,52 @@ export function TierLimitsBanner({ limits }: TierLimitsBannerProps) {
           </div>
         </div>
 
-        {/* Upgrade CTA */}
-        <Link href="/app/billing">
-          <Button variant="outline" size="sm" className="flex-shrink-0">
-            Upgrade
-            <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
-        </Link>
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-2 flex-shrink-0">
+          {/* Reset Account Button */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!limits.can_reset || resetMutation.isPending}
+              >
+                {resetMutation.isPending ? (
+                  <RotateCcw className="h-4 w-4 mr-1 animate-spin" />
+                ) : limits.can_reset ? (
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                ) : (
+                  <Clock className="h-4 w-4 mr-1" />
+                )}
+                {limits.can_reset
+                  ? 'Reset'
+                  : formatCooldownTime(limits.hours_until_reset)}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset Paper Trading Account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will clear all positions, orders, and history. Your account will be reset to $100,000 starting balance. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleReset}>
+                  Reset Account
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Upgrade CTA */}
+          <Link href="/app/billing">
+            <Button variant="outline" size="sm" className="w-full">
+              Upgrade
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

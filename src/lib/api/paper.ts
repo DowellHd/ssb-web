@@ -75,6 +75,18 @@ export interface TierLimits {
   orders_remaining_today: number;
   history_days: number;
   is_unlimited: boolean;
+  // New tier fields
+  max_portfolios: number;
+  max_chart_overlays: number;
+  reset_cooldown_hours: number;
+  can_reset: boolean;
+  hours_until_reset: number | null;
+}
+
+export interface ResetAccountResponse {
+  success: boolean;
+  message: string;
+  account: Account | null;
 }
 
 export interface SnapshotSummary {
@@ -190,5 +202,14 @@ export async function listPositions(): Promise<PositionsListResponse> {
  */
 export async function getPerformance(period: string = '1m'): Promise<Performance> {
   const response = await apiClient.get('/paper/performance', { params: { period } });
+  return response.data;
+}
+
+/**
+ * Reset paper trading account to initial state.
+ * Subject to tier-based cooldown restrictions.
+ */
+export async function resetAccount(): Promise<ResetAccountResponse> {
+  const response = await apiClient.post('/paper/reset');
   return response.data;
 }
