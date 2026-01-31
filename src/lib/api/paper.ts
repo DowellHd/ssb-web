@@ -75,13 +75,17 @@ export interface TierLimits {
   orders_remaining_today: number;
   history_days: number;
   is_unlimited: boolean;
-  // New tier fields
+  // Tier features
   max_portfolios: number;
   max_chart_overlays: number;
+  allowed_overlays: OverlayType[];
   reset_cooldown_hours: number;
   can_reset: boolean;
   hours_until_reset: number | null;
 }
+
+// Chart overlay types
+export type OverlayType = 'sma20' | 'sma50' | 'sma200' | 'regression' | 'levels';
 
 export interface ResetAccountResponse {
   success: boolean;
