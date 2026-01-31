@@ -1,0 +1,153 @@
+'use client';
+
+import { useState, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronDown, LineChart as LineChartIcon, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { getBars } from '@/lib/api/data';
+import type { OverlayType, TierLimits } from '@/lib/api/paper';
+import type { OHLCV } from '@/lib/chart/overlays';
+import { PriceChart } from './price-chart';
+import { OverlayToggles } from './overlay-toggles';
+
+interface ChartSectionProps {
+  symbol: string;
+  limits: TierLimits | null;
+  className?: string;
+}
+
+export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [enabledOverlays, setEnabledOverlays] = useState<OverlayType[]>([]);
+
+  const allowedOverlays = limits?.allowed_overlays ?? ['sma20'];
+
+  // Fetch price data
+  const {
+    data: barsData,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
+    queryKey: ['bars', symbol],
+    queryFn: () =>
+      getBars(symbol, {
+        timeframe: '1d',
+        limit: 250, // ~1 year of daily data
+      }),
+    enabled: !!symbol,
+    staleTime: 60 * 1000, // 1 minute
+    refetchOnWindowFocus: false,
+  });
+
+  // Convert API data to OHLCV format
+  const chartData = useMemo((): OHLCV[] => {
+    if (!barsData?.bars) return [];
+
+    return barsData.bars.map((bar) => ({
+      time: Math.floor(new Date(bar.timestamp).getTime() / 1000),
+      open: bar.open,
+      high: bar.high,
+      low: bar.low,
+      close: bar.close,
+      volume: bar.volume,
+    }));
+  }, [barsData]);
+
+  // Toggle overlay
+  const handleToggleOverlay = useCallback((overlay: OverlayType) => {
+    setEnabledOverlays((prev) =>
+      prev.includes(overlay)
+        ? prev.filter((o) => o !== overlay)
+        : [...prev, overlay]
+    );
+  }, []);
+
+  // Filter out disabled overlays when limits change
+  useMemo(() => {
+    setEnabledOverlays((prev) =>
+      prev.filter((o) => allowedOverlays.includes(o))
+    );
+  }, [allowedOverlays]);
+
+  if (!symbol) {
+    return (
+      <div className={cn('rounded-lg border bg-card', className)}>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <LineChartIcon className="h-8 w-8 text-muted-foreground mb-2" />
+          <p className="text-muted-foreground">Select a position to view chart</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('rounded-lg border bg-card', className)}>
+      {/* Header */}
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 font-semibold hover:text-primary transition-colors"
+        >
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 transition-transform',
+              !isExpanded && '-rotate-90'
+            )}
+          />
+          Price Chart
+        </button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isLoading || isRefetching}
+          >
+            <RefreshCw
+              className={cn(
+                'h-4 w-4',
+                (isLoading || isRefetching) && 'animate-spin'
+              )}
+            />
+          </Button>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="p-4 space-y-4">
+          {/* Overlay Toggles */}
+          <OverlayToggles
+            enabledOverlays={enabledOverlays}
+            allowedOverlays={allowedOverlays}
+            onToggle={handleToggleOverlay}
+          />
+
+          {/* Chart */}
+          {isLoading ? (
+            <div className="flex items-center justify-center h-[400px]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : chartData.length > 0 ? (
+            <PriceChart
+              symbol={symbol}
+              data={chartData}
+              enabledOverlays={enabledOverlays}
+              height={400}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+              No price data available for {symbol}
+            </div>
+          )}
+
+          {/* Educational disclaimer */}
+          <p className="text-[10px] text-muted-foreground text-center">
+            Chart overlays are educational visual aids only. They do not imply trading recommendations.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
