@@ -8,9 +8,11 @@ import type { Position } from '@/lib/api/paper';
 interface PositionsTableProps {
   positions: Position[];
   onSell: (symbol: string) => void;
+  onSelect?: (symbol: string) => void;
+  selectedSymbol?: string;
 }
 
-export function PositionsTable({ positions, onSell }: PositionsTableProps) {
+export function PositionsTable({ positions, onSell, onSelect, selectedSymbol }: PositionsTableProps) {
   if (positions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -38,8 +40,16 @@ export function PositionsTable({ positions, onSell }: PositionsTableProps) {
         <tbody>
           {positions.map((position) => {
             const isProfit = position.unrealized_pl >= 0;
+            const isSelected = selectedSymbol === position.symbol;
             return (
-              <tr key={position.id} className="border-b last:border-0 hover:bg-muted/50">
+              <tr
+                key={position.id}
+                className={cn(
+                  'border-b last:border-0 cursor-pointer transition-colors',
+                  isSelected ? 'bg-primary/5' : 'hover:bg-muted/50'
+                )}
+                onClick={() => onSelect?.(position.symbol)}
+              >
                 <td className="px-4 py-3 font-medium">{position.symbol}</td>
                 <td className="px-4 py-3 text-right">{position.quantity}</td>
                 <td className="px-4 py-3 text-right">{formatCurrency(position.avg_cost)}</td>

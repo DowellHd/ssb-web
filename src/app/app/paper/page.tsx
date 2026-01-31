@@ -10,11 +10,13 @@ import { PositionsTable } from '@/components/paper/positions-table';
 import { OrdersList } from '@/components/paper/orders-list';
 import { TierLimitsBanner } from '@/components/paper/tier-limits-banner';
 import { NewOrderModal } from '@/components/paper/new-order-modal';
+import { ChartSection } from '@/components/paper/chart-section';
 
 export default function PaperTradingPage() {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [orderSymbol, setOrderSymbol] = useState<string | undefined>();
   const [orderSide, setOrderSide] = useState<'buy' | 'sell'>('buy');
+  const [selectedChartSymbol, setSelectedChartSymbol] = useState<string | undefined>();
 
   const { data: account, isLoading: accountLoading, refetch: refetchAccount } = useAccount();
   const { data: positions, isLoading: positionsLoading, refetch: refetchPositions } = usePositions();
@@ -39,6 +41,10 @@ export default function PaperTradingPage() {
     setOrderSymbol(symbol);
     setOrderSide('sell');
     setIsOrderModalOpen(true);
+  };
+
+  const handleSelectSymbol = (symbol: string) => {
+    setSelectedChartSymbol(symbol);
   };
 
   if (isLoading && !account) {
@@ -107,6 +113,12 @@ export default function PaperTradingPage() {
         </div>
       )}
 
+      {/* Price Chart */}
+      <ChartSection
+        symbol={selectedChartSymbol || (positions?.positions?.[0]?.symbol ?? '')}
+        limits={limits ?? null}
+      />
+
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Positions */}
@@ -117,6 +129,8 @@ export default function PaperTradingPage() {
           <PositionsTable
             positions={positions?.positions || []}
             onSell={handleSellPosition}
+            onSelect={handleSelectSymbol}
+            selectedSymbol={selectedChartSymbol}
           />
         </div>
 
