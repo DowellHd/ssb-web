@@ -27,7 +27,7 @@ export interface BarsResponse {
 }
 
 export type AssetClass = 'stocks' | 'etfs' | 'crypto';
-export type Timeframe = '1m' | '5m' | '15m' | '1h' | '1d' | '1w';
+export type Timeframe = '1m' | '5m' | '15m' | '1h' | '1d' | '1w' | '1mo';
 
 // ============================================================================
 // API Functions

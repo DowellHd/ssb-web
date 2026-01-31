@@ -27,6 +27,7 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
   const {
     data: barsData,
     isLoading,
+    error,
     refetch,
     isRefetching,
   } = useQuery({
@@ -39,7 +40,15 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     enabled: !!symbol,
     staleTime: 60 * 1000, // 1 minute
     refetchOnWindowFocus: false,
+    retry: false,
   });
+
+  // Extract error message
+  const errorMessage = error
+    ? (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
+      (error as Error)?.message ||
+      'Failed to load chart data'
+    : null;
 
   // Convert API data to OHLCV format
   const chartData = useMemo((): OHLCV[] => {
@@ -128,6 +137,11 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
           {isLoading ? (
             <div className="flex items-center justify-center h-[400px]">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : errorMessage ? (
+            <div className="flex flex-col items-center justify-center h-[400px] text-destructive">
+              <p className="text-sm font-medium">Failed to load chart</p>
+              <p className="text-xs text-muted-foreground mt-1">{errorMessage}</p>
             </div>
           ) : chartData.length > 0 ? (
             <PriceChart
