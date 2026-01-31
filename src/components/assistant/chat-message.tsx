@@ -66,17 +66,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
           {formatTime(message.timestamp)}
         </span>
 
-        {/* Safety flags (for debugging, hidden in production) */}
-        {message.safety_flags && message.safety_flags.length > 0 && (
-          <div className="mt-1 flex gap-1 flex-wrap">
-            {message.safety_flags.map((flag) => (
-              <span
-                key={flag}
-                className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700"
-              >
-                {flag}
-              </span>
-            ))}
+        {/* Related topics hint */}
+        {message.relatedTopics && message.relatedTopics.length > 0 && !isUser && (
+          <div className="mt-1 text-[10px] text-muted-foreground">
+            Related: {message.relatedTopics.slice(0, 3).join(', ')}
           </div>
         )}
       </div>

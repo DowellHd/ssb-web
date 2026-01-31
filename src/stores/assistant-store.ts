@@ -1,9 +1,12 @@
 /**
  * Zustand store for SSB Assistant chat state.
+ *
+ * Uses local rule-based assistant - no external API calls.
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { sendMessage, clearThread, ChatResponse, Citation } from '@/lib/api/assistant';
+import { processMessage, getQuickPrompts } from '@/lib/assistant/local-assistant';
+import { DISCLAIMER } from '@/lib/assistant/knowledge-base';
 
 // ============================================================================
 // Types
@@ -14,8 +17,8 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  citations?: Citation[];
-  safety_flags?: string[];
+  topicId?: string | null;
+  relatedTopics?: string[];
   isError?: boolean;
 }
 
@@ -25,7 +28,6 @@ interface AssistantState {
   isLoading: boolean;
 
   // Conversation State
-  threadId: string | null;
   messages: Message[];
 
   // Error State
@@ -36,7 +38,7 @@ interface AssistantState {
   open: () => void;
   close: () => void;
   sendMessage: (content: string) => Promise<void>;
-  clearChat: () => Promise<void>;
+  clearChat: () => void;
   setError: (error: string | null) => void;
 }
 
@@ -44,13 +46,13 @@ interface AssistantState {
 // Quick Prompts
 // ============================================================================
 
-export const QUICK_PROMPTS = [
-  'What is a market regime?',
-  'Explain VaR in simple terms',
-  'How do entitlements work?',
-  'How do I use backtesting?',
-  'What is paper trading?',
-];
+export const QUICK_PROMPTS = getQuickPrompts();
+
+// ============================================================================
+// Disclaimer
+// ============================================================================
+
+export { DISCLAIMER };
 
 // ============================================================================
 // Helper Functions
@@ -58,6 +60,17 @@ export const QUICK_PROMPTS = [
 
 function generateMessageId(): string {
   return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Simulate typing delay for more natural feel
+ */
+function getTypingDelay(responseLength: number): number {
+  // Base delay + variable based on response length
+  // Min 300ms, Max 1200ms
+  const baseDelay = 300;
+  const variableDelay = Math.min(responseLength * 2, 900);
+  return baseDelay + variableDelay;
 }
 
 // ============================================================================
@@ -70,7 +83,6 @@ export const useAssistantStore = create<AssistantState>()(
       // Initial State
       isOpen: false,
       isLoading: false,
-      threadId: null,
       messages: [],
       error: null,
 
@@ -83,11 +95,11 @@ export const useAssistantStore = create<AssistantState>()(
       // Close chat panel
       close: () => set({ isOpen: false }),
 
-      // Send a message
+      // Send a message (local processing - no API calls)
       sendMessage: async (content: string) => {
-        const { threadId, messages } = get();
+        const { messages } = get();
 
-        // Add user message to state immediately (optimistic update)
+        // Add user message to state immediately
         const userMessage: Message = {
           id: generateMessageId(),
           role: 'user',
@@ -102,11 +114,12 @@ export const useAssistantStore = create<AssistantState>()(
         });
 
         try {
-          // Call API
-          const response = await sendMessage({
-            message: content,
-            thread_id: threadId,
-          });
+          // Process locally - no API call
+          const response = processMessage(content);
+
+          // Simulate brief typing delay for natural feel
+          const delay = getTypingDelay(response.reply.length);
+          await new Promise((resolve) => setTimeout(resolve, delay));
 
           // Add assistant response
           const assistantMessage: Message = {
@@ -114,71 +127,59 @@ export const useAssistantStore = create<AssistantState>()(
             role: 'assistant',
             content: response.reply,
             timestamp: new Date(),
-            citations: response.citations,
-            safety_flags: response.safety_flags,
+            topicId: response.topicId,
+            relatedTopics: response.relatedTopics,
           };
 
           set((state) => ({
             messages: [...state.messages, assistantMessage],
-            threadId: response.thread_id,
             isLoading: false,
           }));
-        } catch (error: any) {
-          // Extract error detail from backend response
-          const errorDetail =
-            error?.response?.data?.detail ||
-            error?.message ||
-            'An unexpected error occurred. Please try again.';
+        } catch (error: unknown) {
+          // Should rarely happen since processing is local
+          const errorMessage =
+            error instanceof Error ? error.message : 'An unexpected error occurred.';
 
-          // Add error message with backend detail
-          const errorMessage: Message = {
+          const assistantErrorMessage: Message = {
             id: generateMessageId(),
             role: 'assistant',
-            content: errorDetail,
+            content: `I encountered an error processing your message. Please try rephrasing your question.\n\nError: ${errorMessage}`,
             timestamp: new Date(),
             isError: true,
           };
 
           set((state) => ({
-            messages: [...state.messages, errorMessage],
+            messages: [...state.messages, assistantErrorMessage],
             isLoading: false,
-            error: errorDetail,
+            error: errorMessage,
           }));
         }
       },
 
-      // Clear chat history
-      clearChat: async () => {
-        const { threadId } = get();
-
-        // Clear local state first
+      // Clear chat history (local only - no server call needed)
+      clearChat: () => {
         set({
           messages: [],
-          threadId: null,
           error: null,
         });
-
-        // Clear on server if we have a thread
-        if (threadId) {
-          try {
-            await clearThread(threadId);
-          } catch (error) {
-            // Silently ignore - local state is already cleared
-            console.warn('Failed to clear thread on server:', error);
-          }
-        }
       },
 
       // Set error state
       setError: (error: string | null) => set({ error }),
     }),
     {
-      name: 'ssb-assistant',
+      name: 'ssb-assistant-v2',
       partialize: (state) => ({
-        // Only persist these fields
-        threadId: state.threadId,
+        // Only persist messages (keep history across sessions)
         messages: state.messages,
       }),
+      // Handle storage errors gracefully
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.warn('Failed to rehydrate assistant state:', error);
+          // Continue with empty state - don't crash
+        }
+      },
     }
   )
 );
