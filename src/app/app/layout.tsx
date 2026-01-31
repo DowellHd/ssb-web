@@ -25,6 +25,7 @@ import { getCurrentUser, logout, type User } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { PLAN_CONFIG } from '@/lib/plan-config';
+import { useAssistantStore } from '@/stores/assistant-store';
 
 const navItems = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
@@ -44,9 +45,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Sync page context with assistant store
+  const setCurrentPage = useAssistantStore((state) => state.setCurrentPage);
+  const setUserTier = useAssistantStore((state) => state.setUserTier);
+
   useEffect(() => {
     loadUser();
   }, []);
+
+  // Update assistant context when page changes
+  useEffect(() => {
+    setCurrentPage(pathname);
+  }, [pathname, setCurrentPage]);
+
+  // Update assistant context when user tier is known
+  useEffect(() => {
+    if (user) {
+      // For now, default to free unless founder. Full tier detection can be added via billing API
+      const tier = user.is_founder ? 'founder' : 'free';
+      setUserTier(tier);
+    }
+  }, [user, setUserTier]);
 
   const loadUser = async () => {
     try {

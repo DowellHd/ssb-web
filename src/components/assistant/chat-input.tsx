@@ -2,14 +2,27 @@
 
 import { Send } from 'lucide-react';
 import { useState, useRef, KeyboardEvent } from 'react';
-import { useAssistantStore, QUICK_PROMPTS } from '@/stores/assistant-store';
+import { useAssistantStore } from '@/stores/assistant-store';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export function ChatInput() {
+interface ChatInputProps {
+  /** Suggestions to show (from last assistant message or page-smart prompts) */
+  suggestions?: string[];
+}
+
+export function ChatInput({ suggestions }: ChatInputProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { sendMessage, isLoading, messages } = useAssistantStore();
+  const { sendMessage, isLoading, messages, getQuickPrompts } = useAssistantStore();
+
+  // Get page-smart prompts from store
+  const quickPrompts = getQuickPrompts();
+
+  // Use suggestions if provided, otherwise use page-smart quick prompts
+  const displayPrompts = suggestions && suggestions.length > 0
+    ? suggestions
+    : quickPrompts;
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -44,16 +57,19 @@ export function ChatInput() {
     }
   };
 
-  const showQuickPrompts = messages.length === 0;
+  // Show quick prompts when no messages, or suggestions after assistant response
+  const showPrompts = messages.length === 0 || (suggestions && suggestions.length > 0);
 
   return (
     <div className="border-t p-4 space-y-3">
-      {/* Quick prompts (shown when no messages) */}
-      {showQuickPrompts && (
+      {/* Quick prompts / suggestions */}
+      {showPrompts && displayPrompts.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">Quick questions:</p>
+          <p className="text-xs text-muted-foreground">
+            {messages.length === 0 ? 'Quick questions:' : 'Try asking:'}
+          </p>
           <div className="flex flex-wrap gap-2">
-            {QUICK_PROMPTS.map((prompt) => (
+            {displayPrompts.slice(0, 4).map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => handleQuickPrompt(prompt)}
@@ -62,7 +78,8 @@ export function ChatInput() {
                   'px-3 py-1.5 text-xs rounded-full',
                   'bg-muted hover:bg-muted/80',
                   'transition-colors',
-                  'disabled:opacity-50 disabled:cursor-not-allowed'
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                  'text-left'
                 )}
               >
                 {prompt}

@@ -1,77 +1,85 @@
 /**
- * Local Rule-Based Assistant
+ * Local Rule-Based Assistant v2
  *
- * Provides intelligent responses using keyword matching and a knowledge base.
- * No external API calls - all processing is local.
+ * Enhanced assistant with:
+ * - Query normalization (synonyms, aliases)
+ * - Intent detection (definition, how_to, troubleshoot, fallback)
+ * - Page-aware context (scoped responses)
+ * - Response templates per intent
+ * - No external API calls - all processing is local
  */
 
 import {
-  TOPICS,
+  KB_ENTRIES,
   GLOSSARY,
   SAFETY_PATTERNS,
   SAFETY_RESPONSE,
   DISCLAIMER,
-  type KBTopic,
+  PAGE_PROMPTS,
+  normalizeQuery,
+  detectIntent,
+  getPagePrompts,
+  type KBEntry,
+  type Intent,
+  type PageScope,
 } from './knowledge-base';
+
+// =============================================================================
+// Types
+// =============================================================================
+
+export interface AssistantContext {
+  /** Current page path (e.g., '/app/paper', '/app/risk') */
+  page?: string;
+  /** Selected position symbol */
+  selectedSymbol?: string;
+  /** Current account balance */
+  accountBalance?: number;
+  /** User's subscription tier */
+  tier?: 'free' | 'starter' | 'pro' | 'founder';
+}
 
 export interface AssistantResponse {
   reply: string;
   topicId: string | null;
+  matchedTopic?: string;
+  intent: Intent;
   relatedTopics: string[];
+  suggestions: string[];
   disclaimer: string;
 }
 
-// =============================================================================
-// Intent Classification
-// =============================================================================
-
-interface IntentMatch {
-  topicId: string;
+interface KBMatch {
+  entryId: string;
   score: number;
-  topic: KBTopic;
+  entry: KBEntry;
+  pageBoost: boolean;
 }
 
-/**
- * Classify user intent using keyword matching
- */
-function classifyIntent(message: string): IntentMatch[] {
-  const normalizedMessage = message.toLowerCase().trim();
-  const words = normalizedMessage.split(/\s+/);
-  const matches: IntentMatch[] = [];
+// =============================================================================
+// Page Scope Detection
+// =============================================================================
 
-  for (const [topicId, topic] of Object.entries(TOPICS)) {
-    let score = 0;
+function detectPageScope(path?: string): PageScope {
+  if (!path) return 'global';
 
-    for (const keyword of topic.keywords) {
-      const keywordLower = keyword.toLowerCase();
+  const pathLower = path.toLowerCase();
 
-      // Exact word match (higher score)
-      if (words.includes(keywordLower)) {
-        score += 10;
-      }
-      // Partial match / contains
-      else if (normalizedMessage.includes(keywordLower)) {
-        score += 5;
-      }
-      // Fuzzy match for common typos
-      else if (words.some(word => levenshteinDistance(word, keywordLower) <= 2 && word.length > 3)) {
-        score += 3;
-      }
-    }
+  if (pathLower.includes('/paper')) return 'paper';
+  if (pathLower.includes('/backtest')) return 'backtest';
+  if (pathLower.includes('/risk')) return 'risk';
+  if (pathLower.includes('/regime')) return 'regime';
+  if (pathLower.includes('/stress')) return 'stress';
+  if (pathLower.includes('/settings')) return 'settings';
+  if (pathLower.includes('/billing')) return 'billing';
+  if (pathLower.includes('/dashboard') || pathLower === '/app') return 'dashboard';
 
-    // Boost score for title matches
-    if (normalizedMessage.includes(topic.title.toLowerCase())) {
-      score += 15;
-    }
-
-    if (score > 0) {
-      matches.push({ topicId, score, topic });
-    }
-  }
-
-  // Sort by score descending
-  return matches.sort((a, b) => b.score - a.score);
+  return 'global';
 }
+
+// =============================================================================
+// Keyword Matching
+// =============================================================================
 
 /**
  * Simple Levenshtein distance for fuzzy matching
@@ -106,6 +114,95 @@ function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length];
 }
 
+/**
+ * Match query against knowledge base entries.
+ * Returns scored matches, boosted by page relevance.
+ */
+function matchKBEntries(
+  normalizedQuery: string,
+  pageScope: PageScope
+): KBMatch[] {
+  const words = normalizedQuery.split(/\s+/).filter(w => w.length > 1);
+  const matches: KBMatch[] = [];
+
+  for (const [entryId, entry] of Object.entries(KB_ENTRIES)) {
+    let score = 0;
+    const pageBoost = entry.pageScopes.includes(pageScope) ||
+                      entry.pageScopes.includes('global');
+
+    // Check keywords
+    for (const keyword of entry.keywords) {
+      const keywordLower = keyword.toLowerCase();
+
+      // Exact word match (highest score)
+      if (words.includes(keywordLower)) {
+        score += 15;
+      }
+      // Contains keyword (partial match)
+      else if (normalizedQuery.includes(keywordLower)) {
+        score += 10;
+      }
+      // Fuzzy match for typos (lower score)
+      else if (words.some(word =>
+        word.length > 3 && levenshteinDistance(word, keywordLower) <= 2
+      )) {
+        score += 5;
+      }
+    }
+
+    // Check aliases
+    if (entry.aliases) {
+      for (const alias of entry.aliases) {
+        if (normalizedQuery.includes(alias.toLowerCase())) {
+          score += 12;
+        }
+      }
+    }
+
+    // Boost for title match
+    if (normalizedQuery.includes(entry.title.toLowerCase())) {
+      score += 20;
+    }
+
+    // Page relevance boost
+    if (pageBoost && score > 0) {
+      score = Math.round(score * 1.5);
+    }
+
+    if (score > 0) {
+      matches.push({ entryId, score, entry, pageBoost });
+    }
+  }
+
+  // Sort by score descending
+  return matches.sort((a, b) => b.score - a.score);
+}
+
+// =============================================================================
+// Glossary Lookup
+// =============================================================================
+
+function findGlossaryTerms(query: string): string | null {
+  const queryLower = query.toLowerCase();
+  const matchedTerms = GLOSSARY.filter(term => {
+    // Check main term
+    if (queryLower.includes(term.term.toLowerCase())) return true;
+    // Check aliases
+    if (term.aliases?.some(alias => queryLower.includes(alias.toLowerCase()))) {
+      return true;
+    }
+    return false;
+  });
+
+  if (matchedTerms.length === 0) return null;
+
+  const definitions = matchedTerms.map(t =>
+    `**${t.term}**: ${t.definition}`
+  ).join('\n\n');
+
+  return `Here are the definitions:\n\n${definitions}`;
+}
+
 // =============================================================================
 // Safety Check
 // =============================================================================
@@ -115,78 +212,121 @@ function isSafetyTriggered(message: string): boolean {
 }
 
 // =============================================================================
-// Glossary Lookup
+// Response Templates by Intent
 // =============================================================================
 
-function findGlossaryTerms(message: string): string | null {
-  const normalizedMessage = message.toLowerCase();
-  const matchedTerms = GLOSSARY.filter(term =>
-    normalizedMessage.includes(term.term.toLowerCase())
-  );
+function formatDefinitionResponse(entry: KBEntry): string {
+  return entry.content.definition;
+}
 
-  if (matchedTerms.length === 0) return null;
+function formatHowToResponse(entry: KBEntry): string {
+  if (entry.content.how_to) {
+    return entry.content.how_to;
+  }
+  // Fall back to definition with a note
+  return entry.content.definition + '\n\n*For step-by-step instructions, try asking "How do I..." with a specific action.*';
+}
 
-  const definitions = matchedTerms.map(t =>
-    `**${t.term}**: ${t.definition}`
-  ).join('\n\n');
+function formatTroubleshootResponse(entry: KBEntry): string {
+  if (entry.content.troubleshoot) {
+    return entry.content.troubleshoot;
+  }
+  // Fall back with general troubleshooting advice
+  return `**Troubleshooting ${entry.title}:**
 
-  return `Here are the definitions you might find helpful:\n\n${definitions}`;
+If you're experiencing issues, try these general steps:
+1. Refresh the page
+2. Check your internet connection
+3. Verify you have the required subscription tier
+4. Clear browser cache and try again
+
+If the issue persists, check the Help documentation or contact support.
+
+---
+
+${entry.content.definition}`;
+}
+
+function formatResponseByIntent(entry: KBEntry, intent: Intent): string {
+  switch (intent) {
+    case 'how_to':
+      return formatHowToResponse(entry);
+    case 'troubleshoot':
+      return formatTroubleshootResponse(entry);
+    case 'definition':
+    default:
+      return formatDefinitionResponse(entry);
+  }
 }
 
 // =============================================================================
 // Response Generation
 // =============================================================================
 
-function generateGreeting(): AssistantResponse {
+function generateGreeting(pageScope: PageScope): AssistantResponse {
+  const prompts = getPagePrompts(pageScope);
+
+  let contextLine = '';
+  if (pageScope !== 'global') {
+    contextLine = `\nI see you're on the **${pageScope}** page. `;
+  }
+
   return {
-    reply: `Hello! I'm the SSB Assistant. I can help you learn about:
+    reply: `Hello! I'm the SSB Assistant.${contextLine}I can help you learn about:
 
 - **Market Analysis**: Regime detection, trend analysis
 - **Risk Metrics**: VaR, volatility, drawdown, stress testing
-- **Platform Features**: Backtesting, paper trading, entitlements
+- **Platform Features**: Backtesting, paper trading, tiers
 - **Investment Concepts**: Strategies, terminology, best practices
 
-What would you like to learn about?`,
+What would you like to know?`,
     topicId: null,
+    intent: 'fallback',
     relatedTopics: ['what_is_ssb', 'risk_analytics', 'paper_trading'],
+    suggestions: prompts,
     disclaimer: DISCLAIMER,
   };
 }
 
-function generateFallback(): AssistantResponse {
+function generateFallback(pageScope: PageScope): AssistantResponse {
+  const prompts = getPagePrompts(pageScope);
+
   return {
-    reply: `I'm not sure I understood that question. Here are some topics I can help with:
+    reply: `I couldn't find a specific answer for that. Here are some things I can help with:
 
-- "What is SSB?"
-- "Explain market regimes"
-- "What is VaR?"
-- "How does paper trading work?"
-- "Tell me about stress testing"
-- "What are the subscription tiers?"
+${prompts.map(p => `- "${p}"`).join('\n')}
 
-Try asking about one of these topics, or rephrase your question.`,
+Try rephrasing your question, or ask about one of these topics.`,
     topicId: null,
-    relatedTopics: ['what_is_ssb', 'market_regime', 'risk_var', 'paper_trading'],
+    intent: 'fallback',
+    relatedTopics: ['what_is_ssb', 'paper_trading', 'risk_analytics'],
+    suggestions: prompts,
     disclaimer: DISCLAIMER,
   };
 }
 
-function formatTopicResponse(topic: KBTopic, relatedMatches: IntentMatch[]): AssistantResponse {
-  let reply = topic.content;
+function formatFullResponse(
+  entry: KBEntry,
+  intent: Intent,
+  matches: KBMatch[],
+  pageScope: PageScope
+): AssistantResponse {
+  let reply = formatResponseByIntent(entry, intent);
 
-  // Add related topics if available
-  const relatedTopicIds = topic.relatedTopics || [];
-  const additionalRelated = relatedMatches
+  // Collect related topics
+  const relatedTopicIds = entry.relatedTopics || [];
+  const additionalRelated = matches
     .slice(1, 3)
-    .map(m => m.topicId)
+    .map(m => m.entryId)
     .filter(id => !relatedTopicIds.includes(id));
 
   const allRelated = [...relatedTopicIds, ...additionalRelated].slice(0, 4);
 
+  // Add related topics section
   if (allRelated.length > 0) {
     const relatedLinks = allRelated
-      .filter(id => TOPICS[id])
-      .map(id => `• ${TOPICS[id].title}`)
+      .filter(id => KB_ENTRIES[id])
+      .map(id => `- ${KB_ENTRIES[id].title}`)
       .join('\n');
 
     if (relatedLinks) {
@@ -194,10 +334,16 @@ function formatTopicResponse(topic: KBTopic, relatedMatches: IntentMatch[]): Ass
     }
   }
 
+  // Get suggestions based on page context
+  const suggestions = getPagePrompts(pageScope);
+
   return {
     reply,
-    topicId: topic.id,
+    topicId: entry.id,
+    matchedTopic: entry.title,
+    intent,
     relatedTopics: allRelated,
+    suggestions,
     disclaimer: DISCLAIMER,
   };
 }
@@ -207,23 +353,30 @@ function formatTopicResponse(topic: KBTopic, relatedMatches: IntentMatch[]): Ass
 // =============================================================================
 
 /**
- * Process a user message and generate a response
+ * Process a user message and generate a response.
  *
  * This is the main entry point for the local assistant.
- * No API calls are made - all processing is local.
+ * No API calls are made - all processing is deterministic and local.
+ *
+ * @param message - User's input message
+ * @param context - Optional context (current page, selected symbol, etc.)
  */
-export function processMessage(message: string): AssistantResponse {
+export function processMessage(
+  message: string,
+  context?: AssistantContext
+): AssistantResponse {
   const trimmedMessage = message.trim();
+  const pageScope = detectPageScope(context?.page);
 
   // Empty or very short messages
   if (trimmedMessage.length < 2) {
-    return generateGreeting();
+    return generateGreeting(pageScope);
   }
 
   // Check for greetings
   const greetings = ['hello', 'hi', 'hey', 'help', 'start', '?'];
   if (greetings.some(g => trimmedMessage.toLowerCase() === g)) {
-    return generateGreeting();
+    return generateGreeting(pageScope);
   }
 
   // Safety check - redirect harmful requests
@@ -231,73 +384,121 @@ export function processMessage(message: string): AssistantResponse {
     return {
       reply: SAFETY_RESPONSE,
       topicId: null,
+      intent: 'fallback',
       relatedTopics: ['paper_trading', 'backtesting', 'risk_analytics'],
+      suggestions: getPagePrompts(pageScope),
       disclaimer: DISCLAIMER,
     };
   }
 
-  // Check for glossary lookups ("define X", "what is X")
+  // Normalize the query (apply synonym replacements)
+  const normalizedQuery = normalizeQuery(trimmedMessage);
+
+  // Detect intent
+  const intent = detectIntent(trimmedMessage);
+
+  // Check for direct glossary lookups ("define X", "what is X")
   const defineMatch = trimmedMessage.match(/^(define|what is|what's|meaning of)\s+(.+)/i);
   if (defineMatch) {
     const termQuery = defineMatch[2];
     const glossaryResult = findGlossaryTerms(termQuery);
     if (glossaryResult) {
+      // Check if there's also a KB entry
+      const matches = matchKBEntries(normalizeQuery(termQuery), pageScope);
+      if (matches.length > 0 && matches[0].score > 10) {
+        // Combine glossary with full KB entry
+        const bestMatch = matches[0];
+        const response = formatFullResponse(bestMatch.entry, 'definition', matches, pageScope);
+        response.reply = glossaryResult + '\n\n---\n\n' + response.reply;
+        return response;
+      }
+
       return {
-        reply: glossaryResult,
+        reply: glossaryResult + '\n\nWould you like more details on any of these terms?',
         topicId: null,
-        relatedTopics: ['risk_analytics'],
+        intent: 'definition',
+        relatedTopics: ['risk_analytics', 'what_is_ssb'],
+        suggestions: getPagePrompts(pageScope),
         disclaimer: DISCLAIMER,
       };
     }
   }
 
-  // General glossary check
-  const glossaryTerms = findGlossaryTerms(trimmedMessage);
+  // Match against knowledge base
+  const matches = matchKBEntries(normalizedQuery, pageScope);
 
-  // Classify intent
-  const matches = classifyIntent(trimmedMessage);
+  // Check for glossary terms in general query
+  const glossaryTerms = findGlossaryTerms(normalizedQuery);
 
-  // No matches - check glossary or fallback
+  // No KB matches - check glossary or fallback
   if (matches.length === 0) {
     if (glossaryTerms) {
       return {
         reply: glossaryTerms + '\n\nWould you like to learn more about any specific topic?',
         topicId: null,
+        intent: 'definition',
         relatedTopics: ['risk_analytics', 'what_is_ssb'],
+        suggestions: getPagePrompts(pageScope),
         disclaimer: DISCLAIMER,
       };
     }
-    return generateFallback();
+    return generateFallback(pageScope);
   }
 
-  // Return best match
+  // Return best match formatted by intent
   const bestMatch = matches[0];
-  const response = formatTopicResponse(bestMatch.topic, matches);
+  const response = formatFullResponse(bestMatch.entry, intent, matches, pageScope);
 
-  // Append glossary terms if found and relevant
+  // Prepend glossary terms if found and KB match is weak
   if (glossaryTerms && bestMatch.score < 15) {
     response.reply = glossaryTerms + '\n\n---\n\n' + response.reply;
+  }
+
+  // Add context-aware note if relevant
+  if (context?.selectedSymbol && bestMatch.entry.pageScopes.includes('paper')) {
+    response.reply += `\n\n*Currently viewing: ${context.selectedSymbol}*`;
   }
 
   return response;
 }
 
+// =============================================================================
+// Exported Utilities
+// =============================================================================
+
 /**
- * Get quick prompt suggestions
+ * Get quick prompt suggestions for a specific page.
  */
-export function getQuickPrompts(): string[] {
-  return [
-    'What is a market regime?',
-    'Explain VaR in simple terms',
-    'How do entitlements work?',
-    'How do I use backtesting?',
-    'What is paper trading?',
-  ];
+export function getQuickPrompts(page?: string): string[] {
+  const scope = detectPageScope(page);
+  return PAGE_PROMPTS[scope] || PAGE_PROMPTS.global;
 }
 
 /**
- * Get topic by ID
+ * Get a KB entry by ID.
  */
-export function getTopic(topicId: string): KBTopic | null {
-  return TOPICS[topicId] || null;
+export function getEntry(entryId: string): KBEntry | null {
+  return KB_ENTRIES[entryId] || null;
+}
+
+/**
+ * Get all entries relevant to a page scope.
+ */
+export function getEntriesForPage(page?: string): KBEntry[] {
+  const scope = detectPageScope(page);
+  return Object.values(KB_ENTRIES).filter(
+    entry => entry.pageScopes.includes(scope) || entry.pageScopes.includes('global')
+  );
+}
+
+/**
+ * Search entries by query (for autocomplete/typeahead).
+ */
+export function searchEntries(query: string, limit = 5): KBEntry[] {
+  if (query.length < 2) return [];
+
+  const normalized = normalizeQuery(query);
+  const matches = matchKBEntries(normalized, 'global');
+
+  return matches.slice(0, limit).map(m => m.entry);
 }

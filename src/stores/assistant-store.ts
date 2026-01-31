@@ -1,12 +1,21 @@
 /**
  * Zustand store for SSB Assistant chat state.
  *
- * Uses local rule-based assistant - no external API calls.
+ * Uses local rule-based assistant with:
+ * - Page-aware context
+ * - Intent detection
+ * - Query normalization
+ * - No external API calls
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { processMessage, getQuickPrompts } from '@/lib/assistant/local-assistant';
-import { DISCLAIMER } from '@/lib/assistant/knowledge-base';
+import {
+  processMessage,
+  getQuickPrompts,
+  type AssistantContext,
+  type AssistantResponse,
+} from '@/lib/assistant/local-assistant';
+import { DISCLAIMER, type Intent } from '@/lib/assistant/knowledge-base';
 
 // ============================================================================
 // Types
@@ -18,7 +27,10 @@ export interface Message {
   content: string;
   timestamp: Date;
   topicId?: string | null;
+  matchedTopic?: string;
+  intent?: Intent;
   relatedTopics?: string[];
+  suggestions?: string[];
   isError?: boolean;
 }
 
@@ -26,6 +38,11 @@ interface AssistantState {
   // UI State
   isOpen: boolean;
   isLoading: boolean;
+
+  // Context State
+  currentPage: string;
+  selectedSymbol?: string;
+  userTier?: 'free' | 'starter' | 'pro' | 'founder';
 
   // Conversation State
   messages: Message[];
@@ -40,16 +57,18 @@ interface AssistantState {
   sendMessage: (content: string) => Promise<void>;
   clearChat: () => void;
   setError: (error: string | null) => void;
+
+  // Context Actions
+  setCurrentPage: (page: string) => void;
+  setSelectedSymbol: (symbol: string | undefined) => void;
+  setUserTier: (tier: 'free' | 'starter' | 'pro' | 'founder') => void;
+
+  // Prompt Helpers
+  getQuickPrompts: () => string[];
 }
 
 // ============================================================================
-// Quick Prompts
-// ============================================================================
-
-export const QUICK_PROMPTS = getQuickPrompts();
-
-// ============================================================================
-// Disclaimer
+// Disclaimer Export
 // ============================================================================
 
 export { DISCLAIMER };
@@ -67,9 +86,9 @@ function generateMessageId(): string {
  */
 function getTypingDelay(responseLength: number): number {
   // Base delay + variable based on response length
-  // Min 300ms, Max 1200ms
-  const baseDelay = 300;
-  const variableDelay = Math.min(responseLength * 2, 900);
+  // Min 200ms, Max 800ms
+  const baseDelay = 200;
+  const variableDelay = Math.min(responseLength * 1.5, 600);
   return baseDelay + variableDelay;
 }
 
@@ -83,6 +102,9 @@ export const useAssistantStore = create<AssistantState>()(
       // Initial State
       isOpen: false,
       isLoading: false,
+      currentPage: '/app',
+      selectedSymbol: undefined,
+      userTier: undefined,
       messages: [],
       error: null,
 
@@ -95,9 +117,24 @@ export const useAssistantStore = create<AssistantState>()(
       // Close chat panel
       close: () => set({ isOpen: false }),
 
+      // Set current page (for context-aware responses)
+      setCurrentPage: (page: string) => set({ currentPage: page }),
+
+      // Set selected symbol (for paper trading context)
+      setSelectedSymbol: (symbol: string | undefined) => set({ selectedSymbol: symbol }),
+
+      // Set user tier
+      setUserTier: (tier: 'free' | 'starter' | 'pro' | 'founder') => set({ userTier: tier }),
+
+      // Get quick prompts for current page
+      getQuickPrompts: () => {
+        const { currentPage } = get();
+        return getQuickPrompts(currentPage);
+      },
+
       // Send a message (local processing - no API calls)
       sendMessage: async (content: string) => {
-        const { messages } = get();
+        const { messages, currentPage, selectedSymbol, userTier } = get();
 
         // Add user message to state immediately
         const userMessage: Message = {
@@ -114,8 +151,15 @@ export const useAssistantStore = create<AssistantState>()(
         });
 
         try {
-          // Process locally - no API call
-          const response = processMessage(content);
+          // Build context from current state
+          const context: AssistantContext = {
+            page: currentPage,
+            selectedSymbol,
+            tier: userTier,
+          };
+
+          // Process locally with context - no API call
+          const response: AssistantResponse = processMessage(content, context);
 
           // Simulate brief typing delay for natural feel
           const delay = getTypingDelay(response.reply.length);
@@ -128,7 +172,10 @@ export const useAssistantStore = create<AssistantState>()(
             content: response.reply,
             timestamp: new Date(),
             topicId: response.topicId,
+            matchedTopic: response.matchedTopic,
+            intent: response.intent,
             relatedTopics: response.relatedTopics,
+            suggestions: response.suggestions,
           };
 
           set((state) => ({
@@ -168,10 +215,12 @@ export const useAssistantStore = create<AssistantState>()(
       setError: (error: string | null) => set({ error }),
     }),
     {
-      name: 'ssb-assistant-v2',
+      name: 'ssb-assistant-v3',
       partialize: (state) => ({
-        // Only persist messages (keep history across sessions)
+        // Persist messages and context
         messages: state.messages,
+        currentPage: state.currentPage,
+        userTier: state.userTier,
       }),
       // Handle storage errors gracefully
       onRehydrateStorage: () => (state, error) => {
@@ -183,3 +232,23 @@ export const useAssistantStore = create<AssistantState>()(
     }
   )
 );
+
+// ============================================================================
+// Hooks for Context Updates
+// ============================================================================
+
+/**
+ * Hook to sync page context with assistant store.
+ * Call this in your layout or page components.
+ */
+export function useAssistantPageSync(page: string) {
+  const setCurrentPage = useAssistantStore((state) => state.setCurrentPage);
+
+  // Update on mount and when page changes
+  if (typeof window !== 'undefined') {
+    const currentPage = useAssistantStore.getState().currentPage;
+    if (currentPage !== page) {
+      setCurrentPage(page);
+    }
+  }
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { X, Trash2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useAssistantStore } from '@/stores/assistant-store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,15 @@ import { ChatInput } from './chat-input';
 import { DisclaimerBanner } from './disclaimer-banner';
 
 export function ChatPanel() {
-  const { isOpen, close, messages, isLoading, clearChat } = useAssistantStore();
+  const { isOpen, close, messages, isLoading, clearChat, currentPage } = useAssistantStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Get suggestions from the last assistant message
+  const lastSuggestions = useMemo(() => {
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
+    const lastAssistant = assistantMessages[assistantMessages.length - 1];
+    return lastAssistant?.suggestions || [];
+  }, [messages]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -31,6 +38,18 @@ export function ChatPanel() {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, close]);
+
+  // Determine page name for context display
+  const pageName = useMemo(() => {
+    if (currentPage.includes('/paper')) return 'Paper Trading';
+    if (currentPage.includes('/backtest')) return 'Backtesting';
+    if (currentPage.includes('/risk')) return 'Risk Analytics';
+    if (currentPage.includes('/regime')) return 'Market Regime';
+    if (currentPage.includes('/stress')) return 'Stress Testing';
+    if (currentPage.includes('/settings')) return 'Settings';
+    if (currentPage.includes('/billing')) return 'Billing';
+    return 'Dashboard';
+  }, [currentPage]);
 
   return (
     <>
@@ -69,7 +88,9 @@ export function ChatPanel() {
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div>
             <h2 className="font-semibold text-lg">SSB Assistant</h2>
-            <p className="text-xs text-muted-foreground">Educational support</p>
+            <p className="text-xs text-muted-foreground">
+              Context: {pageName}
+            </p>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -99,15 +120,13 @@ export function ChatPanel() {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <div className="text-4xl mb-4">
-                <span role="img" aria-label="wave">
-                  {/* Using text instead of emoji for consistency */}
-                </span>
-              </div>
               <h3 className="font-medium mb-2">Welcome to SSB Assistant</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 I can help you understand market concepts, risk metrics, and platform features.
                 Ask me anything educational!
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Currently on: <span className="font-medium">{pageName}</span>
               </p>
             </div>
           ) : (
@@ -132,8 +151,8 @@ export function ChatPanel() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input area */}
-        <ChatInput />
+        {/* Input area with suggestions */}
+        <ChatInput suggestions={messages.length > 0 ? lastSuggestions : undefined} />
       </div>
     </>
   );
