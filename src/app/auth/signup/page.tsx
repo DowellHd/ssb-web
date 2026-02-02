@@ -127,6 +127,16 @@ export default function SignupPage() {
             {loading ? 'Creating account...' : 'Sign up'}
           </Button>
 
+          {/* Legal acknowledgment */}
+          <p className="text-center text-[11px] text-muted-foreground pt-4 leading-relaxed">
+            By creating an account, you agree to our{' '}
+            <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+            , and acknowledge the{' '}
+            <Link href="/disclaimer" className="text-primary hover:underline">Trading Disclaimer</Link>.
+          </p>
+
           <p className="text-center text-sm text-muted-foreground pt-4">
             Already have an account?{' '}
             <Link href="/auth/login" className="font-medium text-primary hover:underline">
@@ -137,7 +147,8 @@ export default function SignupPage() {
       </div>
 
       <div className="mt-6 rounded-lg bg-amber-900/50 border border-amber-700 p-4 text-sm text-amber-100">
-        <strong>Important:</strong> This platform does not execute trades or provide buy/sell recommendations. All analytics are for educational and informational purposes only.
+        <strong>Important:</strong> This platform does not execute trades or provide buy/sell recommendations. All analytics are for educational and informational purposes only.{' '}
+        <Link href="/disclaimer" className="underline hover:text-white">Read full disclaimer</Link>.
       </div>
     </div>
   );

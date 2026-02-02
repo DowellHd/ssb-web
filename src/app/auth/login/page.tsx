@@ -138,6 +138,16 @@ function LoginForm() {
             {loading ? 'Signing in...' : 'Sign in'}
           </Button>
 
+          {/* Legal acknowledgment */}
+          <p className="text-center text-[11px] text-muted-foreground pt-4 leading-relaxed">
+            By signing in, you agree to our{' '}
+            <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+            , and acknowledge the{' '}
+            <Link href="/disclaimer" className="text-primary hover:underline">Trading Disclaimer</Link>.
+          </p>
+
           <p className="text-center text-sm text-muted-foreground pt-4">
             Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className="font-medium text-primary hover:underline">
