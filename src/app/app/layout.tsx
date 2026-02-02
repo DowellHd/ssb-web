@@ -176,18 +176,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Legal Links */}
           <div className="border-t px-4 py-3">
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <Link href="/terms" className="hover:text-foreground transition-colors flex items-center gap-1">
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors flex items-center gap-1">
                 <FileText className="h-3 w-3" />
                 Terms
-              </Link>
-              <Link href="/privacy" className="hover:text-foreground transition-colors flex items-center gap-1">
+              </a>
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors flex items-center gap-1">
                 <ShieldCheck className="h-3 w-3" />
                 Privacy
-              </Link>
-              <Link href="/disclaimer" className="hover:text-foreground transition-colors flex items-center gap-1">
+              </a>
+              <a href="/disclaimer" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />
                 Disclaimer
-              </Link>
+              </a>
             </div>
           </div>
 

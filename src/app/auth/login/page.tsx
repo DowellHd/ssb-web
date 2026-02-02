@@ -141,11 +141,11 @@ function LoginForm() {
           {/* Legal acknowledgment */}
           <p className="text-center text-[11px] text-muted-foreground pt-4 leading-relaxed">
             By signing in, you agree to our{' '}
-            <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Terms of Service</a>
             {' '}and{' '}
-            <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Privacy Policy</a>
             , and acknowledge the{' '}
-            <Link href="/disclaimer" className="text-primary hover:underline">Trading Disclaimer</Link>.
+            <a href="/disclaimer" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Trading Disclaimer</a>.
           </p>
 
           <p className="text-center text-sm text-muted-foreground pt-4">

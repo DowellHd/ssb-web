@@ -108,15 +108,15 @@ export default function Home() {
               © {new Date().getFullYear()} Smart Strategies Builder. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
-              <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 Terms
-              </Link>
-              <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+              </a>
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 Privacy
-              </Link>
-              <Link href="/disclaimer" className="text-muted-foreground hover:text-foreground transition-colors">
+              </a>
+              <a href="/disclaimer" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 Disclaimer
-              </Link>
+              </a>
             </div>
           </div>
         </div>
