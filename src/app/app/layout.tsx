@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   TrendingUp,
   Shield,
-  AlertTriangle,
   LineChart,
   ClipboardList,
   CreditCard,
@@ -18,6 +17,9 @@ import {
   X,
   Crown,
   CandlestickChart,
+  FileText,
+  ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
 import { Button } from '@/components/ui/button';
@@ -170,6 +172,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               })}
             </ul>
           </nav>
+
+          {/* Legal Links */}
+          <div className="border-t px-4 py-3">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <Link href="/terms" className="hover:text-foreground transition-colors flex items-center gap-1">
+                <FileText className="h-3 w-3" />
+                Terms
+              </Link>
+              <Link href="/privacy" className="hover:text-foreground transition-colors flex items-center gap-1">
+                <ShieldCheck className="h-3 w-3" />
+                Privacy
+              </Link>
+              <Link href="/disclaimer" className="hover:text-foreground transition-colors flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                Disclaimer
+              </Link>
+            </div>
+          </div>
 
           {/* User section */}
           <div className="border-t p-4">

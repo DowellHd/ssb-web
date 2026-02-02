@@ -102,8 +102,23 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="w-full py-6 px-4 border-t">
-        <div className="max-w-5xl mx-auto text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Smart Strategies Builder. All rights reserved.</p>
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Smart Strategies Builder. All rights reserved.
+            </p>
+            <div className="flex gap-6 text-sm">
+              <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                Terms
+              </Link>
+              <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+                Privacy
+              </Link>
+              <Link href="/disclaimer" className="text-muted-foreground hover:text-foreground transition-colors">
+                Disclaimer
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </main>
