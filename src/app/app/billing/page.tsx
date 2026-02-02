@@ -2,13 +2,61 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2 } from 'lucide-react';
+import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCapabilities, type Capabilities } from '@/lib/api/meta';
 import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
 import { getPlanConfig, getPlanDisplayName, isFounderPlan, hasUnlimitedAccess } from '@/lib/plan-config';
 import { isUnlimited, formatLimit } from '@/lib/utils';
+
+// Feature bullets for each plan
+const PLAN_FEATURES: Record<string, string[]> = {
+  free: [
+    '7-day delayed regime data',
+    'Basic risk analytics',
+    '5 paper positions max',
+    '10 orders/day',
+    'Price overlay only',
+  ],
+  starter: [
+    '3-day delayed regime data',
+    'Standard risk analytics',
+    '15 paper positions',
+    '50 orders/day',
+    'Price + Volume overlays',
+  ],
+  pro: [
+    'Real-time regime data',
+    'Advanced risk analytics',
+    '50 paper positions',
+    '500 orders/day',
+    'All chart overlays',
+    'Stress testing access',
+  ],
+  institutional: [
+    'Real-time + priority data',
+    'Full risk analytics suite',
+    'Unlimited positions',
+    'Unlimited orders',
+    'All overlays + custom',
+    'Dedicated support',
+  ],
+};
+
+// Comparison table data
+const COMPARISON_FEATURES = [
+  { label: 'Regime Data Delay', free: '7 days', starter: '3 days', pro: 'Real-time', institutional: 'Real-time' },
+  { label: 'Risk Analytics', free: 'Basic', starter: 'Standard', pro: 'Advanced', institutional: 'Full Suite' },
+  { label: 'Paper Positions', free: '5', starter: '15', pro: '50', institutional: 'Unlimited' },
+  { label: 'Orders per Day', free: '10', starter: '50', pro: '500', institutional: 'Unlimited' },
+  { label: 'Chart Overlays', free: 'Price only', starter: 'Price + Volume', pro: 'All', institutional: 'All + Custom' },
+  { label: 'Stress Testing', free: false, starter: false, pro: true, institutional: true },
+  { label: 'API Access', free: false, starter: 'Limited', pro: 'Full', institutional: 'Full + Priority' },
+  { label: 'Export Reports', free: false, starter: true, pro: true, institutional: true },
+  { label: 'Custom Alerts', free: false, starter: false, pro: true, institutional: true },
+  { label: 'Support', free: 'Community', starter: 'Email', pro: 'Priority', institutional: 'Dedicated' },
+];
 
 export default function BillingPage() {
   const searchParams = useSearchParams();
@@ -347,63 +395,143 @@ export default function BillingPage() {
       {plans && plans.plans.length > 0 && (
         <div className="rounded-lg border bg-card p-6">
           <h2 className="text-lg font-semibold mb-4">Available Plans</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {plans.plans.map((plan) => {
-              const isCurrentPlan = plan.name === currentPlanName;
+              const isCurrentPlan = plan.name.toLowerCase() === currentPlanName.toLowerCase();
               const canUpgrade = !isCurrentPlan && plan.price_monthly > 0;
               const isLoading = checkoutLoading === plan.name;
+              const features = PLAN_FEATURES[plan.name.toLowerCase()] || [];
 
               return (
                 <div
                   key={plan.id}
-                  className={`rounded-lg border p-4 ${
+                  className={`rounded-lg border p-4 flex flex-col ${
                     isCurrentPlan
-                      ? 'border-primary bg-primary/5'
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
                       : 'hover:border-primary/50'
                   }`}
                 >
+                  {isCurrentPlan && (
+                    <div className="text-xs font-medium text-primary mb-2">Current Plan</div>
+                  )}
                   <div className="flex items-center gap-2 mb-2">
                     {getPlanIcon(plan.name)}
                     <h3 className="font-semibold">{getPlanDisplayName(plan.name)}</h3>
-                    {isCurrentPlan && <PlanBadge planName={plan.name} />}
                   </div>
-                  <p className="text-2xl font-bold mb-2">
-                    ${plan.price_monthly}
-                    <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                  <p className="text-2xl font-bold mb-1">
+                    {plan.price_monthly === 0 ? (
+                      'Free'
+                    ) : (
+                      <>
+                        ${plan.price_monthly}
+                        <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                      </>
+                    )}
                   </p>
                   {plan.description && (
-                    <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+                    <p className="text-xs text-muted-foreground mb-3">{plan.description}</p>
                   )}
-                  {isCurrentPlan ? (
-                    <span className="text-sm text-primary font-medium">Current Plan</span>
-                  ) : canUpgrade ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={!billingEnabled || isLoading}
-                      className="w-full"
-                      onClick={() => handleUpgrade(plan.name)}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Loading...
-                        </>
-                      ) : billingEnabled ? (
-                        `Upgrade to ${getPlanDisplayName(plan.name)}`
-                      ) : (
-                        'Coming Soon'
-                      )}
-                    </Button>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">Free tier</span>
+
+                  {/* Feature bullets */}
+                  {features.length > 0 && (
+                    <ul className="text-xs space-y-1.5 mb-4 flex-1">
+                      {features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <CheckCircle className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />
+                          <span className="text-muted-foreground">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   )}
+
+                  {/* Action button */}
+                  <div className="mt-auto pt-2">
+                    {isCurrentPlan ? (
+                      <div className="text-sm text-primary font-medium text-center py-1.5">
+                        ✓ Active
+                      </div>
+                    ) : canUpgrade ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!billingEnabled || isLoading}
+                        className="w-full"
+                        onClick={() => handleUpgrade(plan.name)}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Loading...
+                          </>
+                        ) : billingEnabled ? (
+                          'Upgrade'
+                        ) : (
+                          'Coming Soon'
+                        )}
+                      </Button>
+                    ) : (
+                      <div className="text-sm text-muted-foreground text-center py-1.5">
+                        Free forever
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
       )}
+
+      {/* Feature Comparison Table */}
+      <div className="rounded-lg border bg-card p-6 overflow-x-auto">
+        <h2 className="text-lg font-semibold mb-4">Feature Comparison</h2>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left py-2 pr-4 font-medium">Feature</th>
+              <th className={`text-center py-2 px-3 font-medium ${currentPlanName.toLowerCase() === 'free' ? 'bg-primary/10 rounded-t' : ''}`}>Free</th>
+              <th className={`text-center py-2 px-3 font-medium ${currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/10 rounded-t' : ''}`}>Starter</th>
+              <th className={`text-center py-2 px-3 font-medium ${currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/10 rounded-t' : ''}`}>Pro</th>
+              <th className={`text-center py-2 px-3 font-medium ${currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/10 rounded-t' : ''}`}>Institutional</th>
+            </tr>
+          </thead>
+          <tbody>
+            {COMPARISON_FEATURES.map((row, i) => (
+              <tr key={row.label} className={i < COMPARISON_FEATURES.length - 1 ? 'border-b' : ''}>
+                <td className="py-2 pr-4 text-muted-foreground">{row.label}</td>
+                <td className={`text-center py-2 px-3 ${currentPlanName.toLowerCase() === 'free' ? 'bg-primary/5' : ''}`}>
+                  {typeof row.free === 'boolean' ? (
+                    row.free ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/50 mx-auto" />
+                  ) : (
+                    <span className="text-xs">{row.free}</span>
+                  )}
+                </td>
+                <td className={`text-center py-2 px-3 ${currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/5' : ''}`}>
+                  {typeof row.starter === 'boolean' ? (
+                    row.starter ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/50 mx-auto" />
+                  ) : (
+                    <span className="text-xs">{row.starter}</span>
+                  )}
+                </td>
+                <td className={`text-center py-2 px-3 ${currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/5' : ''}`}>
+                  {typeof row.pro === 'boolean' ? (
+                    row.pro ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/50 mx-auto" />
+                  ) : (
+                    <span className="text-xs">{row.pro}</span>
+                  )}
+                </td>
+                <td className={`text-center py-2 px-3 ${currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/5' : ''}`}>
+                  {typeof row.institutional === 'boolean' ? (
+                    row.institutional ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/50 mx-auto" />
+                  ) : (
+                    <span className="text-xs">{row.institutional}</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Info banner */}
       <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-4 text-sm text-slate-800 dark:text-slate-200">
