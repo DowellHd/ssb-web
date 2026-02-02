@@ -9,6 +9,7 @@ import {
   CandlestickData,
   LineData,
   Time,
+  IPriceLine,
 } from 'lightweight-charts';
 import type { OverlayType } from '@/lib/api/paper';
 import {
@@ -38,6 +39,7 @@ export function PriceChart({
   const chartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const overlaySeriesRef = useRef<Map<string, ISeriesApi<'Line'>>>(new Map());
+  const priceLinesRef = useRef<IPriceLine[]>([]);
 
   // Convert OHLCV data to lightweight-charts format
   const candleData = useMemo((): CandlestickData[] => {
@@ -155,6 +157,7 @@ export function PriceChart({
       chartRef.current = null;
       candleSeriesRef.current = null;
       overlaySeriesRef.current.clear();
+      priceLinesRef.current = [];
     };
   }, [height]);
 
@@ -212,15 +215,18 @@ export function PriceChart({
 
     const series = candleSeriesRef.current;
 
-    // Clear existing price lines
-    // Note: lightweight-charts doesn't have a clearPriceLines method,
-    // so we recreate them each time
+    // Clear existing price lines first
+    for (const priceLine of priceLinesRef.current) {
+      series.removePriceLine(priceLine);
+    }
+    priceLinesRef.current = [];
 
+    // Create new price lines if levels are enabled
     if (keyLevels && enabledOverlays.includes('levels')) {
       const levelColor = OVERLAY_CONFIGS.levels.color;
 
       if (keyLevels.prevDayHigh !== null) {
-        series.createPriceLine({
+        const line = series.createPriceLine({
           price: keyLevels.prevDayHigh,
           color: levelColor,
           lineWidth: 1,
@@ -228,10 +234,11 @@ export function PriceChart({
           axisLabelVisible: true,
           title: 'Prev High',
         });
+        priceLinesRef.current.push(line);
       }
 
       if (keyLevels.prevDayLow !== null) {
-        series.createPriceLine({
+        const line = series.createPriceLine({
           price: keyLevels.prevDayLow,
           color: levelColor,
           lineWidth: 1,
@@ -239,6 +246,7 @@ export function PriceChart({
           axisLabelVisible: true,
           title: 'Prev Low',
         });
+        priceLinesRef.current.push(line);
       }
     }
   }, [keyLevels, enabledOverlays]);

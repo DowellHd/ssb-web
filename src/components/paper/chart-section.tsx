@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, LineChart as LineChartIcon, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,14 @@ import { cn } from '@/lib/utils';
 import { getBars } from '@/lib/api/data';
 import type { OverlayType, TierLimits } from '@/lib/api/paper';
 import type { OHLCV } from '@/lib/chart/overlays';
+import {
+  TIMEFRAME_CONFIG,
+  TIMEFRAME_OPTIONS,
+  DEFAULT_TIMEFRAME,
+  getInitialTimeframe,
+  saveTimeframePreference,
+  type ChartTimeframe,
+} from '@/lib/chart/timeframes';
 import { PriceChart } from './price-chart';
 import { OverlayToggles } from './overlay-toggles';
 
@@ -20,28 +28,54 @@ interface ChartSectionProps {
 export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [enabledOverlays, setEnabledOverlays] = useState<OverlayType[]>([]);
+  const [timeframe, setTimeframe] = useState<ChartTimeframe>(DEFAULT_TIMEFRAME);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const allowedOverlays = limits?.allowed_overlays ?? ['sma20'];
 
-  // Fetch price data
+  // Hydrate timeframe from localStorage after mount (avoids SSR mismatch)
+  useEffect(() => {
+    if (symbol) {
+      const savedTimeframe = getInitialTimeframe(symbol);
+      setTimeframe(savedTimeframe);
+    }
+    setIsHydrated(true);
+  }, [symbol]);
+
+  // Get the API config for current timeframe
+  const timeframeConfig = TIMEFRAME_CONFIG[timeframe];
+
+  // Fetch price data - includes timeframe in query key for automatic refetch
   const {
     data: barsData,
     isLoading,
     error,
     refetch,
     isRefetching,
+    isFetching,
   } = useQuery({
-    queryKey: ['bars', symbol],
+    queryKey: ['bars', symbol, timeframe],
     queryFn: () =>
       getBars(symbol, {
-        timeframe: '1d',
-        limit: 250, // ~1 year of daily data
+        timeframe: timeframeConfig.apiTimeframe,
+        limit: timeframeConfig.limit,
       }),
-    enabled: !!symbol,
+    enabled: !!symbol && isHydrated,
     staleTime: 60 * 1000, // 1 minute
     refetchOnWindowFocus: false,
     retry: false,
   });
+
+  // Handle timeframe change
+  const handleTimeframeChange = useCallback(
+    (newTimeframe: ChartTimeframe) => {
+      setTimeframe(newTimeframe);
+      if (symbol) {
+        saveTimeframePreference(symbol, newTimeframe);
+      }
+    },
+    [symbol]
+  );
 
   // Extract error message
   const errorMessage = error
@@ -108,6 +142,24 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
           Price Chart
         </button>
         <div className="flex items-center gap-2">
+          {/* Timeframe selector */}
+          <div className="flex rounded-md border bg-muted/50 p-0.5">
+            {TIMEFRAME_OPTIONS.map((tf) => (
+              <button
+                key={tf}
+                onClick={() => handleTimeframeChange(tf)}
+                disabled={isFetching}
+                className={cn(
+                  'px-2 py-1 text-xs font-medium rounded transition-colors',
+                  timeframe === tf
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
           <Button
             variant="ghost"
             size="sm"
@@ -134,7 +186,7 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
           />
 
           {/* Chart */}
-          {isLoading ? (
+          {isLoading || !isHydrated ? (
             <div className="flex items-center justify-center h-[400px]">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             </div>
@@ -142,6 +194,15 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
             <div className="flex flex-col items-center justify-center h-[400px] text-destructive">
               <p className="text-sm font-medium">Failed to load chart</p>
               <p className="text-xs text-muted-foreground mt-1">{errorMessage}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => refetch()}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
             </div>
           ) : chartData.length > 0 ? (
             <PriceChart
@@ -151,8 +212,9 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
               height={400}
             />
           ) : (
-            <div className="flex items-center justify-center h-[400px] text-muted-foreground">
-              No price data available for {symbol}
+            <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground">
+              <p>No price data available for {symbol}</p>
+              <p className="text-xs mt-1">Try selecting a different timeframe</p>
             </div>
           )}
 
