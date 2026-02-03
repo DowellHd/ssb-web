@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { getRegimeModelInfo, type ModelInfo } from '@/lib/api/intelligence';
 
 interface RegimeIndicators {
   trend_score: number;
@@ -53,6 +54,7 @@ interface RegimeData {
 export default function RegimePage() {
   const router = useRouter();
   const [data, setData] = useState<RegimeData | null>(null);
+  const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
@@ -82,8 +84,18 @@ export default function RegimePage() {
     }
   };
 
+  const fetchModelInfo = async () => {
+    try {
+      const info = await getRegimeModelInfo();
+      setModelInfo(info);
+    } catch {
+      // Non-critical - continue with data from regime response
+    }
+  };
+
   useEffect(() => {
     fetchRegimeData();
+    fetchModelInfo();
   }, []);
 
   const getRegimeColor = (regime: string) => {
@@ -474,21 +486,48 @@ export default function RegimePage() {
           <Info className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-semibold">Model Information</h3>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="text-sm text-muted-foreground">Model Type</p>
-            <p className="font-medium">{data.explanation.model_info.model_type}</p>
+            <p className="font-medium">
+              {modelInfo?.model_type || data.explanation.model_info.model_type}
+            </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Version</p>
-            <p className="font-medium">{data.explanation.model_info.version}</p>
+            <p className="font-medium">
+              {modelInfo?.version || data.explanation.model_info.version}
+            </p>
           </div>
+          {modelInfo?.last_updated && (
+            <div>
+              <p className="text-sm text-muted-foreground">Last Updated</p>
+              <p className="font-medium">
+                {new Date(modelInfo.last_updated).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </p>
+            </div>
+          )}
+          {modelInfo?.build_id && (
+            <div>
+              <p className="text-sm text-muted-foreground">Build</p>
+              <p className="font-medium font-mono text-xs">{modelInfo.build_id}</p>
+            </div>
+          )}
         </div>
-        {data.explanation.limitations.length > 0 && (
+        {modelInfo?.description && (
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-sm text-muted-foreground">{modelInfo.description}</p>
+          </div>
+        )}
+        {(modelInfo?.limitations || data.explanation.limitations).length > 0 && (
           <div className="mt-4 pt-4 border-t">
             <p className="text-sm text-muted-foreground mb-2">Limitations:</p>
             <ul className="text-sm text-muted-foreground space-y-1">
-              {data.explanation.limitations.map((limitation, index) => (
+              {(modelInfo?.limitations || data.explanation.limitations).map((limitation, index) => (
                 <li key={index}>• {limitation}</li>
               ))}
             </ul>

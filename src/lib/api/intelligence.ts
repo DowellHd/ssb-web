@@ -100,6 +100,15 @@ export interface EntitlementsInfo {
   is_full_access?: boolean; // Full access (non-founder), unlimited limits
 }
 
+export interface ModelInfo {
+  model_type: string;
+  version: string;
+  description: string;
+  last_updated: string;
+  limitations: string[];
+  build_id?: string;
+}
+
 // ============================================================================
 // API Functions
 // ============================================================================
@@ -128,5 +137,13 @@ export async function analyzePortfolioRisk(holdings: PortfolioHolding[]): Promis
  */
 export async function getIntelligenceEntitlements(): Promise<EntitlementsInfo> {
   const response = await apiClient.get('/intelligence/entitlements');
+  return response.data;
+}
+
+/**
+ * Get regime model metadata.
+ */
+export async function getRegimeModelInfo(): Promise<ModelInfo> {
+  const response = await apiClient.get('/intelligence/v2/regime/model-info');
   return response.data;
 }
