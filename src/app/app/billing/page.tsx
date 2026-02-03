@@ -485,42 +485,42 @@ export default function BillingPage() {
       {/* Feature Comparison Table */}
       <div className="rounded-lg border bg-card p-6 overflow-x-auto">
         <h2 className="text-lg font-semibold mb-4">Feature Comparison</h2>
-        <table className="table-dense">
+        <table className="table-compare">
           <thead>
-            <tr className="border-b">
+            <tr className="border-b border-border">
               <th>Feature</th>
-              <th className={`text-center ${currentPlanName.toLowerCase() === 'free' ? 'bg-primary/10 rounded-t' : ''}`}>Free</th>
-              <th className={`text-center ${currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/10 rounded-t' : ''}`}>Starter</th>
-              <th className={`text-center ${currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/10 rounded-t' : ''}`}>Pro</th>
-              <th className={`text-center ${currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/10 rounded-t' : ''}`}>Institutional</th>
+              <th className={currentPlanName.toLowerCase() === 'free' ? 'bg-primary/10' : ''}>Free</th>
+              <th className={currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/10' : ''}>Starter</th>
+              <th className={currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/10' : ''}>Pro</th>
+              <th className={currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/10' : ''}>Institutional</th>
             </tr>
           </thead>
           <tbody>
             {COMPARISON_FEATURES.map((row) => (
               <tr key={row.label}>
-                <td className="text-muted-foreground font-medium">{row.label}</td>
-                <td className={`text-center ${currentPlanName.toLowerCase() === 'free' ? 'bg-primary/5' : ''}`}>
+                <td>{row.label}</td>
+                <td className={currentPlanName.toLowerCase() === 'free' ? 'bg-primary/5' : ''}>
                   {typeof row.free === 'boolean' ? (
                     row.free ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                   ) : (
                     row.free
                   )}
                 </td>
-                <td className={`text-center ${currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/5' : ''}`}>
+                <td className={currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/5' : ''}>
                   {typeof row.starter === 'boolean' ? (
                     row.starter ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                   ) : (
                     row.starter
                   )}
                 </td>
-                <td className={`text-center ${currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/5' : ''}`}>
+                <td className={currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/5' : ''}>
                   {typeof row.pro === 'boolean' ? (
                     row.pro ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                   ) : (
                     row.pro
                   )}
                 </td>
-                <td className={`text-center ${currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/5' : ''}`}>
+                <td className={currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/5' : ''}>
                   {typeof row.institutional === 'boolean' ? (
                     row.institutional ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                   ) : (

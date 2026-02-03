@@ -76,31 +76,49 @@
 }
 
 /*
- * Dense Table Utility
+ * Comparison Table Utility
  *
- * Use for comparison tables, feature matrices, and data-heavy views
- * where scanability and compact layout are priorities.
+ * Purpose-built for plan/feature comparison tables (pricing pages, etc).
+ * Optimized for readability, balanced columns, and clear visual hierarchy.
  *
- * Apply to <table> element: <table className="table-dense">
+ * Usage: <table className="table-compare">
  */
 @layer components {
-  .table-dense {
-    @apply w-full text-sm leading-snug;
+  .table-compare {
+    @apply w-full text-sm leading-tight;
+    table-layout: fixed;
   }
 
-  .table-dense thead th {
-    @apply py-2.5 px-3 text-sm font-semibold text-left;
+  .table-compare thead th {
+    @apply py-3 px-4 text-sm font-semibold;
   }
 
-  .table-dense tbody td {
-    @apply py-2.5 px-3 text-sm;
+  .table-compare thead th:first-child {
+    @apply text-left;
+    width: 32%;
   }
 
-  .table-dense tbody tr {
-    @apply border-b border-border/50 last:border-0;
+  .table-compare thead th:not(:first-child) {
+    @apply text-center;
   }
 
-  .table-dense tbody tr:hover {
-    @apply bg-muted/30;
+  .table-compare tbody td {
+    @apply py-3 px-4 text-sm;
+  }
+
+  .table-compare tbody td:first-child {
+    @apply text-left font-medium text-muted-foreground;
+  }
+
+  .table-compare tbody td:not(:first-child) {
+    @apply text-center;
+  }
+
+  .table-compare tbody tr {
+    @apply border-b border-border;
+  }
+
+  .table-compare tbody tr:last-child {
+    @apply border-b-0;
   }
 }
