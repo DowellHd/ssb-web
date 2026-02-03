@@ -74,3 +74,33 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+ * Dense Table Utility
+ *
+ * Use for comparison tables, feature matrices, and data-heavy views
+ * where scanability and compact layout are priorities.
+ *
+ * Apply to <table> element: <table className="table-dense">
+ */
+@layer components {
+  .table-dense {
+    @apply w-full text-sm leading-snug;
+  }
+
+  .table-dense thead th {
+    @apply py-2.5 px-3 text-sm font-semibold text-left;
+  }
+
+  .table-dense tbody td {
+    @apply py-2.5 px-3 text-sm;
+  }
+
+  .table-dense tbody tr {
+    @apply border-b border-border/50 last:border-0;
+  }
+
+  .table-dense tbody tr:hover {
+    @apply bg-muted/30;
+  }
+}

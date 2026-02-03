@@ -485,46 +485,46 @@ export default function BillingPage() {
       {/* Feature Comparison Table */}
       <div className="rounded-lg border bg-card p-6 overflow-x-auto">
         <h2 className="text-lg font-semibold mb-4">Feature Comparison</h2>
-        <table className="w-full text-sm">
+        <table className="table-dense">
           <thead>
             <tr className="border-b">
-              <th className="text-left py-2 pr-4 font-medium">Feature</th>
-              <th className={`text-center py-2 px-3 font-medium ${currentPlanName.toLowerCase() === 'free' ? 'bg-primary/10 rounded-t' : ''}`}>Free</th>
-              <th className={`text-center py-2 px-3 font-medium ${currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/10 rounded-t' : ''}`}>Starter</th>
-              <th className={`text-center py-2 px-3 font-medium ${currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/10 rounded-t' : ''}`}>Pro</th>
-              <th className={`text-center py-2 px-3 font-medium ${currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/10 rounded-t' : ''}`}>Institutional</th>
+              <th>Feature</th>
+              <th className={`text-center ${currentPlanName.toLowerCase() === 'free' ? 'bg-primary/10 rounded-t' : ''}`}>Free</th>
+              <th className={`text-center ${currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/10 rounded-t' : ''}`}>Starter</th>
+              <th className={`text-center ${currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/10 rounded-t' : ''}`}>Pro</th>
+              <th className={`text-center ${currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/10 rounded-t' : ''}`}>Institutional</th>
             </tr>
           </thead>
           <tbody>
-            {COMPARISON_FEATURES.map((row, i) => (
-              <tr key={row.label} className={i < COMPARISON_FEATURES.length - 1 ? 'border-b' : ''}>
-                <td className="py-2 pr-4 text-muted-foreground">{row.label}</td>
-                <td className={`text-center py-2 px-3 ${currentPlanName.toLowerCase() === 'free' ? 'bg-primary/5' : ''}`}>
+            {COMPARISON_FEATURES.map((row) => (
+              <tr key={row.label}>
+                <td className="text-muted-foreground font-medium">{row.label}</td>
+                <td className={`text-center ${currentPlanName.toLowerCase() === 'free' ? 'bg-primary/5' : ''}`}>
                   {typeof row.free === 'boolean' ? (
-                    row.free ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/50 mx-auto" />
+                    row.free ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                   ) : (
-                    <span className="text-xs">{row.free}</span>
+                    row.free
                   )}
                 </td>
-                <td className={`text-center py-2 px-3 ${currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/5' : ''}`}>
+                <td className={`text-center ${currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/5' : ''}`}>
                   {typeof row.starter === 'boolean' ? (
-                    row.starter ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/50 mx-auto" />
+                    row.starter ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                   ) : (
-                    <span className="text-xs">{row.starter}</span>
+                    row.starter
                   )}
                 </td>
-                <td className={`text-center py-2 px-3 ${currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/5' : ''}`}>
+                <td className={`text-center ${currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/5' : ''}`}>
                   {typeof row.pro === 'boolean' ? (
-                    row.pro ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/50 mx-auto" />
+                    row.pro ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                   ) : (
-                    <span className="text-xs">{row.pro}</span>
+                    row.pro
                   )}
                 </td>
-                <td className={`text-center py-2 px-3 ${currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/5' : ''}`}>
+                <td className={`text-center ${currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/5' : ''}`}>
                   {typeof row.institutional === 'boolean' ? (
-                    row.institutional ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/50 mx-auto" />
+                    row.institutional ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                   ) : (
-                    <span className="text-xs">{row.institutional}</span>
+                    row.institutional
                   )}
                 </td>
               </tr>
