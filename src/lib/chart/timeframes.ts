@@ -103,25 +103,72 @@ export function toChartTime(
   }
 }
 
+// ============================================================================
+// Time Formatting (24-hour format, single source of truth)
+// ============================================================================
+
+/** Shared 24-hour time formatter */
+const TIME_FORMATTER = new Intl.DateTimeFormat('en-GB', {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+/** Shared date formatter (day + short month) */
+const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  day: 'numeric',
+  month: 'short',
+});
+
 /**
- * Format a timestamp for display based on bar size.
+ * Format a timestamp for crosshair/tooltip display.
+ * Uses 24-hour time format (HH:mm) for intraday bars.
  *
- * - Intraday: "23 Oct '25 10:23"
+ * - Intraday: "23 Oct '25 14:30"
  * - Daily+: "23 Oct '25"
  */
 export function formatChartTime(timestamp: number, barSize: BarSize): string {
   const date = new Date(timestamp * 1000);
-  const day = date.getDate();
-  const month = date.toLocaleString('en-US', { month: 'short' });
+  const datePart = DATE_FORMATTER.format(date);
   const year = date.getFullYear().toString().slice(-2);
 
   if (isIntradayBarSize(barSize)) {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${day} ${month} '${year} ${hours}:${minutes}`;
+    const timePart = TIME_FORMATTER.format(date);
+    return `${datePart} '${year} ${timePart}`;
   } else {
-    return `${day} ${month} '${year}`;
+    return `${datePart} '${year}`;
   }
+}
+
+/**
+ * Format a timestamp for x-axis tick labels.
+ * Uses 24-hour time format (HH:mm) for intraday bars.
+ * Shorter format suitable for axis labels.
+ *
+ * - Intraday: "14:30" or "23 Oct"
+ * - Daily+: "23 Oct" or "Oct '25"
+ */
+export function formatAxisTime(timestamp: number, barSize: BarSize): string {
+  const date = new Date(timestamp * 1000);
+
+  if (isIntradayBarSize(barSize)) {
+    // For intraday, show 24-hour time
+    return TIME_FORMATTER.format(date);
+  } else {
+    // For daily+, show date
+    return DATE_FORMATTER.format(date);
+  }
+}
+
+/**
+ * Format a BusinessDay object for display.
+ * Used for daily+ data where lightweight-charts provides BusinessDay objects.
+ */
+export function formatBusinessDay(bd: { year: number; month: number; day: number }): string {
+  const date = new Date(bd.year, bd.month - 1, bd.day);
+  const datePart = DATE_FORMATTER.format(date);
+  const year = bd.year.toString().slice(-2);
+  return `${datePart} '${year}`;
 }
 
 // ============================================================================
