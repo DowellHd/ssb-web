@@ -1,7 +1,8 @@
 /**
  * Chart timeframe utilities.
  *
- * Centralized configuration for timeframe options, limit mappings, and persistence.
+ * Separates DISPLAY RANGE (1D, 1W, etc.) from BAR GRANULARITY (5m, 1d, etc.)
+ * so that "1D" shows intraday candles, not a single daily bar.
  */
 
 import type { Timeframe } from '@/lib/api/data';
@@ -10,11 +11,13 @@ import type { Timeframe } from '@/lib/api/data';
 // Types
 // ============================================================================
 
-export type ChartTimeframe = '1D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '2Y';
+export type ChartRange = '1D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '2Y';
 
-export interface TimeframeConfig {
+export type BarSize = '5m' | '30m' | '4h' | '1d';
+
+export interface RangeConfig {
   label: string;
-  apiTimeframe: Timeframe;
+  barSize: BarSize;
   limit: number;
 }
 
@@ -23,71 +26,142 @@ export interface TimeframeConfig {
 // ============================================================================
 
 /**
- * Timeframe display options with corresponding API parameters.
+ * Range → Bar Size mapping.
  *
- * Each timeframe maps to:
- * - label: Display text for the UI
- * - apiTimeframe: The timeframe parameter for the API
- * - limit: Optimal number of bars to request
+ * - 1D: 5-minute bars (intraday, ~288 bars for full trading day)
+ * - 1W: 30-minute bars (intraday)
+ * - 1M: 4-hour bars (intraday)
+ * - 3M+: Daily bars
  */
-export const TIMEFRAME_CONFIG: Record<ChartTimeframe, TimeframeConfig> = {
-  '1D': { label: '1D', apiTimeframe: '1d', limit: 1 },
-  '1W': { label: '1W', apiTimeframe: '1d', limit: 7 },
-  '1M': { label: '1M', apiTimeframe: '1d', limit: 22 },
-  '3M': { label: '3M', apiTimeframe: '1d', limit: 66 },
-  '6M': { label: '6M', apiTimeframe: '1d', limit: 130 },
-  '1Y': { label: '1Y', apiTimeframe: '1d', limit: 252 },
-  '2Y': { label: '2Y', apiTimeframe: '1d', limit: 504 },
+export const RANGE_CONFIG: Record<ChartRange, RangeConfig> = {
+  '1D': { label: '1D', barSize: '5m', limit: 288 },
+  '1W': { label: '1W', barSize: '30m', limit: 336 },
+  '1M': { label: '1M', barSize: '4h', limit: 180 },
+  '3M': { label: '3M', barSize: '1d', limit: 90 },
+  '6M': { label: '6M', barSize: '1d', limit: 180 },
+  '1Y': { label: '1Y', barSize: '1d', limit: 252 },
+  '2Y': { label: '2Y', barSize: '1d', limit: 504 },
 };
 
 /**
- * Ordered list of timeframes for UI rendering.
+ * Map barSize to API timeframe parameter.
  */
-export const TIMEFRAME_OPTIONS: ChartTimeframe[] = ['1D', '1W', '1M', '3M', '6M', '1Y', '2Y'];
+export function barSizeToApiTimeframe(barSize: BarSize): Timeframe {
+  const map: Record<BarSize, Timeframe> = {
+    '5m': '5m',
+    '30m': '15m', // API may not support 30m, fallback to 15m
+    '4h': '1h',   // API may not support 4h, fallback to 1h with adjusted limit
+    '1d': '1d',
+  };
+  return map[barSize];
+}
 
 /**
- * Default timeframe when no preference is stored.
+ * Ordered list of ranges for UI rendering.
  */
-export const DEFAULT_TIMEFRAME: ChartTimeframe = '3M';
+export const RANGE_OPTIONS: ChartRange[] = ['1D', '1W', '1M', '3M', '6M', '1Y', '2Y'];
+
+/**
+ * Default range when no preference is stored.
+ */
+export const DEFAULT_RANGE: ChartRange = '3M';
+
+// ============================================================================
+// Time Handling Helpers
+// ============================================================================
+
+/**
+ * Returns true if the bar size represents intraday data.
+ * Intraday bars should show time in crosshair/axis.
+ */
+export function isIntradayBarSize(barSize: BarSize): boolean {
+  return barSize === '5m' || barSize === '30m' || barSize === '4h';
+}
+
+/**
+ * Convert a timestamp to lightweight-charts Time format.
+ *
+ * - Intraday: returns UTCTimestamp (seconds since epoch)
+ * - Daily+: returns BusinessDay { year, month, day }
+ */
+export function toChartTime(
+  timestamp: string | number,
+  barSize: BarSize
+): number | { year: number; month: number; day: number } {
+  const date = typeof timestamp === 'string' ? new Date(timestamp) : new Date(timestamp * 1000);
+
+  if (isIntradayBarSize(barSize)) {
+    // UTCTimestamp for intraday (seconds since epoch)
+    return Math.floor(date.getTime() / 1000);
+  } else {
+    // BusinessDay for daily+ (no time component)
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1, // 1-indexed
+      day: date.getDate(),
+    };
+  }
+}
+
+/**
+ * Format a timestamp for display based on bar size.
+ *
+ * - Intraday: "23 Oct '25 10:23"
+ * - Daily+: "23 Oct '25"
+ */
+export function formatChartTime(timestamp: number, barSize: BarSize): string {
+  const date = new Date(timestamp * 1000);
+  const day = date.getDate();
+  const month = date.toLocaleString('en-US', { month: 'short' });
+  const year = date.getFullYear().toString().slice(-2);
+
+  if (isIntradayBarSize(barSize)) {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${day} ${month} '${year} ${hours}:${minutes}`;
+  } else {
+    return `${day} ${month} '${year}`;
+  }
+}
 
 // ============================================================================
 // Persistence
 // ============================================================================
 
-const STORAGE_KEY_PREFIX = 'ssb.paper.chart.timeframe';
+const STORAGE_KEY_PREFIX = 'ssb.paper.chart.range';
 
 /**
- * Get the storage key for a symbol's timeframe preference.
+ * Get the storage key for a symbol's range preference.
  */
 function getStorageKey(symbol: string): string {
   return `${STORAGE_KEY_PREFIX}.${symbol.toUpperCase()}`;
 }
 
 /**
- * Save the selected timeframe for a symbol.
+ * Save the selected range for a symbol.
  * Safe to call during SSR (no-op if window is undefined).
  */
-export function saveTimeframePreference(symbol: string, timeframe: ChartTimeframe): void {
+export function saveRangePreference(symbol: string, range: ChartRange): void {
   if (typeof window === 'undefined') return;
 
   try {
-    localStorage.setItem(getStorageKey(symbol), timeframe);
+    localStorage.setItem(getStorageKey(symbol), range);
   } catch {
     // localStorage may be unavailable (private browsing, quota exceeded, etc.)
   }
 }
 
 /**
- * Load the saved timeframe for a symbol.
+ * Load the saved range for a symbol.
  * Returns null if no preference is stored or during SSR.
  */
-export function loadTimeframePreference(symbol: string): ChartTimeframe | null {
+export function loadRangePreference(symbol: string): ChartRange | null {
   if (typeof window === 'undefined') return null;
 
   try {
     const stored = localStorage.getItem(getStorageKey(symbol));
-    if (stored && TIMEFRAME_OPTIONS.includes(stored as ChartTimeframe)) {
-      return stored as ChartTimeframe;
+    if (stored && RANGE_OPTIONS.includes(stored as ChartRange)) {
+      return stored as ChartRange;
     }
   } catch {
     // localStorage may be unavailable
@@ -97,9 +171,31 @@ export function loadTimeframePreference(symbol: string): ChartTimeframe | null {
 }
 
 /**
- * Get the timeframe to use for a symbol.
+ * Get the range to use for a symbol.
  * Returns the saved preference if available, otherwise the default.
  */
-export function getInitialTimeframe(symbol: string): ChartTimeframe {
-  return loadTimeframePreference(symbol) || DEFAULT_TIMEFRAME;
+export function getInitialRange(symbol: string): ChartRange {
+  return loadRangePreference(symbol) || DEFAULT_RANGE;
 }
+
+// ============================================================================
+// Legacy exports for backwards compatibility
+// ============================================================================
+
+/** @deprecated Use ChartRange instead */
+export type ChartTimeframe = ChartRange;
+
+/** @deprecated Use RANGE_CONFIG instead */
+export const TIMEFRAME_CONFIG = RANGE_CONFIG;
+
+/** @deprecated Use RANGE_OPTIONS instead */
+export const TIMEFRAME_OPTIONS = RANGE_OPTIONS;
+
+/** @deprecated Use DEFAULT_RANGE instead */
+export const DEFAULT_TIMEFRAME = DEFAULT_RANGE;
+
+/** @deprecated Use getInitialRange instead */
+export const getInitialTimeframe = getInitialRange;
+
+/** @deprecated Use saveRangePreference instead */
+export const saveTimeframePreference = saveRangePreference;

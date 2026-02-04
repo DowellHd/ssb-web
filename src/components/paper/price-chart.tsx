@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import {
   createChart,
   ColorType,
@@ -10,6 +10,7 @@ import {
   LineData,
   Time,
   IPriceLine,
+  BusinessDay,
 } from 'lightweight-charts';
 import type { OverlayType } from '@/lib/api/paper';
 import {
@@ -19,18 +20,43 @@ import {
   OVERLAY_CONFIGS,
   type OHLCV,
 } from '@/lib/chart/overlays';
+import {
+  type BarSize,
+  isIntradayBarSize,
+  formatChartTime,
+} from '@/lib/chart/timeframes';
 
 interface PriceChartProps {
   symbol: string;
   data: OHLCV[];
+  barSize: BarSize;
   enabledOverlays: OverlayType[];
   height?: number;
   className?: string;
 }
 
+/**
+ * Convert OHLCV time to lightweight-charts Time format.
+ * - Intraday: UTCTimestamp (number)
+ * - Daily+: BusinessDay { year, month, day }
+ */
+function toChartTime(timestamp: number, barSize: BarSize): Time {
+  if (isIntradayBarSize(barSize)) {
+    return timestamp as Time;
+  } else {
+    const date = new Date(timestamp * 1000);
+    return {
+      year: date.getFullYear(),
+      month: (date.getMonth() + 1) as BusinessDay['month'],
+      day: date.getDate() as BusinessDay['day'],
+    } as Time;
+  }
+}
+
 export function PriceChart({
   symbol,
   data,
+  barSize,
   enabledOverlays,
   height = 400,
   className,
@@ -41,55 +67,58 @@ export function PriceChart({
   const overlaySeriesRef = useRef<Map<string, ISeriesApi<'Line'>>>(new Map());
   const priceLinesRef = useRef<IPriceLine[]>([]);
 
+  const isIntraday = isIntradayBarSize(barSize);
+
   // Convert OHLCV data to lightweight-charts format
   const candleData = useMemo((): CandlestickData[] => {
     return data.map((d) => ({
-      time: d.time as Time,
+      time: toChartTime(d.time, barSize),
       open: d.open,
       high: d.high,
       low: d.low,
       close: d.close,
     }));
-  }, [data]);
+  }, [data, barSize]);
 
   // Calculate overlay data
   const overlayData = useMemo(() => {
     const result: Record<string, LineData[]> = {};
 
-    if (enabledOverlays.includes('sma20')) {
+    // Only calculate overlays if we have enough data
+    if (enabledOverlays.includes('sma20') && data.length >= 20) {
       result.sma20 = calculateSMA(data, 20).map((p) => ({
-        time: p.time as Time,
+        time: toChartTime(p.time, barSize),
         value: p.value,
       }));
     }
 
-    if (enabledOverlays.includes('sma50')) {
+    if (enabledOverlays.includes('sma50') && data.length >= 50) {
       result.sma50 = calculateSMA(data, 50).map((p) => ({
-        time: p.time as Time,
+        time: toChartTime(p.time, barSize),
         value: p.value,
       }));
     }
 
-    if (enabledOverlays.includes('sma200')) {
+    if (enabledOverlays.includes('sma200') && data.length >= 200) {
       result.sma200 = calculateSMA(data, 200).map((p) => ({
-        time: p.time as Time,
+        time: toChartTime(p.time, barSize),
         value: p.value,
       }));
     }
 
-    if (enabledOverlays.includes('regression')) {
+    if (enabledOverlays.includes('regression') && data.length >= 50) {
       result.regression = calculateLinearRegression(data, 50).map((p) => ({
-        time: p.time as Time,
+        time: toChartTime(p.time, barSize),
         value: p.value,
       }));
     }
 
     return result;
-  }, [data, enabledOverlays]);
+  }, [data, barSize, enabledOverlays]);
 
   // Calculate key levels
   const keyLevels = useMemo(() => {
-    if (!enabledOverlays.includes('levels')) return null;
+    if (!enabledOverlays.includes('levels') || data.length < 2) return null;
     return calculateKeyLevels(data);
   }, [data, enabledOverlays]);
 
@@ -113,7 +142,7 @@ export function PriceChart({
       },
       timeScale: {
         borderColor: 'rgba(156, 163, 175, 0.2)',
-        timeVisible: true,
+        timeVisible: isIntraday,
         secondsVisible: false,
       },
       crosshair: {
@@ -126,6 +155,21 @@ export function PriceChart({
           color: 'rgba(156, 163, 175, 0.4)',
           width: 1,
           style: 2,
+        },
+      },
+      localization: {
+        timeFormatter: (time: Time) => {
+          if (typeof time === 'number') {
+            return formatChartTime(time, barSize);
+          } else if (typeof time === 'object' && 'year' in time) {
+            const bd = time as BusinessDay;
+            const date = new Date(bd.year, bd.month - 1, bd.day);
+            const day = date.getDate();
+            const month = date.toLocaleString('en-US', { month: 'short' });
+            const year = bd.year.toString().slice(-2);
+            return `${day} ${month} '${year}`;
+          }
+          return String(time);
         },
       },
     });
@@ -159,7 +203,7 @@ export function PriceChart({
       overlaySeriesRef.current.clear();
       priceLinesRef.current = [];
     };
-  }, [height]);
+  }, [height, isIntraday, barSize]);
 
   // Update candle data
   useEffect(() => {

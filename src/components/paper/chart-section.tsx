@@ -9,12 +9,14 @@ import { getBars } from '@/lib/api/data';
 import type { OverlayType, TierLimits } from '@/lib/api/paper';
 import type { OHLCV } from '@/lib/chart/overlays';
 import {
-  TIMEFRAME_CONFIG,
-  TIMEFRAME_OPTIONS,
-  DEFAULT_TIMEFRAME,
-  getInitialTimeframe,
-  saveTimeframePreference,
-  type ChartTimeframe,
+  RANGE_CONFIG,
+  RANGE_OPTIONS,
+  DEFAULT_RANGE,
+  getInitialRange,
+  saveRangePreference,
+  barSizeToApiTimeframe,
+  type ChartRange,
+  type BarSize,
 } from '@/lib/chart/timeframes';
 import { PriceChart } from './price-chart';
 import { OverlayToggles } from './overlay-toggles';
@@ -28,24 +30,26 @@ interface ChartSectionProps {
 export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [enabledOverlays, setEnabledOverlays] = useState<OverlayType[]>([]);
-  const [timeframe, setTimeframe] = useState<ChartTimeframe>(DEFAULT_TIMEFRAME);
+  const [range, setRange] = useState<ChartRange>(DEFAULT_RANGE);
   const [isHydrated, setIsHydrated] = useState(false);
 
   const allowedOverlays = limits?.allowed_overlays ?? ['sma20'];
 
-  // Hydrate timeframe from localStorage after mount (avoids SSR mismatch)
+  // Hydrate range from localStorage after mount (avoids SSR mismatch)
   useEffect(() => {
     if (symbol) {
-      const savedTimeframe = getInitialTimeframe(symbol);
-      setTimeframe(savedTimeframe);
+      const savedRange = getInitialRange(symbol);
+      setRange(savedRange);
     }
     setIsHydrated(true);
   }, [symbol]);
 
-  // Get the API config for current timeframe
-  const timeframeConfig = TIMEFRAME_CONFIG[timeframe];
+  // Get the config for current range
+  const rangeConfig = RANGE_CONFIG[range];
+  const barSize: BarSize = rangeConfig.barSize;
+  const apiTimeframe = barSizeToApiTimeframe(barSize);
 
-  // Fetch price data - includes timeframe in query key for automatic refetch
+  // Fetch price data - includes range in query key for automatic refetch
   const {
     data: barsData,
     isLoading,
@@ -54,11 +58,11 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     isRefetching,
     isFetching,
   } = useQuery({
-    queryKey: ['bars', symbol, timeframe],
+    queryKey: ['bars', symbol, range],
     queryFn: () =>
       getBars(symbol, {
-        timeframe: timeframeConfig.apiTimeframe,
-        limit: timeframeConfig.limit,
+        timeframe: apiTimeframe,
+        limit: rangeConfig.limit,
       }),
     enabled: !!symbol && isHydrated,
     staleTime: 60 * 1000, // 1 minute
@@ -66,12 +70,12 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     retry: false,
   });
 
-  // Handle timeframe change
-  const handleTimeframeChange = useCallback(
-    (newTimeframe: ChartTimeframe) => {
-      setTimeframe(newTimeframe);
+  // Handle range change
+  const handleRangeChange = useCallback(
+    (newRange: ChartRange) => {
+      setRange(newRange);
       if (symbol) {
-        saveTimeframePreference(symbol, newTimeframe);
+        saveRangePreference(symbol, newRange);
       }
     },
     [symbol]
@@ -108,7 +112,7 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
   }, []);
 
   // Filter out disabled overlays when limits change
-  useMemo(() => {
+  useEffect(() => {
     setEnabledOverlays((prev) =>
       prev.filter((o) => allowedOverlays.includes(o))
     );
@@ -142,21 +146,21 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
           Price Chart
         </button>
         <div className="flex items-center gap-2">
-          {/* Timeframe selector */}
+          {/* Range selector */}
           <div className="flex rounded-md border bg-muted/50 p-0.5">
-            {TIMEFRAME_OPTIONS.map((tf) => (
+            {RANGE_OPTIONS.map((r) => (
               <button
-                key={tf}
-                onClick={() => handleTimeframeChange(tf)}
+                key={r}
+                onClick={() => handleRangeChange(r)}
                 disabled={isFetching}
                 className={cn(
                   'px-2 py-1 text-xs font-medium rounded transition-colors',
-                  timeframe === tf
+                  range === r
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                {tf}
+                {r}
               </button>
             ))}
           </div>
@@ -208,13 +212,14 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
             <PriceChart
               symbol={symbol}
               data={chartData}
+              barSize={barSize}
               enabledOverlays={enabledOverlays}
               height={400}
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground">
               <p>No price data available for {symbol}</p>
-              <p className="text-xs mt-1">Try selecting a different timeframe</p>
+              <p className="text-xs mt-1">Try selecting a different range</p>
             </div>
           )}
 
