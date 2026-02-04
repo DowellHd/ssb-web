@@ -24,6 +24,8 @@ import {
   type BarSize,
   isIntradayBarSize,
   formatChartTime,
+  formatAxisTime,
+  formatBusinessDay,
 } from '@/lib/chart/timeframes';
 
 interface PriceChartProps {
@@ -144,6 +146,16 @@ export function PriceChart({
         borderColor: 'rgba(156, 163, 175, 0.2)',
         timeVisible: isIntraday,
         secondsVisible: false,
+        tickMarkFormatter: (time: Time) => {
+          if (typeof time === 'number') {
+            return formatAxisTime(time, barSize);
+          } else if (typeof time === 'object' && 'year' in time) {
+            const bd = time as BusinessDay;
+            const date = new Date(bd.year, bd.month - 1, bd.day);
+            return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+          }
+          return String(time);
+        },
       },
       crosshair: {
         vertLine: {
@@ -162,12 +174,7 @@ export function PriceChart({
           if (typeof time === 'number') {
             return formatChartTime(time, barSize);
           } else if (typeof time === 'object' && 'year' in time) {
-            const bd = time as BusinessDay;
-            const date = new Date(bd.year, bd.month - 1, bd.day);
-            const day = date.getDate();
-            const month = date.toLocaleString('en-US', { month: 'short' });
-            const year = bd.year.toString().slice(-2);
-            return `${day} ${month} '${year}`;
+            return formatBusinessDay(time as BusinessDay);
           }
           return String(time);
         },
