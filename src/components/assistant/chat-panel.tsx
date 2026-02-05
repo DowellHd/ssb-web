@@ -1,16 +1,24 @@
 'use client';
 
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, Settings } from 'lucide-react';
 import { useEffect, useRef, useMemo } from 'react';
 import { useAssistantStore } from '@/stores/assistant-store';
+import {
+  useAssistantSettingsStore,
+  useAssistantSettingsAttributes,
+} from '@/stores/assistant-settings-store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
 import { DisclaimerBanner } from './disclaimer-banner';
+import { AssistantSettingsModal } from './assistant-settings-modal';
 
 export function ChatPanel() {
   const { isOpen, close, messages, isLoading, clearChat, currentPage } = useAssistantStore();
+  const { openSettings, panelWidth, panelHeight, mobileMode, reducedMotion, cornerStyle, density } =
+    useAssistantSettingsStore();
+  const settingsAttributes = useAssistantSettingsAttributes();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Get suggestions from the last assistant message
@@ -65,16 +73,28 @@ export function ChatPanel() {
       {/* Panel */}
       <div
         className={cn(
+          'assistant-root',
           'fixed z-50 bg-card border shadow-2xl',
           'flex flex-col',
-          'transition-all duration-300 ease-in-out',
+          // Transition (respects reduced motion via CSS)
+          !reducedMotion && 'transition-all duration-300 ease-in-out',
           // Desktop: slide-out from right
           'lg:right-6 lg:bottom-6 lg:top-auto lg:left-auto',
-          'lg:w-96 lg:h-[600px] lg:max-h-[80vh]',
-          'lg:rounded-lg',
+          // Desktop width based on settings
+          panelWidth === 'sm' && 'lg:w-80',
+          panelWidth === 'md' && 'lg:w-96',
+          panelWidth === 'lg' && 'lg:w-[28rem]',
+          // Desktop height based on settings
+          panelHeight === 'short' && 'lg:h-[450px]',
+          panelHeight === 'default' && 'lg:h-[600px]',
+          panelHeight === 'tall' && 'lg:h-[750px]',
+          'lg:max-h-[85vh]',
+          // Corner style
+          cornerStyle === 'rounded' ? 'lg:rounded-lg' : 'lg:rounded-2xl',
           // Mobile: full-width drawer from bottom
           'max-lg:inset-x-0 max-lg:bottom-0 max-lg:top-auto',
-          'max-lg:h-[85vh] max-lg:rounded-t-xl',
+          mobileMode === 'sheet' ? 'max-lg:h-[85vh]' : 'max-lg:h-[100vh]',
+          cornerStyle === 'rounded' ? 'max-lg:rounded-t-xl' : 'max-lg:rounded-t-2xl',
           // Open/closed state
           isOpen
             ? 'translate-y-0 opacity-100'
@@ -83,6 +103,7 @@ export function ChatPanel() {
         role="dialog"
         aria-modal="true"
         aria-label="SSB Assistant"
+        {...settingsAttributes}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
@@ -96,9 +117,18 @@ export function ChatPanel() {
             <Button
               variant="ghost"
               size="icon"
+              onClick={openSettings}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              aria-label="Open assistant settings"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={clearChat}
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              title="Clear chat"
+              aria-label="Clear chat"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -107,6 +137,7 @@ export function ChatPanel() {
               size="icon"
               onClick={close}
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              aria-label="Close assistant"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -117,7 +148,10 @@ export function ChatPanel() {
         <DisclaimerBanner />
 
         {/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className={cn(
+          'flex-1 overflow-y-auto',
+          density === 'compact' ? 'p-3 space-y-3' : 'p-4 space-y-4'
+        )}>
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
               <h3 className="font-medium mb-2">Welcome to SSB Assistant</h3>
@@ -154,6 +188,9 @@ export function ChatPanel() {
         {/* Input area with suggestions */}
         <ChatInput suggestions={messages.length > 0 ? lastSuggestions : undefined} />
       </div>
+
+      {/* Settings Modal */}
+      <AssistantSettingsModal />
     </>
   );
 }

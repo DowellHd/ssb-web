@@ -3,6 +3,7 @@
 import { Send } from 'lucide-react';
 import { useState, useRef, KeyboardEvent } from 'react';
 import { useAssistantStore } from '@/stores/assistant-store';
+import { useAssistantSettingsStore } from '@/stores/assistant-settings-store';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -11,10 +12,21 @@ interface ChatInputProps {
   suggestions?: string[];
 }
 
+// Text size mappings for input area
+const INPUT_TEXT_SIZE_MAP = {
+  sm: { input: 'text-xs', prompt: 'text-[10px]', hint: 'text-[9px]' },
+  default: { input: 'text-sm', prompt: 'text-xs', hint: 'text-[10px]' },
+  lg: { input: 'text-base', prompt: 'text-sm', hint: 'text-xs' },
+  xl: { input: 'text-lg', prompt: 'text-base', hint: 'text-sm' },
+} as const;
+
 export function ChatInput({ suggestions }: ChatInputProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { sendMessage, isLoading, messages, getQuickPrompts } = useAssistantStore();
+  const { textScale, density, cornerStyle } = useAssistantSettingsStore();
+
+  const textSizes = INPUT_TEXT_SIZE_MAP[textScale];
 
   // Get page-smart prompts from store
   const quickPrompts = getQuickPrompts();
@@ -60,12 +72,17 @@ export function ChatInput({ suggestions }: ChatInputProps) {
   // Show quick prompts when no messages, or suggestions after assistant response
   const showPrompts = messages.length === 0 || (suggestions && suggestions.length > 0);
 
+  const paddingClass = density === 'compact' ? 'p-3 space-y-2' : 'p-4 space-y-3';
+  const promptPadding = density === 'compact' ? 'px-2.5 py-1' : 'px-3 py-1.5';
+  const promptRadius = cornerStyle === 'extra-rounded' ? 'rounded-full' : 'rounded-full';
+  const inputRadius = cornerStyle === 'extra-rounded' ? 'rounded-xl' : 'rounded-lg';
+
   return (
-    <div className="border-t p-4 space-y-3">
+    <div className={cn('border-t', paddingClass)}>
       {/* Quick prompts / suggestions */}
       {showPrompts && displayPrompts.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">
+          <p className={cn(textSizes.prompt, 'text-muted-foreground')}>
             {messages.length === 0 ? 'Quick questions:' : 'Try asking:'}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -75,7 +92,9 @@ export function ChatInput({ suggestions }: ChatInputProps) {
                 onClick={() => handleQuickPrompt(prompt)}
                 disabled={isLoading}
                 className={cn(
-                  'px-3 py-1.5 text-xs rounded-full',
+                  promptPadding,
+                  textSizes.prompt,
+                  promptRadius,
                   'bg-muted hover:bg-muted/80',
                   'transition-colors',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -100,7 +119,9 @@ export function ChatInput({ suggestions }: ChatInputProps) {
             placeholder="Ask a question..."
             disabled={isLoading}
             className={cn(
-              'w-full resize-none rounded-lg border bg-background px-3 py-2 text-sm',
+              'w-full resize-none border bg-background px-3 py-2',
+              inputRadius,
+              textSizes.input,
               'placeholder:text-muted-foreground',
               'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
               'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -112,7 +133,8 @@ export function ChatInput({ suggestions }: ChatInputProps) {
           {input.length > 1500 && (
             <span
               className={cn(
-                'absolute right-2 bottom-1 text-[10px]',
+                'absolute right-2 bottom-1',
+                textSizes.hint,
                 input.length > 2000 ? 'text-destructive' : 'text-muted-foreground'
               )}
             >
@@ -132,7 +154,7 @@ export function ChatInput({ suggestions }: ChatInputProps) {
       </div>
 
       {/* Hint */}
-      <p className="text-[10px] text-muted-foreground text-center">
+      <p className={cn(textSizes.hint, 'text-muted-foreground text-center')}>
         Press Enter to send, Shift+Enter for new line
       </p>
     </div>

@@ -4,6 +4,7 @@ import { AlertTriangle, Bot, User, BookOpen, HelpCircle, Wrench } from 'lucide-r
 import { cn } from '@/lib/utils';
 import type { Message } from '@/stores/assistant-store';
 import type { Intent } from '@/lib/assistant/knowledge-base';
+import { useAssistantSettingsStore } from '@/stores/assistant-settings-store';
 
 interface ChatMessageProps {
   message: Message;
@@ -16,9 +17,22 @@ const INTENT_CONFIG: Record<Intent, { icon: typeof BookOpen; label: string; colo
   fallback: { icon: HelpCircle, label: '', color: 'text-muted-foreground' },
 };
 
+// Text size mappings
+const TEXT_SIZE_MAP = {
+  sm: { bubble: 'text-xs', timestamp: 'text-[10px]' },
+  default: { bubble: 'text-sm', timestamp: 'text-xs' },
+  lg: { bubble: 'text-base', timestamp: 'text-xs' },
+  xl: { bubble: 'text-lg', timestamp: 'text-sm' },
+} as const;
+
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const isError = message.isError;
+  const { textScale, density, cornerStyle } = useAssistantSettingsStore();
+
+  const textSizes = TEXT_SIZE_MAP[textScale];
+  const paddingClass = density === 'compact' ? 'px-2.5 py-1.5' : 'px-3 py-2';
+  const radiusClass = cornerStyle === 'extra-rounded' ? 'rounded-xl' : 'rounded-lg';
 
   return (
     <div
@@ -55,7 +69,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
         <div
           className={cn(
-            'rounded-lg px-3 py-2 text-sm',
+            radiusClass,
+            paddingClass,
+            textSizes.bubble,
             isUser
               ? 'bg-primary text-primary-foreground'
               : isError
@@ -75,7 +91,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         </div>
 
         {/* Timestamp */}
-        <span className="text-xs text-muted-foreground mt-1">
+        <span className={cn(textSizes.timestamp, 'text-muted-foreground mt-1')}>
           {formatTime(message.timestamp)}
         </span>
       </div>

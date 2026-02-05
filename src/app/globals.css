@@ -122,3 +122,95 @@
     @apply border-b-0;
   }
 }
+
+/*
+ * SSB Assistant Settings
+ *
+ * CSS variables and data-attribute mappings for assistant customization.
+ * Applied to elements with .assistant-root class.
+ */
+@layer components {
+  /* Base assistant CSS variables */
+  .assistant-root {
+    --assistant-text-scale: 1;
+    --assistant-spacing-scale: 1;
+    --assistant-radius: 0.5rem;
+  }
+
+  /* Text scale mappings */
+  .assistant-root[data-text-scale="sm"] {
+    --assistant-text-scale: 0.875;
+  }
+  .assistant-root[data-text-scale="default"] {
+    --assistant-text-scale: 1;
+  }
+  .assistant-root[data-text-scale="lg"] {
+    --assistant-text-scale: 1.125;
+  }
+  .assistant-root[data-text-scale="xl"] {
+    --assistant-text-scale: 1.25;
+  }
+
+  /* Density mappings */
+  .assistant-root[data-density="compact"] {
+    --assistant-spacing-scale: 0.75;
+  }
+  .assistant-root[data-density="comfortable"] {
+    --assistant-spacing-scale: 1;
+  }
+
+  /* Corner style mappings */
+  .assistant-root[data-corner-style="rounded"] {
+    --assistant-radius: 0.5rem;
+  }
+  .assistant-root[data-corner-style="extra-rounded"] {
+    --assistant-radius: 1rem;
+  }
+
+  /* Reduced motion */
+  .assistant-root[data-reduced-motion="true"],
+  .assistant-root[data-reduced-motion="true"] * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Text elements that should scale */
+  .assistant-text {
+    font-size: calc(0.875rem * var(--assistant-text-scale));
+  }
+  .assistant-text-sm {
+    font-size: calc(0.75rem * var(--assistant-text-scale));
+  }
+  .assistant-text-xs {
+    font-size: calc(0.625rem * var(--assistant-text-scale));
+  }
+  .assistant-text-lg {
+    font-size: calc(1rem * var(--assistant-text-scale));
+  }
+
+  /* Spacing elements */
+  .assistant-spacing {
+    padding: calc(1rem * var(--assistant-spacing-scale));
+  }
+  .assistant-spacing-sm {
+    padding: calc(0.5rem * var(--assistant-spacing-scale));
+  }
+  .assistant-gap {
+    gap: calc(0.5rem * var(--assistant-spacing-scale));
+  }
+  .assistant-gap-sm {
+    gap: calc(0.25rem * var(--assistant-spacing-scale));
+  }
+
+  /* Rounded corners */
+  .assistant-rounded {
+    border-radius: var(--assistant-radius);
+  }
+  .assistant-rounded-lg {
+    border-radius: calc(var(--assistant-radius) * 1.5);
+  }
+  .assistant-rounded-full {
+    border-radius: 9999px;
+  }
+}
