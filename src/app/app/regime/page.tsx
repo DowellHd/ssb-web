@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
 import { getRegimeModelInfo, type ModelInfo } from '@/lib/api/intelligence';
 import { SUBSYSTEM_VERSIONS } from '@/lib/versioning';
+import { RegimeExplanation } from '@/components/regime/regime-explanation';
 
 interface RegimeIndicators {
   trend_score: number;
@@ -292,6 +293,13 @@ export default function RegimePage() {
           </div>
         </div>
       </div>
+
+      {/* Interpretability panel */}
+      <RegimeExplanation
+        regime={data.regime}
+        confidence={data.confidence}
+        indicators={data.indicators}
+      />
 
       {/* Main content grid */}
       <div className="grid gap-6 lg:grid-cols-2">
