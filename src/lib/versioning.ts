@@ -21,14 +21,14 @@ export interface SubsystemVersion {
 
 export const SUBSYSTEM_VERSIONS = {
   regime: {
-    version: '1.1.0',
-    lastUpdated: '2026-02-04',
-    description: 'Rule-based ensemble regime classification',
+    version: '1.2.0',
+    lastUpdated: '2026-02-05',
+    description: 'Rule-based ensemble regime classification with long-term insights',
   },
   risk: {
-    version: '1.0.0',
-    lastUpdated: '2026-02-04',
-    description: 'Parametric VaR risk analysis',
+    version: '1.1.0',
+    lastUpdated: '2026-02-05',
+    description: 'Parametric VaR risk analysis with long-term framing',
   },
   stress: {
     version: '1.0.0',
@@ -36,9 +36,14 @@ export const SUBSYSTEM_VERSIONS = {
     description: 'Historical stress testing',
   },
   chart: {
-    version: '1.2.0',
-    lastUpdated: '2026-02-04',
-    description: 'Price chart with technical overlays',
+    version: '1.3.0',
+    lastUpdated: '2026-02-05',
+    description: 'Price chart with view mode support',
+  },
+  viewMode: {
+    version: '1.0.0',
+    lastUpdated: '2026-02-05',
+    description: 'Global short-term/long-term view mode toggle',
   },
 } as const satisfies Record<string, SubsystemVersion>;
 

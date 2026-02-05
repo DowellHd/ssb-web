@@ -62,9 +62,53 @@ export function barSizeToApiTimeframe(barSize: BarSize): Timeframe {
 export const RANGE_OPTIONS: ChartRange[] = ['1D', '1W', '1M', '3M', '6M', '1Y', '2Y'];
 
 /**
+ * Long-term ranges (weekly/monthly bars, no intraday).
+ * Emphasizes regime persistence and drawdowns over short-term movements.
+ */
+export const LONG_TERM_RANGE_OPTIONS: ChartRange[] = ['3M', '6M', '1Y', '2Y'];
+
+/**
  * Default range when no preference is stored.
  */
 export const DEFAULT_RANGE: ChartRange = '3M';
+
+/**
+ * Default range for long-term view mode.
+ */
+export const DEFAULT_LONG_TERM_RANGE: ChartRange = '1Y';
+
+/**
+ * Check if a range is appropriate for long-term view.
+ * Intraday ranges (1D, 1W, 1M) are not suitable for long-term analysis.
+ */
+export function isLongTermRange(range: ChartRange): boolean {
+  return LONG_TERM_RANGE_OPTIONS.includes(range);
+}
+
+/**
+ * Get the appropriate range options based on view mode.
+ */
+export function getRangeOptions(isLongTermMode: boolean): ChartRange[] {
+  return isLongTermMode ? LONG_TERM_RANGE_OPTIONS : RANGE_OPTIONS;
+}
+
+/**
+ * Get the appropriate default range based on view mode.
+ */
+export function getDefaultRange(isLongTermMode: boolean): ChartRange {
+  return isLongTermMode ? DEFAULT_LONG_TERM_RANGE : DEFAULT_RANGE;
+}
+
+/**
+ * Ensure a range is valid for the current view mode.
+ * If in long-term mode and range is intraday, returns the default long-term range.
+ */
+export function normalizeRangeForViewMode(range: ChartRange, isLongTermMode: boolean): ChartRange {
+  if (isLongTermMode && !isLongTermRange(range)) {
+    return DEFAULT_LONG_TERM_RANGE;
+  }
+  return range;
+}
 
 // ============================================================================
 // Time Handling Helpers

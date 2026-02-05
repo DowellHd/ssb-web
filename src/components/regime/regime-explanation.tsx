@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Lightbulb, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { useIsLongTerm } from '@/stores/view-mode-store';
+import { LongTermInsights } from './long-term-insights';
 
 interface RegimeIndicators {
   trend_score: number;
@@ -224,6 +226,7 @@ function generateExplanations(
 
 export function RegimeExplanation({ regime, confidence, indicators }: RegimeExplanationProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const isLongTerm = useIsLongTerm();
 
   const { supporting, opposing, confidenceReason } = generateExplanations(regime, confidence, indicators);
 
@@ -297,6 +300,15 @@ export function RegimeExplanation({ regime, confidence, indicators }: RegimeExpl
               <span className="font-medium">Confidence:</span> {confidenceReason}
             </p>
           </div>
+
+          {/* Long-term insights (only in long-term mode) */}
+          {isLongTerm && (
+            <LongTermInsights
+              regime={regime}
+              confidence={confidence}
+              indicators={indicators}
+            />
+          )}
 
           {/* Disclaimer */}
           <p className="text-xs text-muted-foreground/70 italic">

@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { analyzePortfolioRisk, getIntelligenceEntitlements, type RiskReport, type EntitlementsInfo } from '@/lib/api/intelligence';
+import { ViewModeToggle, ViewModeBadge } from '@/components/ui/view-mode-toggle';
+import { useIsLongTerm } from '@/stores/view-mode-store';
+import { LongTermRiskFraming } from '@/components/regime/long-term-insights';
 
 export default function RiskPage() {
   const [riskReport, setRiskReport] = useState<RiskReport | null>(null);
@@ -13,6 +16,7 @@ export default function RiskPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [symbols, setSymbols] = useState('SPY,QQQ,IWM');
+  const isLongTerm = useIsLongTerm();
 
   useEffect(() => {
     getIntelligenceEntitlements()
@@ -80,15 +84,24 @@ export default function RiskPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-3">
-          <Shield className="h-7 w-7 text-green-600" />
-          Risk Analytics
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Analyze portfolio risk metrics including VaR, volatility, and risk attribution.
-        </p>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold flex items-center gap-3">
+              <Shield className="h-7 w-7 text-green-600" />
+              Risk Analytics
+            </h1>
+            <ViewModeBadge />
+          </div>
+          <p className="text-muted-foreground mt-1">
+            Analyze portfolio risk metrics including VaR, volatility, and risk attribution.
+          </p>
+        </div>
+        <ViewModeToggle />
       </div>
+
+      {/* Long-term risk framing (only in long-term mode) */}
+      {isLongTerm && <LongTermRiskFraming />}
 
       {/* Input form */}
       <div className="rounded-lg border bg-card p-6">

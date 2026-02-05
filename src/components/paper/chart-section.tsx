@@ -10,14 +10,16 @@ import type { OverlayType, TierLimits } from '@/lib/api/paper';
 import type { OHLCV } from '@/lib/chart/overlays';
 import {
   RANGE_CONFIG,
-  RANGE_OPTIONS,
-  DEFAULT_RANGE,
   getInitialRange,
   saveRangePreference,
   barSizeToApiTimeframe,
+  getRangeOptions,
+  getDefaultRange,
+  normalizeRangeForViewMode,
   type ChartRange,
   type BarSize,
 } from '@/lib/chart/timeframes';
+import { useIsLongTerm } from '@/stores/view-mode-store';
 import { PriceChart } from './price-chart';
 import { OverlayToggles } from './overlay-toggles';
 
@@ -30,9 +32,11 @@ interface ChartSectionProps {
 export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [enabledOverlays, setEnabledOverlays] = useState<OverlayType[]>([]);
-  const [range, setRange] = useState<ChartRange>(DEFAULT_RANGE);
+  const [range, setRange] = useState<ChartRange>(() => getDefaultRange(false));
   const [isHydrated, setIsHydrated] = useState(false);
 
+  const isLongTerm = useIsLongTerm();
+  const rangeOptions = getRangeOptions(isLongTerm);
   const allowedOverlays = limits?.allowed_overlays ?? ['sma20'];
 
   // Hydrate range from localStorage after mount (avoids SSR mismatch)
@@ -43,6 +47,11 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     }
     setIsHydrated(true);
   }, [symbol]);
+
+  // Normalize range when view mode changes (e.g., switch from 1D to 1Y in long-term mode)
+  useEffect(() => {
+    setRange((currentRange) => normalizeRangeForViewMode(currentRange, isLongTerm));
+  }, [isLongTerm]);
 
   // Get the config for current range
   const rangeConfig = RANGE_CONFIG[range];
@@ -148,7 +157,7 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
         <div className="flex items-center gap-2">
           {/* Range selector */}
           <div className="flex rounded-md border bg-muted/50 p-0.5">
-            {RANGE_OPTIONS.map((r) => (
+            {rangeOptions.map((r) => (
               <button
                 key={r}
                 onClick={() => handleRangeChange(r)}
