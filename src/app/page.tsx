@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { TrendingUp, Shield, LineChart, Lock } from 'lucide-react';
+import { BrandName, BRAND_NAME } from '@/components/ui/brand-name';
 
 export default function Home() {
   return (
@@ -35,7 +36,7 @@ export default function Home() {
         <div className="max-w-5xl w-full">
           <div className="text-center space-y-8">
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
-              Smart Strategies Builder
+              <BrandName first />
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               AI-powered financial intelligence platform for risk analysis,
@@ -105,7 +106,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Smart Strategies Builder. All rights reserved.
+              © {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
               <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -119,6 +120,9 @@ export default function Home() {
               </a>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground text-center mt-4">
+            {BRAND_NAME}™ is a trademark of its respective owner.
+          </p>
         </div>
       </footer>
     </main>

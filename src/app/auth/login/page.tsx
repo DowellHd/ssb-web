@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { CheckCircle } from 'lucide-react';
+import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -71,7 +72,7 @@ function LoginForm() {
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Welcome back to Smart Strategies Builder
+            Welcome back to {BRAND_NAME_TM}
           </p>
         </div>
 

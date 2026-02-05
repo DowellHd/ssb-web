@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,7 +63,7 @@ export default function SignupPage() {
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Create an account</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Start analyzing with Smart Strategies Builder
+            Start analyzing with {BRAND_NAME_TM}
           </p>
         </div>
 

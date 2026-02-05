@@ -22,6 +22,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
+import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser, logout, type User } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
@@ -228,7 +229,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <span className="font-bold">Smart Strategies Builder</span>
+          <span className="font-bold">{BRAND_NAME_TM}</span>
         </header>
 
         {/* Page content */}
