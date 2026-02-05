@@ -6,6 +6,7 @@
  */
 
 import type { Explanation } from './regime-analysis';
+import { SUBSYSTEM_VERSIONS } from '@/lib/versioning';
 
 export interface AssetImpact {
   symbol: string;
@@ -226,7 +227,7 @@ export const demoStressResults: StressResultResponse = {
     ],
     model_info: {
       model_type: 'historical_stress_test',
-      version: '1.0.0',
+      version: SUBSYSTEM_VERSIONS.stress.version,
       training_period: null,
       assumptions: [
         'Historical scenarios use actual market drawdowns',

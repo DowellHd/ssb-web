@@ -5,6 +5,8 @@
  * DEMO DATA - FOR DEMONSTRATION PURPOSES ONLY
  */
 
+import { SUBSYSTEM_VERSIONS } from '@/lib/versioning';
+
 export interface RegimeIndicators {
   trend_score: number;
   volatility_percentile: number;
@@ -78,7 +80,7 @@ export const demoRegimeAnalysis: RegimeAnalysisResponse = {
     ],
     model_info: {
       model_type: 'rule_based_ensemble',
-      version: '1.0.0',
+      version: SUBSYSTEM_VERSIONS.regime.version,
       training_period: null,
       assumptions: [
         'US equity markets',

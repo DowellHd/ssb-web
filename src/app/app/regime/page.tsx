@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
 import { getRegimeModelInfo, type ModelInfo } from '@/lib/api/intelligence';
+import { SUBSYSTEM_VERSIONS } from '@/lib/versioning';
 
 interface RegimeIndicators {
   trend_score: number;
@@ -496,21 +497,19 @@ export default function RegimePage() {
           <div>
             <p className="text-sm text-muted-foreground">Version</p>
             <p className="font-medium">
-              {modelInfo?.version || data.explanation.model_info.version}
+              {modelInfo?.version || data.explanation.model_info.version || SUBSYSTEM_VERSIONS.regime.version}
             </p>
           </div>
-          {modelInfo?.last_updated && (
-            <div>
-              <p className="text-sm text-muted-foreground">Last Updated</p>
-              <p className="font-medium">
-                {new Date(modelInfo.last_updated).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </p>
-            </div>
-          )}
+          <div>
+            <p className="text-sm text-muted-foreground">Last Updated</p>
+            <p className="font-medium">
+              {new Date(modelInfo?.last_updated || SUBSYSTEM_VERSIONS.regime.lastUpdated).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </p>
+          </div>
           {modelInfo?.build_id && (
             <div>
               <p className="text-sm text-muted-foreground">Build</p>
