@@ -19,6 +19,7 @@ import { apiClient, getErrorMessage } from '@/lib/api-client';
 import { getRegimeModelInfo, type ModelInfo } from '@/lib/api/intelligence';
 import { SUBSYSTEM_VERSIONS } from '@/lib/versioning';
 import { RegimeExplanation } from '@/components/regime/regime-explanation';
+import { ViewModeToggle, ViewModeBadge } from '@/components/ui/view-mode-toggle';
 
 interface RegimeIndicators {
   trend_score: number;
@@ -147,22 +148,28 @@ export default function RegimePage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Market Regime Analysis</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold">Market Regime Analysis</h1>
+            <ViewModeBadge />
+          </div>
           <p className="text-muted-foreground mt-1">
             Current market conditions and regime classification
           </p>
         </div>
-        <Button
-          onClick={fetchRegimeData}
-          variant="outline"
-          size="sm"
-          className="gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <ViewModeToggle />
+          <Button
+            onClick={fetchRegimeData}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Methodology info panel */}
