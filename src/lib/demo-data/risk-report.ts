@@ -6,6 +6,7 @@
  */
 
 import type { Explanation } from './regime-analysis';
+import { SUBSYSTEM_VERSIONS } from '@/lib/versioning';
 
 export interface RiskMetrics {
   volatility_annual: number;
@@ -88,7 +89,7 @@ export const demoRiskReport: RiskReportResponse = {
     ],
     model_info: {
       model_type: 'parametric_var',
-      version: '1.0.0',
+      version: SUBSYSTEM_VERSIONS.risk.version,
       training_period: null,
       assumptions: [
         'Historical returns are indicative of risk (not guaranteed)',
