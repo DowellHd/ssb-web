@@ -25,6 +25,7 @@ import { ScenarioComparison } from '@/components/regime/scenario-comparison';
 import { ViewModeToggle, ViewModeBadge } from '@/components/ui/view-mode-toggle';
 import { useScenarioModeStore } from '@/stores/scenario-mode-store';
 import { computeScenarioRegime } from '@/lib/scenario-compute';
+import { useScenarioEntitlements } from '@/hooks/use-scenario-entitlements';
 
 interface RegimeIndicators {
   trend_score: number;
@@ -69,6 +70,10 @@ export default function RegimePage() {
 
   // Scenario mode state
   const { isEnabled: isScenarioMode, overrides } = useScenarioModeStore();
+
+  // Get plan name for entitlements (use data.tier when available)
+  const planName = data?.tier;
+  const scenarioEntitlements = useScenarioEntitlements(planName);
 
   // Compute scenario result when scenario mode is enabled
   const scenarioResult = useMemo(() => {
@@ -352,11 +357,16 @@ export default function RegimePage() {
           volatility_percentile: data.indicators.volatility_percentile,
           breadth_score: data.indicators.breadth_score,
         }}
+        planName={planName}
       />
 
-      {/* Scenario Comparison (shown when scenario mode is active) */}
-      {isScenarioMode && baselineResult && scenarioResult && (
-        <ScenarioComparison baseline={baselineResult} scenario={scenarioResult} />
+      {/* Scenario Comparison (shown when scenario mode is active and entitlements allow) */}
+      {isScenarioMode && baselineResult && scenarioResult && scenarioEntitlements.showBaselineCompare && (
+        <ScenarioComparison
+          baseline={baselineResult}
+          scenario={scenarioResult}
+          showDeltas={scenarioEntitlements.showDeltas}
+        />
       )}
 
       {/* Interpretability panel */}

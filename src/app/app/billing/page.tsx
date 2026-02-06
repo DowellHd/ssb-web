@@ -48,6 +48,11 @@ const PLAN_FEATURES: Record<string, string[]> = {
 const COMPARISON_FEATURES = [
   { label: 'Regime Data Delay', free: '7 days', starter: '3 days', pro: 'Real-time', institutional: 'Real-time' },
   { label: 'Risk Analytics', free: 'Basic', starter: 'Standard', pro: 'Advanced', institutional: 'Full Suite' },
+  { label: 'Scenario Mode', free: 'Lite', starter: 'Plus', pro: 'Plus', institutional: 'Advanced' },
+  { label: 'Scenario inputs at once', free: '1', starter: '3', pro: '3', institutional: '3' },
+  { label: 'Baseline compare + deltas', free: false, starter: true, pro: true, institutional: true },
+  { label: 'Scenario presets', free: false, starter: true, pro: true, institutional: true },
+  { label: 'Scenario export', free: false, starter: false, pro: false, institutional: true },
   { label: 'Paper Positions', free: '5', starter: '15', pro: '50', institutional: 'Unlimited' },
   { label: 'Orders per Day', free: '10', starter: '50', pro: '500', institutional: 'Unlimited' },
   { label: 'Chart Overlays', free: 'Price only', starter: 'Price + Volume', pro: 'All', institutional: 'All + Custom' },
