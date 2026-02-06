@@ -19,6 +19,8 @@ interface ScenarioComparisonProps {
     confidence: number;
     regime_probabilities: RegimeProbabilities;
   };
+  /** Whether to show delta indicators (requires Plus tier or higher) */
+  showDeltas?: boolean;
 }
 
 function DeltaIndicator({ value, format = 'percent' }: { value: number; format?: 'percent' | 'number' }) {
@@ -62,7 +64,7 @@ function getRegimeColor(regime: string): string {
   return colors[regime] || 'bg-gray-100 text-gray-800 border-gray-200';
 }
 
-export function ScenarioComparison({ baseline, scenario }: ScenarioComparisonProps) {
+export function ScenarioComparison({ baseline, scenario, showDeltas = true }: ScenarioComparisonProps) {
   const isLongTerm = useIsLongTerm();
   const regimeChanged = baseline.regime !== scenario.regime;
   const confidenceDelta = scenario.confidence - baseline.confidence;
@@ -133,7 +135,7 @@ export function ScenarioComparison({ baseline, scenario }: ScenarioComparisonPro
             </span>
             <p className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
               {(scenario.confidence * 100).toFixed(0)}% confidence
-              <DeltaIndicator value={confidenceDelta} />
+              {showDeltas && <DeltaIndicator value={confidenceDelta} />}
             </p>
           </div>
         </div>
@@ -158,7 +160,7 @@ export function ScenarioComparison({ baseline, scenario }: ScenarioComparisonPro
                     <span className="font-medium tabular-nums">
                       {(scenarioProb * 100).toFixed(1)}%
                     </span>
-                    <DeltaIndicator value={delta} />
+                    {showDeltas && <DeltaIndicator value={delta} />}
                   </div>
                 </div>
                 <div className="flex gap-1 h-2">
