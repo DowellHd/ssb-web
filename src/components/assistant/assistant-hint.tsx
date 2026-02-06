@@ -9,7 +9,8 @@ import {
   initAssistantHintDevTools,
 } from '@/lib/assistant-hint';
 
-const DISPLAY_DURATION = 5000; // 5 seconds
+const HINT_DELAY_MS = 2500; // Delay before showing hint to let user orient
+const DISPLAY_DURATION = 5000; // How long the hint stays visible
 const FADE_OUT_DURATION = 400;
 
 interface AssistantHintProps {
@@ -47,7 +48,7 @@ export function AssistantHint({ onOpenAssistant }: AssistantHintProps) {
       markAssistantHintSeen();
     }
 
-    // Small delay before showing to let page settle
+    // Delay before showing to let user orient on the page
     const showTimer = setTimeout(() => {
       if (process.env.NODE_ENV !== 'production') {
         console.debug('[assistant-hint] shown');
@@ -57,7 +58,7 @@ export function AssistantHint({ onOpenAssistant }: AssistantHintProps) {
       requestAnimationFrame(() => {
         setIsVisible(true);
       });
-    }, 800);
+    }, HINT_DELAY_MS);
 
     return () => clearTimeout(showTimer);
   }, []);
