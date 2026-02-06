@@ -14,6 +14,8 @@ import {
   Copy,
   Check,
   AlertTriangle,
+  Bug,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +35,7 @@ import {
   type MFAStatusResponse,
 } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
+import { resetAssistantHint } from '@/lib/assistant-hint';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -623,6 +626,42 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Developer section - only visible in development */}
+      {process.env.NODE_ENV !== 'production' && (
+        <div className="rounded-lg border border-dashed border-yellow-600/50 bg-yellow-950/20 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-yellow-600/20">
+              <Bug className="h-5 w-5 text-yellow-500" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-yellow-500">Developer Tools</h2>
+              <p className="text-xs text-muted-foreground">Only visible in development mode</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <p className="font-medium text-sm">Reset Assistant Hint</p>
+                <p className="text-xs text-muted-foreground">
+                  Show the onboarding hint again on next page load
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  resetAssistantHint();
+                  toast.success('Assistant hint reset. Refresh the page to see it again.');
+                }}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

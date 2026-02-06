@@ -1,12 +1,15 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import {
+  hasSeenAssistantHint,
+  markAssistantHintSeen,
+  initAssistantHintDevTools,
+} from '@/lib/assistant-hint';
 
-const STORAGE_KEY = 'ssb.assistant_hint.v1.seen';
 const DISPLAY_DURATION = 5000; // 5 seconds
-const FADE_IN_DURATION = 250;
 const FADE_OUT_DURATION = 400;
 
 interface AssistantHintProps {
@@ -18,25 +21,45 @@ export function AssistantHint({ onOpenAssistant }: AssistantHintProps) {
   const [shouldShow, setShouldShow] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const hasMarkedSeen = useRef(false);
 
-  // Check if hint was already seen
+  // Initialize dev tools on mount
+  useEffect(() => {
+    initAssistantHintDevTools();
+  }, []);
+
+  // Check if hint was already seen and show if not
   useEffect(() => {
     // Only run on client
     if (typeof window === 'undefined') return;
 
-    const seen = localStorage.getItem(STORAGE_KEY);
-    if (!seen) {
-      // Small delay before showing to let page settle
-      const showTimer = setTimeout(() => {
-        setShouldShow(true);
-        // Trigger fade-in after mount
-        requestAnimationFrame(() => {
-          setIsVisible(true);
-        });
-      }, 800);
-
-      return () => clearTimeout(showTimer);
+    // Check if already seen
+    if (hasSeenAssistantHint()) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[assistant-hint] suppressed - already seen');
+      }
+      return;
     }
+
+    // Mark as seen IMMEDIATELY to prevent re-showing on navigation
+    if (!hasMarkedSeen.current) {
+      hasMarkedSeen.current = true;
+      markAssistantHintSeen();
+    }
+
+    // Small delay before showing to let page settle
+    const showTimer = setTimeout(() => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[assistant-hint] shown');
+      }
+      setShouldShow(true);
+      // Trigger fade-in after mount
+      requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+    }, 800);
+
+    return () => clearTimeout(showTimer);
   }, []);
 
   // Auto-hide after display duration
@@ -44,41 +67,33 @@ export function AssistantHint({ onOpenAssistant }: AssistantHintProps) {
     if (!isVisible || isFadingOut) return;
 
     const hideTimer = setTimeout(() => {
-      dismiss();
+      startFadeOut();
     }, DISPLAY_DURATION);
 
     return () => clearTimeout(hideTimer);
   }, [isVisible, isFadingOut]);
 
-  const markAsSeen = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, 'true');
-    }
-  }, []);
-
-  const dismiss = useCallback(() => {
+  const startFadeOut = useCallback(() => {
     if (isFadingOut) return;
 
     setIsFadingOut(true);
-    markAsSeen();
 
     // Remove from DOM after fade-out
     setTimeout(() => {
       setShouldShow(false);
       setIsVisible(false);
     }, FADE_OUT_DURATION);
-  }, [isFadingOut, markAsSeen]);
+  }, [isFadingOut]);
 
   const handleClick = useCallback(() => {
-    markAsSeen();
     setShouldShow(false);
     onOpenAssistant?.();
-  }, [markAsSeen, onOpenAssistant]);
+  }, [onOpenAssistant]);
 
   const handleClose = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    dismiss();
-  }, [dismiss]);
+    startFadeOut();
+  }, [startFadeOut]);
 
   if (!shouldShow) return null;
 
