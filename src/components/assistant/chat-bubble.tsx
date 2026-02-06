@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useAssistantStore } from '@/stores/assistant-store';
 import { useAssistantSettingsStore } from '@/stores/assistant-settings-store';
 import { cn } from '@/lib/utils';
+import { AssistantHint } from './assistant-hint';
 import { ChatPanel } from './chat-panel';
 
 // Bubble size configurations
@@ -16,7 +17,7 @@ const BUBBLE_SIZES = {
 } as const;
 
 export function ChatBubble() {
-  const { isOpen, toggle } = useAssistantStore();
+  const { isOpen, toggle, open } = useAssistantStore();
   const { bubbleSize, reducedMotion } = useAssistantSettingsStore();
   const [imageError, setImageError] = useState(false);
 
@@ -24,6 +25,9 @@ export function ChatBubble() {
 
   return (
     <>
+      {/* First-time hint (only shows when panel is closed) */}
+      {!isOpen && <AssistantHint onOpenAssistant={open} />}
+
       {/* Floating bubble button */}
       <button
         onClick={toggle}
