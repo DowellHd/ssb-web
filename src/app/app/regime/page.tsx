@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -15,11 +15,16 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
 import { getRegimeModelInfo, type ModelInfo } from '@/lib/api/intelligence';
 import { SUBSYSTEM_VERSIONS } from '@/lib/versioning';
 import { RegimeExplanation } from '@/components/regime/regime-explanation';
+import { ScenarioPanel } from '@/components/regime/scenario-panel';
+import { ScenarioComparison } from '@/components/regime/scenario-comparison';
 import { ViewModeToggle, ViewModeBadge } from '@/components/ui/view-mode-toggle';
+import { useScenarioModeStore } from '@/stores/scenario-mode-store';
+import { computeScenarioRegime } from '@/lib/scenario-compute';
 
 interface RegimeIndicators {
   trend_score: number;
@@ -61,6 +66,32 @@ export default function RegimePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
+
+  // Scenario mode state
+  const { isEnabled: isScenarioMode, overrides } = useScenarioModeStore();
+
+  // Compute scenario result when scenario mode is enabled
+  const scenarioResult = useMemo(() => {
+    if (!data || !isScenarioMode) return null;
+
+    const scenarioIndicators = {
+      trend_score: overrides.trendScore ?? data.indicators.trend_score,
+      volatility_percentile: overrides.volatilityPercentile ?? data.indicators.volatility_percentile,
+      breadth_score: overrides.breadthScore ?? data.indicators.breadth_score,
+    };
+
+    return computeScenarioRegime(scenarioIndicators, overrides.regimeOverride);
+  }, [data, isScenarioMode, overrides]);
+
+  // Baseline result for comparison
+  const baselineResult = useMemo(() => {
+    if (!data) return null;
+    return {
+      regime: data.regime,
+      confidence: data.confidence,
+      regime_probabilities: data.regime_probabilities,
+    };
+  }, [data]);
 
   const fetchRegimeData = async () => {
     setLoading(true);
@@ -244,18 +275,26 @@ export default function RegimePage() {
       </div>
 
       {/* Regime header card */}
-      <div className="rounded-lg border bg-card p-6">
+      <div className={cn(
+        'rounded-lg border bg-card p-6',
+        isScenarioMode && 'ring-2 ring-purple-500/50'
+      )}>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-3">
             <div className="flex items-center gap-3 flex-wrap">
               <span
                 className={`px-4 py-2 rounded-full text-sm font-semibold border capitalize ${getRegimeColor(
-                  data.regime
+                  isScenarioMode && scenarioResult ? scenarioResult.regime : data.regime
                 )}`}
               >
-                {data.regime.replace('_', ' ')} Market
+                {(isScenarioMode && scenarioResult ? scenarioResult.regime : data.regime).replace('_', ' ')} Market
               </span>
-              {data.delay_applied_days > 0 && (
+              {isScenarioMode && (
+                <span className="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                  Scenario Mode
+                </span>
+              )}
+              {!isScenarioMode && data.delay_applied_days > 0 && (
                 <span className="px-3 py-1 rounded-full text-xs bg-muted text-muted-foreground">
                   {data.delay_applied_days}-day delay
                 </span>
@@ -264,17 +303,22 @@ export default function RegimePage() {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Confidence:</span>
               <span className="font-semibold">
-                {(data.confidence * 100).toFixed(0)}%
+                {((isScenarioMode && scenarioResult ? scenarioResult.confidence : data.confidence) * 100).toFixed(0)}%
               </span>
               <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${data.confidence * 100}%` }}
+                  className={cn(
+                    'h-full transition-all',
+                    isScenarioMode ? 'bg-purple-500' : 'bg-primary'
+                  )}
+                  style={{ width: `${(isScenarioMode && scenarioResult ? scenarioResult.confidence : data.confidence) * 100}%` }}
                 />
               </div>
             </div>
             <p className="text-sm text-muted-foreground max-w-xl">
-              {data.explanation.summary}
+              {isScenarioMode
+                ? 'Scenario-based classification. Adjust parameters to explore different conditions.'
+                : data.explanation.summary}
             </p>
           </div>
           <div className="text-sm text-muted-foreground">
@@ -301,109 +345,191 @@ export default function RegimePage() {
         </div>
       </div>
 
+      {/* Scenario Mode Panel */}
+      <ScenarioPanel
+        liveIndicators={{
+          trend_score: data.indicators.trend_score,
+          volatility_percentile: data.indicators.volatility_percentile,
+          breadth_score: data.indicators.breadth_score,
+        }}
+      />
+
+      {/* Scenario Comparison (shown when scenario mode is active) */}
+      {isScenarioMode && baselineResult && scenarioResult && (
+        <ScenarioComparison baseline={baselineResult} scenario={scenarioResult} />
+      )}
+
       {/* Interpretability panel */}
       <RegimeExplanation
-        regime={data.regime}
-        confidence={data.confidence}
-        indicators={data.indicators}
+        regime={isScenarioMode && scenarioResult ? scenarioResult.regime : data.regime}
+        confidence={isScenarioMode && scenarioResult ? scenarioResult.confidence : data.confidence}
+        indicators={
+          isScenarioMode
+            ? {
+                trend_score: overrides.trendScore ?? data.indicators.trend_score,
+                volatility_percentile: overrides.volatilityPercentile ?? data.indicators.volatility_percentile,
+                breadth_score: overrides.breadthScore ?? data.indicators.breadth_score,
+                vix_level: data.indicators.vix_level,
+                yield_curve_slope: data.indicators.yield_curve_slope,
+              }
+            : data.indicators
+        }
       />
 
       {/* Main content grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Regime probabilities */}
-        <div className="rounded-lg border bg-card p-6">
-          <h3 className="font-semibold mb-4">Regime Probabilities</h3>
+        <div className={cn(
+          'rounded-lg border bg-card p-6',
+          isScenarioMode && 'ring-1 ring-purple-500/30'
+        )}>
+          <h3 className="font-semibold mb-4">
+            {isScenarioMode ? 'Scenario Probabilities' : 'Regime Probabilities'}
+          </h3>
           <div className="space-y-3">
-            {Object.entries(data.regime_probabilities)
+            {Object.entries(isScenarioMode && scenarioResult ? scenarioResult.regime_probabilities : data.regime_probabilities)
               .sort(([, a], [, b]) => b - a)
-              .map(([regime, probability]) => (
-                <div key={regime} className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="capitalize">{regime.replace('_', ' ')}</span>
-                    <span className="font-medium">
-                      {(probability * 100).toFixed(1)}%
-                    </span>
+              .map(([regime, probability]) => {
+                const activeRegime = isScenarioMode && scenarioResult ? scenarioResult.regime : data.regime;
+                return (
+                  <div key={regime} className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="capitalize">{regime.replace('_', ' ')}</span>
+                      <span className="font-medium">
+                        {(probability * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={cn(
+                          'h-full transition-all',
+                          regime === activeRegime
+                            ? (isScenarioMode ? 'bg-purple-500' : 'bg-primary')
+                            : 'bg-muted-foreground/30'
+                        )}
+                        style={{ width: `${probability * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all ${
-                        regime === data.regime ? 'bg-primary' : 'bg-muted-foreground/30'
-                      }`}
-                      style={{ width: `${probability * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
         </div>
 
         {/* Technical indicators */}
-        <div className="rounded-lg border bg-card p-6">
-          <h3 className="font-semibold mb-4">Technical Indicators</h3>
+        <div className={cn(
+          'rounded-lg border bg-card p-6',
+          isScenarioMode && 'ring-1 ring-purple-500/30'
+        )}>
+          <h3 className="font-semibold mb-4">
+            {isScenarioMode ? 'Scenario Indicators' : 'Technical Indicators'}
+          </h3>
           <div className="space-y-4">
             {/* Trend Score */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {getTrendIcon(data.indicators.trend_score)}
-                <span className="text-sm text-muted-foreground">Trend Score</span>
-              </div>
-              <span className="text-sm font-medium">
-                {data.indicators.trend_score > 0 ? '+' : ''}
-                {data.indicators.trend_score.toFixed(2)}
-              </span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all ${
-                  data.indicators.trend_score > 0 ? 'bg-green-500' : 'bg-red-500'
-                }`}
-                style={{
-                  width: `${((data.indicators.trend_score + 1) / 2) * 100}%`,
-                }}
-              />
-            </div>
+            {(() => {
+              const trendValue = isScenarioMode && overrides.trendScore !== null
+                ? overrides.trendScore
+                : data.indicators.trend_score;
+              const isOverridden = isScenarioMode && overrides.trendScore !== null;
+              return (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {getTrendIcon(trendValue)}
+                      <span className="text-sm text-muted-foreground">Trend Score</span>
+                      {isOverridden && <span className="text-xs text-purple-400">(modified)</span>}
+                    </div>
+                    <span className="text-sm font-medium">
+                      {trendValue > 0 ? '+' : ''}
+                      {trendValue.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full transition-all',
+                        isOverridden ? 'bg-purple-500' : (trendValue > 0 ? 'bg-green-500' : 'bg-red-500')
+                      )}
+                      style={{
+                        width: `${((trendValue + 1) / 2) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </>
+              );
+            })()}
 
             {/* Volatility */}
-            <div className="flex items-center justify-between pt-4">
-              <span className="text-sm text-muted-foreground">
-                Volatility Percentile
-              </span>
-              <span className="text-sm font-medium">
-                {data.indicators.volatility_percentile}th
-              </span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all ${
-                  data.indicators.volatility_percentile > 70
-                    ? 'bg-red-500'
-                    : data.indicators.volatility_percentile > 50
-                      ? 'bg-yellow-500'
-                      : 'bg-green-500'
-                }`}
-                style={{ width: `${data.indicators.volatility_percentile}%` }}
-              />
-            </div>
+            {(() => {
+              const volValue = isScenarioMode && overrides.volatilityPercentile !== null
+                ? overrides.volatilityPercentile
+                : data.indicators.volatility_percentile;
+              const isOverridden = isScenarioMode && overrides.volatilityPercentile !== null;
+              return (
+                <>
+                  <div className="flex items-center justify-between pt-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Volatility Percentile</span>
+                      {isOverridden && <span className="text-xs text-purple-400">(modified)</span>}
+                    </div>
+                    <span className="text-sm font-medium">
+                      {volValue.toFixed(0)}th
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full transition-all',
+                        isOverridden
+                          ? 'bg-purple-500'
+                          : volValue > 70
+                            ? 'bg-red-500'
+                            : volValue > 50
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
+                      )}
+                      style={{ width: `${volValue}%` }}
+                    />
+                  </div>
+                </>
+              );
+            })()}
 
             {/* Market Breadth */}
-            <div className="flex items-center justify-between pt-4">
-              <span className="text-sm text-muted-foreground">Market Breadth</span>
-              <span className="text-sm font-medium">
-                {(data.indicators.breadth_score * 100).toFixed(0)}%
-              </span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all ${
-                  data.indicators.breadth_score > 0.6
-                    ? 'bg-green-500'
-                    : data.indicators.breadth_score > 0.4
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                }`}
-                style={{ width: `${data.indicators.breadth_score * 100}%` }}
-              />
-            </div>
+            {(() => {
+              const breadthValue = isScenarioMode && overrides.breadthScore !== null
+                ? overrides.breadthScore
+                : data.indicators.breadth_score;
+              const isOverridden = isScenarioMode && overrides.breadthScore !== null;
+              return (
+                <>
+                  <div className="flex items-center justify-between pt-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Market Breadth</span>
+                      {isOverridden && <span className="text-xs text-purple-400">(modified)</span>}
+                    </div>
+                    <span className="text-sm font-medium">
+                      {(breadthValue * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full transition-all',
+                        isOverridden
+                          ? 'bg-purple-500'
+                          : breadthValue > 0.6
+                            ? 'bg-green-500'
+                            : breadthValue > 0.4
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                      )}
+                      style={{ width: `${breadthValue * 100}%` }}
+                    />
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
 
