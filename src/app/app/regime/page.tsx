@@ -17,7 +17,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { getRegimeModelInfo, getIntelligenceEntitlements, type ModelInfo, type EntitlementsInfo } from '@/lib/api/intelligence';
+import { getRegimeModelInfo, type ModelInfo } from '@/lib/api/intelligence';
+import { usePlanStore } from '@/stores/plan-store';
 import { SUBSYSTEM_VERSIONS } from '@/lib/versioning';
 import { RegimeExplanation } from '@/components/regime/regime-explanation';
 import { ScenarioPanel } from '@/components/regime/scenario-panel';
@@ -64,7 +65,6 @@ export default function RegimePage() {
   const router = useRouter();
   const [data, setData] = useState<RegimeData | null>(null);
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
-  const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
@@ -72,8 +72,8 @@ export default function RegimePage() {
   // Scenario mode state
   const { isEnabled: isScenarioMode, overrides } = useScenarioModeStore();
 
-  // Get plan name from user entitlements (not regime data tier)
-  const planName = entitlements?.plan_name;
+  // Get canonical plan from centralized store (not regime API tier)
+  const { plan: planName, planDisplayName } = usePlanStore((state) => state.normalized);
   const scenarioEntitlements = useScenarioEntitlements(planName);
 
   // Compute scenario result when scenario mode is enabled
@@ -133,19 +133,9 @@ export default function RegimePage() {
     }
   };
 
-  const fetchEntitlements = async () => {
-    try {
-      const info = await getIntelligenceEntitlements();
-      setEntitlements(info);
-    } catch {
-      // Non-critical - entitlements will default to free tier
-    }
-  };
-
   useEffect(() => {
     fetchRegimeData();
     fetchModelInfo();
-    fetchEntitlements();
   }, []);
 
   const getRegimeColor = (regime: string) => {
@@ -352,9 +342,9 @@ export default function RegimePage() {
               </span>
             </p>
             <p>
-              Tier:{' '}
-              <span className="font-medium text-foreground capitalize">
-                {data.tier}
+              Plan:{' '}
+              <span className="font-medium text-foreground">
+                {planDisplayName}
               </span>
             </p>
           </div>

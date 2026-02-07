@@ -29,6 +29,7 @@ import { getErrorMessage } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { PLAN_CONFIG } from '@/lib/plan-config';
 import { useAssistantStore } from '@/stores/assistant-store';
+import { usePlanStore } from '@/stores/plan-store';
 
 const navItems = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
@@ -52,23 +53,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const setCurrentPage = useAssistantStore((state) => state.setCurrentPage);
   const setUserTier = useAssistantStore((state) => state.setUserTier);
 
+  // Initialize plan store
+  const fetchEntitlements = usePlanStore((state) => state.fetchEntitlements);
+  const normalizedPlan = usePlanStore((state) => state.normalized);
+
   useEffect(() => {
     loadUser();
-  }, []);
+    fetchEntitlements();
+  }, [fetchEntitlements]);
 
   // Update assistant context when page changes
   useEffect(() => {
     setCurrentPage(pathname);
   }, [pathname, setCurrentPage]);
 
-  // Update assistant context when user tier is known
+  // Update assistant context when plan is known
   useEffect(() => {
-    if (user) {
-      // For now, default to free unless founder. Full tier detection can be added via billing API
-      const tier = user.is_founder ? 'founder' : 'free';
-      setUserTier(tier);
+    if (normalizedPlan.plan) {
+      setUserTier(normalizedPlan.plan);
     }
-  }, [user, setUserTier]);
+  }, [normalizedPlan.plan, setUserTier]);
 
   const loadUser = async () => {
     try {
