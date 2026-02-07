@@ -36,7 +36,7 @@ export interface AssistantContext {
   /** Current account balance */
   accountBalance?: number;
   /** User's subscription tier */
-  tier?: 'free' | 'starter' | 'pro' | 'founder';
+  tier?: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access';
 }
 
 export interface AssistantResponse {

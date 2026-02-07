@@ -42,7 +42,7 @@ interface AssistantState {
   // Context State
   currentPage: string;
   selectedSymbol?: string;
-  userTier?: 'free' | 'starter' | 'pro' | 'founder';
+  userTier?: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access';
 
   // Conversation State
   messages: Message[];
@@ -61,7 +61,7 @@ interface AssistantState {
   // Context Actions
   setCurrentPage: (page: string) => void;
   setSelectedSymbol: (symbol: string | undefined) => void;
-  setUserTier: (tier: 'free' | 'starter' | 'pro' | 'founder') => void;
+  setUserTier: (tier: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access') => void;
 
   // Prompt Helpers
   getQuickPrompts: () => string[];
@@ -124,7 +124,7 @@ export const useAssistantStore = create<AssistantState>()(
       setSelectedSymbol: (symbol: string | undefined) => set({ selectedSymbol: symbol }),
 
       // Set user tier
-      setUserTier: (tier: 'free' | 'starter' | 'pro' | 'founder') => set({ userTier: tier }),
+      setUserTier: (tier: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access') => set({ userTier: tier }),
 
       // Get quick prompts for current page
       getQuickPrompts: () => {

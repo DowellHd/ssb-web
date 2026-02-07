@@ -9,6 +9,7 @@ import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, ty
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
 import { getPlanConfig, getPlanDisplayName, isFounderPlan, hasUnlimitedAccess } from '@/lib/plan-config';
 import { isUnlimited, formatLimit } from '@/lib/utils';
+import { usePlanStore } from '@/stores/plan-store';
 
 // Feature bullets for each plan
 const PLAN_FEATURES: Record<string, string[]> = {
@@ -76,6 +77,9 @@ export default function BillingPage() {
   const [portalLoading, setPortalLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [canceledMessage, setCanceledMessage] = useState<string | null>(null);
+
+  // Use normalized plan from centralized store for consistent display
+  const normalizedPlan = usePlanStore((state) => state.normalized);
 
   const loadData = async () => {
     setLoading(true);
@@ -199,7 +203,8 @@ export default function BillingPage() {
 
   const billingEnabled = capabilities?.billing_enabled;
   const hasActiveSubscription = subscription?.subscription?.status === 'active';
-  const currentPlanName = entitlements?.plan_name || 'free';
+  // Use store's normalized plan for UI consistency across app
+  const currentPlanName = normalizedPlan.plan;
 
   return (
     <div className="space-y-6">
