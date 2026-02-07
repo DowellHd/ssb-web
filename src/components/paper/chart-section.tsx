@@ -6,8 +6,10 @@ import { ChevronDown, LineChart as LineChartIcon, RefreshCw } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getBars } from '@/lib/api/data';
+import { getRegimeAnalysis } from '@/lib/api/intelligence';
 import type { OverlayType, TierLimits } from '@/lib/api/paper';
 import type { OHLCV } from '@/lib/chart/overlays';
+import type { RegimeType, RegimeIndicators } from '@/lib/chart/regime-context';
 import {
   RANGE_CONFIG,
   getInitialRange,
@@ -22,6 +24,11 @@ import {
 import { useIsLongTerm } from '@/stores/view-mode-store';
 import { PriceChart } from './price-chart';
 import { OverlayToggles } from './overlay-toggles';
+import {
+  RegimeStatusBadge,
+  RegimeChartWrapper,
+  RegimeRiskInterpretation,
+} from '@/components/chart';
 
 interface ChartSectionProps {
   symbol: string;
@@ -78,6 +85,30 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     refetchOnWindowFocus: false,
     retry: false,
   });
+
+  // Fetch regime data for context (uses SPY as market proxy)
+  const { data: regimeData } = useQuery({
+    queryKey: ['regime', 'SPY'],
+    queryFn: () => getRegimeAnalysis({ symbol: 'SPY', lookback_days: 200 }),
+    enabled: isHydrated,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  // Extract regime context
+  const regimeContext = useMemo(() => {
+    if (!regimeData) return null;
+    return {
+      regime: regimeData.regime as RegimeType,
+      confidence: regimeData.confidence,
+      indicators: {
+        trend_score: regimeData.indicators.trend_score,
+        volatility_percentile: regimeData.indicators.volatility_percentile,
+        breadth_score: regimeData.indicators.breadth_score,
+      } as RegimeIndicators,
+    };
+  }, [regimeData]);
 
   // Handle range change
   const handleRangeChange = useCallback(
@@ -142,18 +173,28 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     <div className={cn('rounded-lg border bg-card', className)}>
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 font-semibold hover:text-primary transition-colors"
-        >
-          <ChevronDown
-            className={cn(
-              'h-4 w-4 transition-transform',
-              !isExpanded && '-rotate-90'
-            )}
-          />
-          Price Chart
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-2 font-semibold hover:text-primary transition-colors"
+          >
+            <ChevronDown
+              className={cn(
+                'h-4 w-4 transition-transform',
+                !isExpanded && '-rotate-90'
+              )}
+            />
+            Price Chart
+          </button>
+          {/* Regime Status Badge */}
+          {regimeContext && (
+            <RegimeStatusBadge
+              regime={regimeContext.regime}
+              indicators={regimeContext.indicators}
+              confidence={regimeContext.confidence}
+            />
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {/* Range selector */}
           <div className="flex rounded-md border bg-muted/50 p-0.5">
@@ -218,18 +259,28 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
               </Button>
             </div>
           ) : chartData.length > 0 ? (
-            <PriceChart
-              symbol={symbol}
-              data={chartData}
-              barSize={barSize}
-              enabledOverlays={enabledOverlays}
-              height={400}
-            />
+            <RegimeChartWrapper regime={regimeContext?.regime || null}>
+              <PriceChart
+                symbol={symbol}
+                data={chartData}
+                barSize={barSize}
+                enabledOverlays={enabledOverlays}
+                height={400}
+              />
+            </RegimeChartWrapper>
           ) : (
             <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground">
               <p>No price data available for {symbol}</p>
               <p className="text-xs mt-1">Try selecting a different range</p>
             </div>
+          )}
+
+          {/* Regime-aware risk interpretation */}
+          {regimeContext && chartData.length > 0 && (
+            <RegimeRiskInterpretation
+              regime={regimeContext.regime}
+              volatilityPercentile={regimeContext.indicators.volatility_percentile}
+            />
           )}
 
           {/* Educational disclaimer */}
