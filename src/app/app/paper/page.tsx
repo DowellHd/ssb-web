@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, Plus, TrendingUp, TrendingDown, DollarSign, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAccount, usePositions, useOrders, useTierLimits } from '@/hooks/use-paper-trading';
+import { usePortfolioHealth } from '@/hooks/use-portfolio-health';
 import { cn, formatCurrency, formatPercent, isUnlimited, safeNumber } from '@/lib/utils';
 import { AccountSummaryCard } from '@/components/paper/account-summary-card';
 import { PositionsTable } from '@/components/paper/positions-table';
@@ -11,17 +13,35 @@ import { OrdersList } from '@/components/paper/orders-list';
 import { TierLimitsBanner } from '@/components/paper/tier-limits-banner';
 import { NewOrderModal } from '@/components/paper/new-order-modal';
 import { ChartSection } from '@/components/paper/chart-section';
+import { HealthAtAGlance, PortfolioHealthPanel } from '@/components/portfolio-health';
+import { getRegimeAnalysis } from '@/lib/api/intelligence';
+import type { RegimeType } from '@/lib/chart/regime-context';
 
 export default function PaperTradingPage() {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [orderSymbol, setOrderSymbol] = useState<string | undefined>();
   const [orderSide, setOrderSide] = useState<'buy' | 'sell'>('buy');
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<string | undefined>();
+  const [showHealthPanel, setShowHealthPanel] = useState(false);
 
   const { data: account, isLoading: accountLoading, refetch: refetchAccount } = useAccount();
   const { data: positions, isLoading: positionsLoading, refetch: refetchPositions } = usePositions();
   const { data: orders, isLoading: ordersLoading, refetch: refetchOrders } = useOrders();
   const { data: limits, isLoading: limitsLoading } = useTierLimits();
+
+  // Fetch regime data for portfolio health calculations
+  const { data: regimeData } = useQuery({
+    queryKey: ['regime', 'SPY'],
+    queryFn: () => getRegimeAnalysis({ symbol: 'SPY', lookback_days: 200 }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  // Portfolio health hook
+  const { health, entitlements: healthEntitlements, hasAccess: hasHealthAccess, isScenarioAdjusted } = usePortfolioHealth({
+    regime: regimeData?.regime as RegimeType | undefined,
+    volatilityPercentile: regimeData?.indicators?.volatility_percentile,
+  });
 
   const isLoading = accountLoading || positionsLoading || ordersLoading || limitsLoading;
 
@@ -111,6 +131,24 @@ export default function PaperTradingPage() {
             icon={BarChart3}
           />
         </div>
+      )}
+
+      {/* Portfolio Health at a Glance Widget */}
+      <HealthAtAGlance
+        health={health}
+        hasAccess={hasHealthAccess}
+        isScenarioAdjusted={isScenarioAdjusted}
+        onExpand={() => setShowHealthPanel(!showHealthPanel)}
+      />
+
+      {/* Full Portfolio Health Panel (expanded) */}
+      {showHealthPanel && (
+        <PortfolioHealthPanel
+          health={health}
+          entitlements={healthEntitlements}
+          hasAccess={hasHealthAccess}
+          isScenarioAdjusted={isScenarioAdjusted}
+        />
       )}
 
       {/* Price Chart */}
