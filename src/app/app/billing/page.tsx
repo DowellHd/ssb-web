@@ -11,57 +11,85 @@ import { getPlanConfig, getPlanDisplayName, isFounderPlan, hasUnlimitedAccess } 
 import { isUnlimited, formatLimit } from '@/lib/utils';
 import { usePlanStore } from '@/stores/plan-store';
 
-// Feature bullets for each plan
+// Feature bullets for each plan (qualitative labels only - no numeric limits)
 const PLAN_FEATURES: Record<string, string[]> = {
   free: [
-    '7-day delayed regime data',
+    'Delayed regime data',
     'Basic risk analytics',
-    '5 paper positions max',
-    '10 orders/day',
-    'Price overlay only',
+    'Limited paper trading',
+    'Basic chart overlays',
+    'Community support',
   ],
   starter: [
-    '3-day delayed regime data',
+    'Reduced data delay',
     'Standard risk analytics',
-    '15 paper positions',
-    '50 orders/day',
-    'Price + Volume overlays',
+    'Standard paper trading',
+    'Standard chart overlays',
+    'Email support',
   ],
   pro: [
     'Real-time regime data',
     'Advanced risk analytics',
-    '50 paper positions',
-    '500 orders/day',
+    'Advanced paper trading',
     'All chart overlays',
     'Stress testing access',
+    'Priority support',
   ],
   institutional: [
     'Real-time + priority data',
     'Full risk analytics suite',
-    'Unlimited positions',
-    'Unlimited orders',
+    'Unlimited paper trading',
     'All overlays + custom',
+    'Full API access',
     'Dedicated support',
   ],
 };
 
-// Comparison table data
-const COMPARISON_FEATURES = [
-  { label: 'Regime Data Delay', free: '7 days', starter: '3 days', pro: 'Real-time', institutional: 'Real-time' },
-  { label: 'Risk Analytics', free: 'Basic', starter: 'Standard', pro: 'Advanced', institutional: 'Full Suite' },
-  { label: 'Scenario Mode', free: 'Lite', starter: 'Plus', pro: 'Plus', institutional: 'Advanced' },
-  { label: 'Scenario inputs at once', free: '1', starter: '3', pro: '3', institutional: '3' },
-  { label: 'Baseline compare + deltas', free: false, starter: true, pro: true, institutional: true },
-  { label: 'Scenario presets', free: false, starter: true, pro: true, institutional: true },
-  { label: 'Scenario export', free: false, starter: false, pro: false, institutional: true },
-  { label: 'Paper Positions', free: '5', starter: '15', pro: '50', institutional: 'Unlimited' },
-  { label: 'Orders per Day', free: '10', starter: '50', pro: '500', institutional: 'Unlimited' },
-  { label: 'Chart Overlays', free: 'Price only', starter: 'Price + Volume', pro: 'All', institutional: 'All + Custom' },
-  { label: 'Stress Testing', free: false, starter: false, pro: true, institutional: true },
-  { label: 'API Access', free: false, starter: 'Limited', pro: 'Full', institutional: 'Full + Priority' },
-  { label: 'Export Reports', free: false, starter: true, pro: true, institutional: true },
-  { label: 'Custom Alerts', free: false, starter: false, pro: true, institutional: true },
-  { label: 'Support', free: 'Community', starter: 'Email', pro: 'Priority', institutional: 'Dedicated' },
+// Comparison table data - grouped by category with qualitative labels
+interface ComparisonFeature {
+  label: string;
+  free: string | boolean;
+  starter: string | boolean;
+  pro: string | boolean;
+  institutional: string | boolean;
+}
+
+interface ComparisonSection {
+  section: string;
+  features: ComparisonFeature[];
+}
+
+const COMPARISON_SECTIONS: ComparisonSection[] = [
+  {
+    section: 'Data & Analytics',
+    features: [
+      { label: 'Regime Data', free: 'Delayed', starter: 'Reduced delay', pro: 'Real-time', institutional: 'Real-time' },
+      { label: 'Risk Analytics', free: 'Basic', starter: 'Standard', pro: 'Advanced', institutional: 'Full Suite' },
+      { label: 'Stress Testing', free: false, starter: false, pro: true, institutional: true },
+    ],
+  },
+  {
+    section: 'Simulation & Scenarios',
+    features: [
+      { label: 'Scenario Mode', free: 'Lite', starter: 'Standard', pro: 'Standard', institutional: 'Advanced' },
+      { label: 'Scenario Export', free: false, starter: false, pro: false, institutional: true },
+    ],
+  },
+  {
+    section: 'Paper Trading',
+    features: [
+      { label: 'Positions & Orders', free: 'Limited', starter: 'Standard', pro: 'Advanced', institutional: 'Unlimited' },
+      { label: 'Chart Overlays', free: 'Basic', starter: 'Standard', pro: 'Advanced', institutional: 'Advanced' },
+    ],
+  },
+  {
+    section: 'Platform Access',
+    features: [
+      { label: 'API Access', free: false, starter: 'Limited', pro: 'Full', institutional: 'Priority' },
+      { label: 'Data Export', free: false, starter: 'Basic', pro: 'Standard', institutional: 'Full' },
+      { label: 'Support', free: 'Community', starter: 'Email', pro: 'Priority', institutional: 'Dedicated' },
+    ],
+  },
 ];
 
 export default function BillingPage() {
@@ -517,7 +545,7 @@ export default function BillingPage() {
         </div>
       )}
 
-      {/* Feature Comparison Table */}
+      {/* Feature Comparison Table - Grouped by Category */}
       <div className="rounded-lg border bg-card p-6 overflow-x-auto">
         <h2 className="text-lg font-semibold mb-4">Feature Comparison</h2>
         <table className="table-compare">
@@ -531,38 +559,49 @@ export default function BillingPage() {
             </tr>
           </thead>
           <tbody>
-            {COMPARISON_FEATURES.map((row) => (
-              <tr key={row.label}>
-                <td>{row.label}</td>
-                <td className={currentPlanName.toLowerCase() === 'free' ? 'bg-primary/5' : ''}>
-                  {typeof row.free === 'boolean' ? (
-                    row.free ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                  ) : (
-                    row.free
-                  )}
-                </td>
-                <td className={currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/5' : ''}>
-                  {typeof row.starter === 'boolean' ? (
-                    row.starter ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                  ) : (
-                    row.starter
-                  )}
-                </td>
-                <td className={currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/5' : ''}>
-                  {typeof row.pro === 'boolean' ? (
-                    row.pro ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                  ) : (
-                    row.pro
-                  )}
-                </td>
-                <td className={currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/5' : ''}>
-                  {typeof row.institutional === 'boolean' ? (
-                    row.institutional ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                  ) : (
-                    row.institutional
-                  )}
-                </td>
-              </tr>
+            {COMPARISON_SECTIONS.map((section) => (
+              <>
+                {/* Section Header Row */}
+                <tr key={section.section} className="bg-muted/50">
+                  <td colSpan={5} className="font-semibold text-xs uppercase tracking-wide text-muted-foreground py-2">
+                    {section.section}
+                  </td>
+                </tr>
+                {/* Feature Rows */}
+                {section.features.map((row) => (
+                  <tr key={row.label}>
+                    <td className="pl-4">{row.label}</td>
+                    <td className={currentPlanName.toLowerCase() === 'free' ? 'bg-primary/5' : ''}>
+                      {typeof row.free === 'boolean' ? (
+                        row.free ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                      ) : (
+                        row.free
+                      )}
+                    </td>
+                    <td className={currentPlanName.toLowerCase() === 'starter' ? 'bg-primary/5' : ''}>
+                      {typeof row.starter === 'boolean' ? (
+                        row.starter ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                      ) : (
+                        row.starter
+                      )}
+                    </td>
+                    <td className={currentPlanName.toLowerCase() === 'pro' ? 'bg-primary/5' : ''}>
+                      {typeof row.pro === 'boolean' ? (
+                        row.pro ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                      ) : (
+                        row.pro
+                      )}
+                    </td>
+                    <td className={currentPlanName.toLowerCase() === 'institutional' ? 'bg-primary/5' : ''}>
+                      {typeof row.institutional === 'boolean' ? (
+                        row.institutional ? <Check className="h-4 w-4 text-green-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                      ) : (
+                        row.institutional
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </>
             ))}
           </tbody>
         </table>
