@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, X, Check } from 'lucide-react';
+import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, X, Check, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCapabilities, type Capabilities } from '@/lib/api/meta';
 import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
@@ -224,6 +224,28 @@ export default function BillingPage() {
         </Button>
       </div>
 
+      {/* Early Access Banner */}
+      <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-3">
+        <div className="flex items-start gap-3">
+          <FlaskConical className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+                Early Access
+              </span>
+            </div>
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              SSB is currently in early access. <strong>All plans are free during this period</strong> and
+              no real charges will occur. When you test the checkout flow, use Stripe test card{' '}
+              <code className="px-1 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-xs font-mono">
+                4242 4242 4242 4242
+              </code>{' '}
+              with any future expiry and CVC. Pricing will apply after general availability.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Success Message */}
       {successMessage && (
         <div className="rounded-lg bg-green-50 border border-green-300 p-4 text-sm text-green-800 flex items-center gap-3">
@@ -253,10 +275,9 @@ export default function BillingPage() {
 
       {/* Billing not enabled banner */}
       {!billingEnabled && (
-        <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
-          <strong>Note:</strong> Billing integration is not yet configured.
-          You are currently on the Free plan with all basic features available.
-          Upgrade options will be available soon.
+        <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-800 p-4 text-sm text-amber-800 dark:text-amber-200">
+          <strong>Note:</strong> Billing is currently in test mode.
+          All features are available during early access. No real charges will occur.
         </div>
       )}
 
@@ -404,7 +425,11 @@ export default function BillingPage() {
       {/* Available Plans */}
       {plans && plans.plans.length > 0 && (
         <div className="rounded-lg border bg-card p-6">
-          <h2 className="text-lg font-semibold mb-4">Available Plans</h2>
+          <h2 className="text-lg font-semibold mb-2">Available Plans</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            During early access, all features are available at no cost.
+            Select a plan to set your feature tier—no real charges will occur.
+          </p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {plans.plans.map((plan) => {
               const isCurrentPlan = plan.name.toLowerCase() === currentPlanName.toLowerCase();
@@ -541,6 +566,34 @@ export default function BillingPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Early Access FAQ */}
+      <div className="rounded-lg border bg-card p-6">
+        <h3 className="font-semibold mb-4">Early Access FAQ</h3>
+        <div className="space-y-4 text-sm">
+          <div>
+            <p className="font-medium text-foreground">Is SSB free right now?</p>
+            <p className="text-muted-foreground mt-1">
+              Yes. During early access, all plan features are available at no cost.
+              No real payments are processed.
+            </p>
+          </div>
+          <div>
+            <p className="font-medium text-foreground">Will I be charged automatically later?</p>
+            <p className="text-muted-foreground mt-1">
+              No. When billing goes live after general availability, you will be notified in advance
+              and must explicitly choose a paid plan. There are no automatic charges.
+            </p>
+          </div>
+          <div>
+            <p className="font-medium text-foreground">Why show pricing during early access?</p>
+            <p className="text-muted-foreground mt-1">
+              Displaying plan tiers helps us test feature gating, gather feedback on value perception,
+              and prepare for launch. Your input during this phase is valuable.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Info banner */}
