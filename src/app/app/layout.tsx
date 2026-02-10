@@ -18,6 +18,8 @@ import {
   Crown,
   CandlestickChart,
   FileText,
+  History,
+  Map,
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react';
@@ -38,6 +40,8 @@ const navItems = [
   { href: '/app/paper', label: 'Paper Trading', icon: CandlestickChart },
   { href: '/app/backtests', label: 'Backtests', icon: LineChart },
   { href: '/app/audit', label: 'Audit Log', icon: ClipboardList },
+  { href: '/app/changelog', label: 'Changelog', icon: History },
+  { href: '/app/roadmap', label: 'Roadmap', icon: Map },
   { href: '/app/billing', label: 'Billing', icon: CreditCard },
   { href: '/app/settings', label: 'Settings', icon: Settings },
 ];
