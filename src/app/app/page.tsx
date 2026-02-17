@@ -258,7 +258,7 @@ export default function AppDashboardPage() {
         <div className="grid gap-6 md:grid-cols-5">
           <div>
             <p className="text-sm text-muted-foreground">Email</p>
-            <p className="font-medium">{dashboard?.email || '—'}</p>
+            <p className="font-medium text-sm break-all">{dashboard?.email || '—'}</p>
             {dashboard && !dashboard.email_verified && (
               <div className="mt-2 space-y-2">
                 <p className="text-xs text-yellow-600 flex items-center gap-1">
