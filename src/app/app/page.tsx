@@ -255,8 +255,8 @@ export default function AppDashboardPage() {
       {/* Account status */}
       <div className="rounded-lg border bg-card p-6">
         <h2 className="text-xl font-semibold mb-4">Account Status</h2>
-        <div className="grid gap-6 md:grid-cols-5 [&>div]:min-w-0">
-          <div className="overflow-hidden">
+        <div className="grid gap-6 md:grid-cols-5">
+          <div style={{ minWidth: 0 }}>
             <p className="text-sm text-muted-foreground">Email</p>
             <p className="font-medium truncate" title={dashboard?.email || ''}>{dashboard?.email || '—'}</p>
             {dashboard && !dashboard.email_verified && (
