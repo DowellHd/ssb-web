@@ -58,7 +58,7 @@ function VerifyEmailSentContent() {
 
         <div className="space-y-4 mt-6">
           <p className="text-sm text-muted-foreground">
-            Didn&apos;t receive the email? Check your spam folder or
+            Didn&apos;t receive the email? Check your spam or promotions folder, or resend it below.
           </p>
           <div className="flex flex-col gap-2">
             {email && (
