@@ -256,9 +256,9 @@ export default function AppDashboardPage() {
       <div className="rounded-lg border bg-card p-6">
         <h2 className="text-xl font-semibold mb-4">Account Status</h2>
         <div className="grid gap-6 md:grid-cols-5">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm text-muted-foreground">Email</p>
-            <p className="font-medium">{dashboard?.email || '—'}</p>
+            <p className="font-medium truncate" title={dashboard?.email || ''}>{dashboard?.email || '—'}</p>
             {dashboard && !dashboard.email_verified && (
               <div className="mt-2 space-y-2">
                 <p className="text-xs text-yellow-600 flex items-center gap-1">
