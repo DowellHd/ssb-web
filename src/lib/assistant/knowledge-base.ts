@@ -23,7 +23,9 @@ export type PageScope =
   | 'regime'
   | 'stress'
   | 'settings'
-  | 'billing';
+  | 'billing'
+  | 'audit'
+  | 'portfolio';
 
 export interface KBEntry {
   id: string;
@@ -161,6 +163,50 @@ export const QUERY_SYNONYMS: Record<string, string> = {
   'smart strategies builder': 'platform',
   'app': 'platform',
   'application': 'platform',
+
+  // View mode variations
+  'short term': 'view mode',
+  'long term': 'view mode',
+  'short-term': 'view mode',
+  'long-term': 'view mode',
+  'timeframe': 'view mode',
+  'view': 'view mode',
+
+  // Scenario mode variations
+  'scenario': 'scenario mode',
+  'what if': 'scenario mode',
+  'what-if': 'scenario mode',
+  'simulation mode': 'scenario mode',
+  'override': 'scenario mode',
+
+  // Regime indicator variations
+  'trend score': 'regime indicators',
+  'breadth': 'regime indicators',
+  'breadth score': 'regime indicators',
+  'volatility percentile': 'regime indicators',
+  'confidence score': 'regime indicators',
+
+  // Audit log variations
+  'audit': 'audit log',
+  'activity log': 'audit log',
+  'history': 'audit log',
+  'log': 'audit log',
+
+  // Portfolio health variations
+  'portfolio health': 'portfolio health',
+  'health score': 'portfolio health',
+  'risk score': 'portfolio health',
+  'concentration': 'portfolio health',
+
+  // Correlation variations
+  'correlation': 'correlation analysis',
+  'correlation matrix': 'correlation analysis',
+  'corr': 'correlation analysis',
+
+  // Long-term insight variations
+  'long term insights': 'long-term insights',
+  'long-term insights': 'long-term insights',
+  'regime insights': 'long-term insights',
 };
 
 /**
@@ -698,37 +744,55 @@ Portfolio reached $100,000, then fell to $80,000 = 20% drawdown
   market_regime: {
     id: 'market_regime',
     title: 'Market Regime',
-    keywords: ['market regime', 'bull', 'bear', 'trend', 'conditions'],
-    aliases: ['market state', 'market mood', 'market phase'],
+    keywords: ['market regime', 'bull', 'bear', 'trend', 'conditions', 'regime classification'],
+    aliases: ['market state', 'market mood', 'market phase', 'regime detection'],
     pageScopes: ['global', 'regime', 'dashboard'],
     content: {
-      definition: `**Market Regime** refers to the current state or "mood" of the market.
+      definition: `**Market Regime** describes the current structural state of the market — the environment that sets context for how prices are behaving.
 
-**Common Regimes:**
-- **Bull Market**: Rising prices, positive sentiment
-- **Bear Market**: Falling prices, negative sentiment
-- **Ranging/Sideways**: No clear direction
-- **High Volatility**: Large price swings
-- **Low Volatility**: Calm markets
+**SSB Regime Classifications:**
+- **Bull**: Rising trend, positive momentum, broad participation
+- **Bear**: Falling trend, negative momentum, declining breadth
+- **Sideways**: No clear directional bias, mean-reversion behavior
+- **High Volatility**: Elevated price swings regardless of direction
+- **Low Volatility**: Unusually calm conditions, compressed ranges
 
-**How SSB Analyzes Regimes:**
-- Price trend analysis (moving averages, momentum)
-- Volatility measurements (VIX levels)
-- Breadth indicators
-- Macro factors`,
-      how_to: `**Using Regime Insights:**
+**How SSB Classifies Regimes (v1.2.0):**
+SSB uses a **rule-based ensemble model** that combines multiple signals:
+- **Price Direction**: Multi-timeframe moving average crosses and momentum
+- **Volatility**: Historical volatility percentile relative to long-run norms; VIX levels
+- **Market Breadth**: Proportion of market components participating in the trend
+- **Macro Alignment**: Yield curve slope and macro factor signals
 
-1. Go to **Market Regime** page
-2. View current regime classification
-3. See historical regime changes
-4. Consider regime when analyzing strategies
+The output is a **regime label + confidence score**, not a simple up/down signal.
 
-**Why It Matters:**
-Different strategies work in different regimes:
-- Trend-following in trending markets
-- Mean reversion in ranging markets`,
+**Confidence Score:**
+- Reflects how strongly all indicators agree on the classification
+- High confidence = clear, aligned signals
+- Low confidence = mixed or transitioning conditions
+
+**View Modes:**
+- **Short-Term**: Near-term signal emphasis (days to weeks)
+- **Long-Term**: Structural regime framing (weeks to months)
+
+**Data:**
+- Analysis covers SPY as the benchmark equity regime proxy
+- Delay applied by tier (Founder/Institutional: real-time; lower tiers: delayed)`,
+      how_to: `**Using the Regime Analysis Page:**
+
+1. Navigate to **Market Regime** from the sidebar
+2. The **regime badge** shows the current classification and confidence
+3. Toggle **View Mode** (Short/Long) to switch analysis horizon
+4. Expand **"What is Market Regime Detection?"** for methodology details
+5. Review **Technical Indicators** for the underlying signals
+6. Check **Macro Indicators** for VIX and yield curve context
+7. Enable **Scenario Mode** (Starter+) to explore hypothetical conditions
+
+**Data Currency:**
+- "Data as of:" shows when underlying market data is valid through
+- Click **Refresh** to fetch the latest classification`,
     },
-    relatedTopics: ['volatility', 'risk_analytics', 'backtesting'],
+    relatedTopics: ['regime_indicators', 'view_mode', 'scenario_mode', 'volatility', 'risk_analytics'],
   },
 
   // -------------------------------------------------------------------------
@@ -829,58 +893,70 @@ Different strategies work in different regimes:
   entitlements: {
     id: 'entitlements',
     title: 'Plans & Tiers',
-    keywords: ['plan', 'tier', 'subscription', 'free', 'starter', 'pro', 'upgrade'],
-    aliases: ['pricing', 'membership', 'account type'],
+    keywords: ['plan', 'tier', 'subscription', 'free', 'starter', 'pro', 'institutional', 'founder', 'upgrade', 'entitlement'],
+    aliases: ['pricing', 'membership', 'account type', 'my plan', 'features by tier'],
     pageScopes: ['global', 'settings', 'billing', 'paper'],
     content: {
-      definition: `**SSB Subscription Tiers** determine your feature access and limits.
+      definition: `**SSB Subscription Tiers** determine your feature access, data currency, and limits.
 
-**Free Tier:**
+**Free:**
 - Basic risk analytics
-- Paper trading: 5 positions, 10 orders/day
-- 30-day history, 1 reset/week
-- SMA 20 overlay only
+- Paper trading: 5 positions, 10 orders/day, 30-day history, 1 reset/week
+- SMA 20 chart overlay only
+- Regime data with delay; no Scenario Mode presets
+- 1 Scenario override (no baseline compare)
 
-**Starter ($9/month):**
-- 25 positions, 100 orders/day
-- 365-day history, daily resets
+**Starter:**
+- Paper trading: 25 positions, 100 orders/day, 365-day history, daily resets
 - SMA 20, SMA 50, Key Levels overlays
+- 3 Scenario overrides, baseline compare, deltas, presets
 
-**Pro ($29/month):**
+**Pro:**
+- Paper trading: 200 positions, 1,000 orders/day, unlimited resets
+- All chart overlays
 - Real-time regime insights
 - Stress testing access
-- 200 positions, 1000 orders/day
-- All chart overlays
+- Portfolio Health widget (sector, concentration, risk score)
+- 3 Scenario overrides with full features
 
-**Founder/Institutional:**
-- All features unlimited
-- Priority support`,
+**Institutional:**
+- All Pro features
+- Portfolio Health correlation matrix and granular breakdown
+- Scenario Mode export and custom labels
+- Real-time data, no delay
+
+**Founder:**
+- All Institutional features
+- Displayed as "All Access"
+- Real-time data, no delay applied
+- Priority access to new features
+
+**Note:** Feature availability is enforced server-side. The plan shown in the regime header ("Plan:") reflects your canonical tier.`,
       how_to: `**Managing Your Subscription:**
 
-1. Go to **Settings** → **Billing**
-2. View your current plan
-3. Click **Upgrade** to change tiers
-4. Manage payment methods
+1. Go to **Billing** from the sidebar (or Settings → Billing)
+2. View your current plan and next billing date
+3. Click **Upgrade** to access higher tiers
+4. Manage payment methods in the Billing portal
 
 **Upgrading:**
 - Changes take effect immediately
-- Pro-rated billing for upgrades
-- Can downgrade anytime`,
+- Pro-rated billing for mid-cycle upgrades`,
       troubleshoot: `**Subscription Issues:**
 
-**"Feature not available":**
-- Check if feature requires higher tier
-- Upgrade if needed
+**"Feature not available" or gated UI:**
+- Check which tier the feature requires (see definitions above)
+- Verify your plan in Billing
 
-**"Limit reached":**
-- Free/Starter tiers have limits
-- Wait for reset or upgrade
+**"Limit reached" errors:**
+- Free/Starter tiers have order and position limits
+- Wait until next reset period or upgrade
 
 **Billing issues:**
-- Check payment method in Settings
-- Contact support if charges failed`,
+- Check payment method in Billing settings
+- Contact support if a charge appears incorrect`,
     },
-    relatedTopics: ['paper_trading', 'what_is_ssb'],
+    relatedTopics: ['paper_trading', 'what_is_ssb', 'portfolio_health', 'scenario_mode', 'correlation_analysis'],
   },
 
   account: {
@@ -918,6 +994,303 @@ Different strategies work in different regimes:
     },
     relatedTopics: ['paper_trading', 'position', 'pnl'],
   },
+
+  // -------------------------------------------------------------------------
+  // View Mode
+  // -------------------------------------------------------------------------
+  view_mode: {
+    id: 'view_mode',
+    title: 'View Mode (Short-Term / Long-Term)',
+    keywords: ['view mode', 'short term', 'long term', 'timeframe', 'toggle'],
+    aliases: ['short-term view', 'long-term view', 'view toggle', 'time horizon'],
+    pageScopes: ['global', 'regime', 'risk', 'dashboard'],
+    content: {
+      definition: `**View Mode** is a global toggle that shifts analysis framing between two time horizons.
+
+**Short-Term View:**
+- Focuses on near-term market conditions (days to weeks)
+- Emphasizes recent price action, momentum, and volatility signals
+- Suitable for understanding current regime context
+
+**Long-Term View:**
+- Emphasizes structural market conditions (weeks to months)
+- Incorporates macro factors, yield curve, and regime persistence
+- Useful for understanding broader market environment
+
+**How It Works:**
+- The toggle appears on the Market Regime Analysis and Risk Analytics pages
+- Switching view mode updates charts, regime classifications, and risk framing across the platform
+- Your selection is remembered between sessions
+
+**Note:** View mode affects how data is presented, not which data is fetched. All analysis remains informational.`,
+      how_to: `**Using View Mode:**
+
+1. Find the **Short/Long** toggle in the top-right area of Regime or Risk pages
+2. Click to switch between short-term and long-term framing
+3. All visible metrics and charts update to reflect the selected horizon
+
+The **View Mode Badge** displayed next to page titles indicates which horizon is currently active.`,
+    },
+    relatedTopics: ['market_regime', 'risk_analytics', 'long_term_insights'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Scenario Mode
+  // -------------------------------------------------------------------------
+  scenario_mode: {
+    id: 'scenario_mode',
+    title: 'Scenario Mode (What-If Analysis)',
+    keywords: ['scenario mode', 'what if', 'override', 'simulation mode', 'scenario'],
+    aliases: ['what-if mode', 'scenario analysis', 'parameter override', 'hypothetical'],
+    pageScopes: ['global', 'regime', 'stress'],
+    content: {
+      definition: `**Scenario Mode** allows you to override market indicator values to explore hypothetical regime conditions — without affecting the live analysis.
+
+**What It Does:**
+- Lets you adjust Trend Score, Volatility Percentile, and Breadth Score
+- Computes how the regime classification would change under those conditions
+- Shows a side-by-side comparison of baseline vs. scenario regime
+
+**Key Behaviors:**
+- Scenario Mode does NOT change live market data
+- Classifications are computed locally based on your inputs
+- Data resets when you disable Scenario Mode or refresh the page
+- The page is highlighted with a purple ring when Scenario Mode is active
+
+**Tier Access:**
+- **Free**: 1 active override, no baseline comparison
+- **Starter / Pro**: Up to 3 overrides, baseline comparison, delta view, presets
+- **Institutional / Founder**: All features including export and labels
+
+**Preset Scenarios (Starter+):**
+- Low Vol Expansion
+- High Rate Stress
+- Recession Shock
+
+**Note:** Scenario Mode is for educational exploration only. Results are hypothetical and not predictive of future market conditions.`,
+      how_to: `**Using Scenario Mode:**
+
+1. Navigate to **Market Regime Analysis**
+2. Find the **Scenario Panel** below the main regime card
+3. Toggle **Scenario Mode** on
+4. Adjust the sliders for Trend Score, Volatility Percentile, or Breadth Score
+5. Optionally select a preset scenario (Starter+)
+6. View updated regime classification and comparison panel
+7. Toggle off to return to live analysis`,
+      troubleshoot: `**Scenario Mode Issues:**
+
+**Sliders disabled or not visible:**
+- Scenario Mode may require a higher tier for additional overrides
+- Check your plan in Settings → Billing
+
+**"Comparison" panel not showing:**
+- Baseline compare is available on Starter tier and above
+
+**Regime not changing as expected:**
+- Regime classification requires multiple signals to shift
+- Try more extreme slider values to see reclassification
+
+**Changes lost after refresh:**
+- By design — Scenario Mode resets on page refresh for safety`,
+    },
+    relatedTopics: ['market_regime', 'regime_indicators', 'stress_testing', 'entitlements'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Regime Indicators
+  // -------------------------------------------------------------------------
+  regime_indicators: {
+    id: 'regime_indicators',
+    title: 'Regime Indicators',
+    keywords: ['regime indicators', 'trend score', 'breadth score', 'volatility percentile', 'confidence score', 'indicators'],
+    aliases: ['market indicators', 'classification inputs', 'technical signals'],
+    pageScopes: ['global', 'regime'],
+    content: {
+      definition: `**Regime Indicators** are the quantitative signals used by SSB's ensemble model to classify the current market regime.
+
+**Trend Score** (range: -1 to +1):
+- Measures the direction and strength of recent price momentum
+- Positive: uptrend; Negative: downtrend; Near zero: sideways
+- Derived from multiple moving average crossovers and momentum factors
+
+**Volatility Percentile** (0–100):
+- Where current volatility sits relative to historical norms
+- 0 = lowest ever recorded; 100 = highest ever recorded
+- Above 70: elevated risk environment; Below 30: calm conditions
+
+**Breadth Score** (0–1):
+- Measures the proportion of market components participating in the trend
+- 1.0 = broad participation; 0.0 = very narrow or divergent market
+
+**Confidence Score** (%):
+- How strongly the model assigns the current regime label
+- Higher confidence = clearer regime signal from indicator alignment
+
+**Macro Indicators (supplemental):**
+- **VIX Level**: CBOE Volatility Index; above 30 = high fear, below 20 = low fear
+- **Yield Curve (10Y-2Y)**: Positive = normal; Negative = inverted (historically associated with slowdowns)
+
+**Model Version:** Regime engine v1.2.0 (updated 2026-02-05)`,
+      how_to: `**Reading Regime Indicators:**
+
+1. Navigate to **Market Regime Analysis**
+2. The **Technical Indicators** card shows Trend Score, Volatility Percentile, and Market Breadth
+3. The **Macro Indicators** card shows VIX Level and Yield Curve slope
+4. Purple bars indicate values you have overridden in Scenario Mode
+5. The **Confidence** bar under the regime badge reflects indicator alignment strength`,
+    },
+    relatedTopics: ['market_regime', 'scenario_mode', 'volatility', 'view_mode'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Long-Term Insights
+  // -------------------------------------------------------------------------
+  long_term_insights: {
+    id: 'long_term_insights',
+    title: 'Long-Term Regime Insights',
+    keywords: ['long-term insights', 'regime insights', 'structural', 'macro regime', 'long term'],
+    aliases: ['long term context', 'macro context', 'regime persistence'],
+    pageScopes: ['global', 'regime', 'dashboard'],
+    content: {
+      definition: `**Long-Term Insights** provide structural market context that extends beyond short-term signals — capturing regime persistence, macro alignment, and multi-factor trends.
+
+**What It Adds:**
+- Regime persistence analysis: how long the current regime has been in place
+- Macro factor alignment (yield curve slope, inflation signals)
+- Cross-market context for the current environment
+
+**When to Reference It:**
+- When evaluating whether recent market behavior represents a regime shift or short-term noise
+- When comparing short-term vs. long-term framing using the View Mode toggle
+
+**Availability:**
+- Long-term insights are available on all tiers
+- Access through the **Long-Term View** toggle on the Regime page
+
+**Note:** Long-term insights are descriptive. They describe the structural context of current conditions and do not forecast future outcomes.`,
+    },
+    relatedTopics: ['view_mode', 'market_regime', 'regime_indicators'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Audit Log
+  // -------------------------------------------------------------------------
+  audit_log: {
+    id: 'audit_log',
+    title: 'Audit Log',
+    keywords: ['audit log', 'activity log', 'history', 'log', 'events'],
+    aliases: ['activity history', 'event log', 'action history'],
+    pageScopes: ['global', 'audit'],
+    content: {
+      definition: `**Audit Log** is an activity record that tracks significant actions taken within your SSB account.
+
+**What Is Logged:**
+- Paper trading orders (placed, filled, cancelled)
+- Account resets
+- Subscription changes (upgrades, downgrades)
+- Login events
+- API key activity (if applicable)
+
+**Purpose:**
+- Review past activity for reference or reconciliation
+- Understand what changed and when
+
+**Access:**
+- Navigate to **Audit Log** from the sidebar
+- Entries are sorted newest-first
+- Available on all tiers`,
+      how_to: `**Using the Audit Log:**
+
+1. Navigate to **Audit Log** from the main sidebar
+2. Entries are listed chronologically (newest first)
+3. Each entry shows: timestamp, action type, and relevant details
+4. Use browser search (Ctrl/Cmd+F) to find specific events`,
+    },
+    relatedTopics: ['paper_trading', 'entitlements', 'account'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Portfolio Health
+  // -------------------------------------------------------------------------
+  portfolio_health: {
+    id: 'portfolio_health',
+    title: 'Portfolio Health',
+    keywords: ['portfolio health', 'health score', 'risk score', 'concentration', 'sector exposure'],
+    aliases: ['portfolio analysis', 'health check', 'portfolio risk score'],
+    pageScopes: ['global', 'dashboard', 'portfolio'],
+    content: {
+      definition: `**Portfolio Health** is a summary panel that assesses the overall risk profile of your paper trading portfolio.
+
+**Metrics Included:**
+- **Health Score**: Composite risk indicator (0–100, higher = healthier)
+- **Concentration Risk**: Whether too much value is in a single position
+- **Sector Exposure**: How portfolio weight is distributed across sectors
+- **Risk Score**: Quantitative risk rating based on volatility and drawdown
+- **Correlation Analysis** (Institutional/Founder): How correlated positions are to each other
+
+**Tier Access:**
+- **Free / Starter**: Not available
+- **Pro**: Health widget, sector exposure, concentration warnings, risk score
+- **Institutional / Founder**: All Pro features plus correlation matrix and granular breakdown
+
+**Note:** Portfolio Health is informational. It describes current characteristics and does not constitute a recommendation to buy, sell, or rebalance.`,
+      how_to: `**Viewing Portfolio Health:**
+
+1. Go to your **Dashboard** or **Paper Trading** page
+2. The Portfolio Health panel appears when Pro tier or above is active
+3. Correlation analysis section is visible for Institutional/Founder tiers
+4. Metrics update as your positions change`,
+    },
+    relatedTopics: ['risk_analytics', 'correlation_analysis', 'entitlements', 'position'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Correlation Analysis
+  // -------------------------------------------------------------------------
+  correlation_analysis: {
+    id: 'correlation_analysis',
+    title: 'Correlation Analysis',
+    keywords: ['correlation analysis', 'correlation matrix', 'correlation', 'corr'],
+    aliases: ['position correlation', 'asset correlation', 'diversification analysis'],
+    pageScopes: ['global', 'risk', 'portfolio', 'dashboard'],
+    content: {
+      definition: `**Correlation Analysis** measures how much the positions in your portfolio move together.
+
+**Key Concepts:**
+
+**Correlation Coefficient** (range: -1 to +1):
+- **+1.0**: Perfect positive correlation — assets move identically
+- **0.0**: No relationship — assets move independently
+- **-1.0**: Perfect negative correlation — assets move oppositely
+
+**Correlation Matrix:**
+- A grid showing pairwise correlation between all portfolio positions
+- High positive correlation (above +0.8) may reduce effective diversification
+- Negative correlation may provide natural hedging
+
+**Why It Matters:**
+- Two similar ETFs might appear diversified by name but have very high correlation
+- High portfolio-wide correlation can amplify drawdown during broad market stress
+- A lower average correlation generally indicates better diversification
+
+**Availability:**
+- Institutional and Founder tiers only
+- Accessed through the Portfolio Health panel
+
+**Note:** Correlation describes historical behavior. Future correlations may differ, especially during market stress.`,
+      how_to: `**Reading the Correlation Matrix:**
+
+1. Navigate to your **Dashboard** (Institutional/Founder tier)
+2. Open the **Portfolio Health** panel
+3. The correlation matrix shows each position pair
+4. Color coding: Red = high positive correlation, Blue = negative correlation, White ≈ near zero
+
+**Interpreting results:**
+- Look for clusters of high correlation — these positions may behave similarly in stress
+- Positions with low or negative correlation to the rest of the portfolio add diversification`,
+    },
+    relatedTopics: ['portfolio_health', 'risk_analytics', 'entitlements', 'volatility'],
+  },
 };
 
 // =============================================================================
@@ -926,24 +1299,36 @@ Different strategies work in different regimes:
 
 export const GLOSSARY: KBGlossaryTerm[] = [
   { term: 'Alpha', aliases: ['alpha'], definition: 'Returns above a benchmark, often attributed to skill', category: 'analytics' },
-  { term: 'Beta', aliases: ['beta'], definition: 'Measure of volatility relative to the market', category: 'risk' },
-  { term: 'Correlation', definition: 'Statistical measure of how two assets move together', category: 'risk' },
-  { term: 'Diversification', definition: 'Spreading investments to reduce risk', category: 'risk' },
-  { term: 'Drawdown', aliases: ['dd', 'mdd'], definition: 'Peak-to-trough decline in portfolio value', category: 'risk' },
-  { term: 'ETF', definition: 'Exchange-Traded Fund - basket of securities trading like a stock', category: 'trading' },
-  { term: 'Hedging', definition: 'Taking positions to offset potential losses', category: 'risk' },
-  { term: 'Liquidity', definition: 'How easily an asset can be bought/sold without affecting price', category: 'trading' },
-  { term: 'Market Cap', definition: 'Total market value of a company\'s shares', category: 'trading' },
-  { term: 'P/E Ratio', definition: 'Price-to-Earnings ratio - valuation metric', category: 'analytics' },
-  { term: 'P&L', aliases: ['pnl', 'pl', 'profit and loss'], definition: 'Profit and Loss - money made or lost', category: 'trading' },
-  { term: 'Rebalancing', definition: 'Adjusting portfolio to maintain target allocation', category: 'trading' },
-  { term: 'Sharpe Ratio', definition: 'Risk-adjusted return measure (return per unit of risk)', category: 'analytics' },
-  { term: 'Slippage', definition: 'Difference between expected and actual execution price', category: 'trading' },
-  { term: 'Spread', definition: 'Difference between bid and ask prices', category: 'trading' },
-  { term: 'SMA', aliases: ['simple moving average'], definition: 'Simple Moving Average - average price over N periods', category: 'analytics' },
-  { term: 'VaR', aliases: ['value at risk'], definition: 'Value at Risk - potential loss at a confidence level', category: 'risk' },
-  { term: 'Volatility', aliases: ['vol'], definition: 'Measure of price fluctuation over time', category: 'risk' },
-  { term: 'Yield', definition: 'Income return on an investment', category: 'analytics' },
+  { term: 'Beta', aliases: ['beta'], definition: 'Measure of volatility relative to the market; Beta > 1 = more volatile than market', category: 'risk' },
+  { term: 'Breadth Score', aliases: ['breadth', 'market breadth'], definition: 'Proportion of market components participating in the current trend (0–1); higher = broader participation', category: 'analytics' },
+  { term: 'Calmar Ratio', definition: 'Annualized return divided by maximum drawdown; higher is better', category: 'analytics' },
+  { term: 'Confidence Score', definition: 'In SSB regime analysis, the degree to which all indicators agree on the current regime classification (0–100%)', category: 'analytics' },
+  { term: 'Correlation', aliases: ['correlation coefficient'], definition: 'Statistical measure of how two assets move together (-1 = opposite, 0 = independent, +1 = identical)', category: 'risk' },
+  { term: 'Correlation Matrix', definition: 'Grid showing pairwise correlation between all portfolio positions; useful for assessing diversification', category: 'risk' },
+  { term: 'CVaR', aliases: ['cvar', 'expected shortfall', 'conditional var'], definition: 'Conditional Value at Risk — the average loss in the worst-case tail beyond the VaR threshold', category: 'risk' },
+  { term: 'Diversification', definition: 'Spreading investments across uncorrelated assets to reduce concentration risk', category: 'risk' },
+  { term: 'Drawdown', aliases: ['dd', 'mdd', 'max drawdown'], definition: 'Peak-to-trough decline in portfolio value; maximum drawdown is the largest such decline historically', category: 'risk' },
+  { term: 'Ensemble Model', definition: 'A model that combines multiple independent signals or classifiers to produce a more robust output', category: 'analytics' },
+  { term: 'ETF', definition: 'Exchange-Traded Fund — a basket of securities trading like a stock', category: 'trading' },
+  { term: 'Hedging', definition: 'Taking offsetting positions to reduce exposure to a specific risk', category: 'risk' },
+  { term: 'Liquidity', definition: 'How easily an asset can be bought or sold without materially affecting its price', category: 'trading' },
+  { term: 'Market Cap', definition: 'Total market value of all outstanding shares of a company', category: 'trading' },
+  { term: 'P/E Ratio', definition: 'Price-to-Earnings ratio — a common equity valuation metric', category: 'analytics' },
+  { term: 'P&L', aliases: ['pnl', 'pl', 'profit and loss'], definition: 'Profit and Loss — the net gain or loss on a position or account', category: 'trading' },
+  { term: 'Rebalancing', definition: 'Adjusting portfolio weights back to target allocations after price movements shift them', category: 'trading' },
+  { term: 'Regime Classification', aliases: ['regime label'], definition: 'The category assigned to the current market environment by SSB\'s ensemble model (e.g., Bull, Bear, Sideways, High Volatility)', category: 'analytics' },
+  { term: 'Sharpe Ratio', definition: 'Risk-adjusted return measure: annualized excess return divided by annualized standard deviation; higher is better', category: 'analytics' },
+  { term: 'Slippage', definition: 'Difference between the expected execution price and the actual fill price', category: 'trading' },
+  { term: 'Sortino Ratio', definition: 'Like Sharpe but only penalizes downside volatility, not upside; higher is better', category: 'analytics' },
+  { term: 'Spread', definition: 'Difference between the best bid and ask prices at any moment', category: 'trading' },
+  { term: 'SMA', aliases: ['simple moving average', 'moving average'], definition: 'Simple Moving Average — the arithmetic mean of closing prices over N periods', category: 'analytics' },
+  { term: 'Trend Score', aliases: ['trend'], definition: 'In SSB, a composite signal (-1 to +1) measuring price trend direction and momentum across multiple timeframes', category: 'analytics' },
+  { term: 'VaR', aliases: ['value at risk'], definition: 'Value at Risk — the potential loss threshold at a given confidence level (e.g., 95%) over a defined time horizon', category: 'risk' },
+  { term: 'VIX', aliases: ['vix', 'volatility index', 'fear index'], definition: 'CBOE Volatility Index — measures expected 30-day volatility of the S&P 500; above 30 = high fear, below 20 = calm', category: 'risk' },
+  { term: 'Volatility', aliases: ['vol', 'historical volatility'], definition: 'Measure of how much prices fluctuate over time; annualized standard deviation of returns', category: 'risk' },
+  { term: 'Volatility Percentile', definition: 'In SSB, where current realized volatility ranks relative to its historical distribution (0 = lowest ever, 100 = highest ever)', category: 'analytics' },
+  { term: 'Yield', definition: 'Income return on an investment, expressed as a percentage of its price', category: 'analytics' },
+  { term: 'Yield Curve', aliases: ['yield curve slope', '10y-2y', 'treasury spread'], definition: 'The spread between long-term (10Y) and short-term (2Y) Treasury yields; positive = normal, negative (inverted) = historically associated with economic slowdowns', category: 'analytics' },
 ];
 
 // =============================================================================
@@ -1043,6 +1428,18 @@ export const PAGE_PROMPTS: Record<PageScope, string[]> = {
     'Cancel subscription',
     'Change payment method',
     'What are the tiers?',
+  ],
+  audit: [
+    'What is the audit log?',
+    'What events are tracked?',
+    'How far back does history go?',
+    'What does this entry mean?',
+  ],
+  portfolio: [
+    'What is portfolio health?',
+    'What is a correlation matrix?',
+    'How is the health score calculated?',
+    'What is concentration risk?',
   ],
 };
 

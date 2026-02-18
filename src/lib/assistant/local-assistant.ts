@@ -37,6 +37,8 @@ export interface AssistantContext {
   accountBalance?: number;
   /** User's subscription tier */
   tier?: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access';
+  /** Whether Scenario Mode is currently active */
+  isScenarioMode?: boolean;
 }
 
 export interface AssistantResponse {
@@ -72,6 +74,8 @@ function detectPageScope(path?: string): PageScope {
   if (pathLower.includes('/stress')) return 'stress';
   if (pathLower.includes('/settings')) return 'settings';
   if (pathLower.includes('/billing')) return 'billing';
+  if (pathLower.includes('/audit')) return 'audit';
+  if (pathLower.includes('/portfolio')) return 'portfolio';
   if (pathLower.includes('/dashboard') || pathLower === '/app') return 'dashboard';
 
   return 'global';
@@ -260,6 +264,58 @@ function formatResponseByIntent(entry: KBEntry, intent: Intent): string {
 }
 
 // =============================================================================
+// Tier & Context Helpers
+// =============================================================================
+
+/**
+ * IDs of KB entries where tier context is meaningful to surface.
+ */
+const TIER_RELEVANT_ENTRIES = new Set([
+  'market_regime',
+  'regime_indicators',
+  'scenario_mode',
+  'risk_analytics',
+  'stress_testing',
+  'entitlements',
+  'portfolio_health',
+  'correlation_analysis',
+  'long_term_insights',
+  'view_mode',
+]);
+
+/**
+ * Returns a brief, factual note about the user's current tier capabilities.
+ * Appended to responses for tier-relevant topics.
+ */
+function buildTierNote(tier?: AssistantContext['tier'], entryId?: string): string {
+  if (!tier || !entryId || !TIER_RELEVANT_ENTRIES.has(entryId)) return '';
+
+  switch (tier) {
+    case 'founder':
+    case 'full_access':
+      return '\n\n*Your plan provides full access to all platform features, including real-time data, correlation analysis, portfolio health, and all Scenario Mode capabilities.*';
+    case 'institutional':
+      return '\n\n*Your Institutional plan includes real-time data, correlation analysis, portfolio health, and full Scenario Mode access.*';
+    case 'pro':
+      return '\n\n*Your Pro plan includes real-time regime insights, stress testing, portfolio health, all chart overlays, and Scenario Mode with baseline comparison.*';
+    case 'starter':
+      return '\n\n*Your Starter plan includes expanded paper trading limits and Scenario Mode with up to 3 overrides and baseline comparison.*';
+    case 'free':
+      return '\n\n*Some features shown above require a higher-tier plan. Visit Billing to explore upgrade options.*';
+    default:
+      return '';
+  }
+}
+
+/**
+ * Returns a contextual note when Scenario Mode is active on the regime page.
+ */
+function buildScenarioModeNote(isScenarioMode: boolean, pageScope: PageScope): string {
+  if (!isScenarioMode || pageScope !== 'regime') return '';
+  return '\n\n*Note: Scenario Mode is currently active. The regime classification shown on-screen reflects your overridden indicator values, not live market data. Disable Scenario Mode to return to live analysis.*';
+}
+
+// =============================================================================
 // Response Generation
 // =============================================================================
 
@@ -309,9 +365,18 @@ function formatFullResponse(
   entry: KBEntry,
   intent: Intent,
   matches: KBMatch[],
-  pageScope: PageScope
+  pageScope: PageScope,
+  context?: AssistantContext
 ): AssistantResponse {
   let reply = formatResponseByIntent(entry, intent);
+
+  // Append scenario mode note when relevant
+  const scenarioNote = buildScenarioModeNote(context?.isScenarioMode ?? false, pageScope);
+  if (scenarioNote) reply += scenarioNote;
+
+  // Append tier-specific context note for relevant entries
+  const tierNote = buildTierNote(context?.tier, entry.id);
+  if (tierNote) reply += tierNote;
 
   // Collect related topics
   const relatedTopicIds = entry.relatedTopics || [];
@@ -408,7 +473,7 @@ export function processMessage(
       if (matches.length > 0 && matches[0].score > 10) {
         // Combine glossary with full KB entry
         const bestMatch = matches[0];
-        const response = formatFullResponse(bestMatch.entry, 'definition', matches, pageScope);
+        const response = formatFullResponse(bestMatch.entry, 'definition', matches, pageScope, context);
         response.reply = glossaryResult + '\n\n---\n\n' + response.reply;
         return response;
       }
@@ -447,7 +512,7 @@ export function processMessage(
 
   // Return best match formatted by intent
   const bestMatch = matches[0];
-  const response = formatFullResponse(bestMatch.entry, intent, matches, pageScope);
+  const response = formatFullResponse(bestMatch.entry, intent, matches, pageScope, context);
 
   // Prepend glossary terms if found and KB match is weak
   if (glossaryTerms && bestMatch.score < 15) {
