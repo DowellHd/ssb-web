@@ -16,6 +16,7 @@ import {
   type AssistantResponse,
 } from '@/lib/assistant/local-assistant';
 import { DISCLAIMER, type Intent } from '@/lib/assistant/knowledge-base';
+import { useScenarioModeStore } from '@/stores/scenario-mode-store';
 
 // ============================================================================
 // Types
@@ -156,6 +157,7 @@ export const useAssistantStore = create<AssistantState>()(
             page: currentPage,
             selectedSymbol,
             tier: userTier,
+            isScenarioMode: useScenarioModeStore.getState().isEnabled,
           };
 
           // Process locally with context - no API call
@@ -223,7 +225,7 @@ export const useAssistantStore = create<AssistantState>()(
         userTier: state.userTier,
       }),
       // Handle storage errors gracefully
-      onRehydrateStorage: () => (state, error) => {
+      onRehydrateStorage: () => (_state, error) => {
         if (error) {
           console.warn('Failed to rehydrate assistant state:', error);
           // Continue with empty state - don't crash
