@@ -68,6 +68,7 @@ export default function RegimePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
+  const [fetchedAt, setFetchedAt] = useState<Date | null>(null);
 
   // Scenario mode state
   const { isEnabled: isScenarioMode, overrides } = useScenarioModeStore();
@@ -107,6 +108,7 @@ export default function RegimePage() {
         params: { symbol: 'SPY', lookback_days: 200 },
       });
       setData(response.data);
+      setFetchedAt(new Date());
     } catch (err: any) {
       const status = err?.response?.status;
       const message = getErrorMessage(err);
@@ -327,11 +329,11 @@ export default function RegimePage() {
                 : data.explanation.summary}
             </p>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground space-y-1">
             <p>
               Analysis as of:{' '}
               <span className="font-medium text-foreground">
-                {new Date(data.analysis_date).toLocaleString('en-US', {
+                {new Date(data.data_as_of || data.analysis_date).toLocaleString('en-US', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
@@ -341,6 +343,21 @@ export default function RegimePage() {
                 })}
               </span>
             </p>
+            {fetchedAt && (
+              <p>
+                Refreshed:{' '}
+                <span className="font-medium text-foreground">
+                  {fetchedAt.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZoneName: 'short',
+                  })}
+                </span>
+              </p>
+            )}
             <p>
               Plan:{' '}
               <span className="font-medium text-foreground">
