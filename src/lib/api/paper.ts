@@ -194,6 +194,14 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean; 
 }
 
 /**
+ * Dismiss (hard-delete) order records from history.
+ */
+export async function dismissOrders(ids: string[]): Promise<{ success: boolean; dismissed: number }> {
+  const response = await apiClient.post('/paper/orders/dismiss', { ids });
+  return response.data;
+}
+
+/**
  * List paper trading positions.
  */
 export async function listPositions(): Promise<PositionsListResponse> {

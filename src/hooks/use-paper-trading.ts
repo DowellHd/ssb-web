@@ -11,6 +11,7 @@ import {
   getPerformance,
   placeOrder,
   cancelOrder,
+  dismissOrders,
   resetAccount,
   type Account,
   type TierLimits,
@@ -125,6 +126,24 @@ export function useCancelOrder() {
       queryClient.invalidateQueries({ queryKey: paperQueryKeys.limits() });
 
       toast.success('Order canceled');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+}
+
+/**
+ * Hook to dismiss (hard-delete) order records from history.
+ */
+export function useDismissOrders() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ success: boolean; dismissed: number }, Error, string[]>({
+    mutationFn: dismissOrders,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: paperQueryKeys.orders() });
+      toast.success(`Removed ${data.dismissed} order${data.dismissed !== 1 ? 's' : ''}`);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
