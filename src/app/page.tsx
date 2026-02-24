@@ -120,9 +120,6 @@ export default function Home() {
               </a>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            {BRAND_NAME}™ is a trademark of its respective owner.
-          </p>
         </div>
       </footer>
     </main>
