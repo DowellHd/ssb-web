@@ -30,39 +30,47 @@ export function safeNumber(value: unknown, fallback: number = 0): number {
 
 /**
  * Safe toFixed that handles null/undefined/NaN
+ * Accepts number or numeric string (handles Python Decimal serialized as string)
  */
 export function safeToFixed(value: unknown, decimals: number = 2, fallback: string = '—'): string {
-  if (!isValidNumber(value)) return fallback;
-  return value.toFixed(decimals);
+  const num = safeNumber(value, NaN);
+  if (!isValidNumber(num)) return fallback;
+  return num.toFixed(decimals);
 }
 
 /**
  * Format currency value safely
+ * Accepts number or numeric string (handles Python Decimal serialized as string)
  */
 export function formatCurrency(value: unknown, currency: string = 'USD', fallback: string = '—'): string {
-  if (!isValidNumber(value)) return fallback;
+  const num = safeNumber(value, NaN);
+  if (!isValidNumber(num)) return fallback;
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(num);
 }
 
 /**
  * Format percentage safely
+ * Accepts number or numeric string (handles Python Decimal serialized as string)
  */
 export function formatPercent(value: unknown, decimals: number = 2, fallback: string = '—'): string {
-  if (!isValidNumber(value)) return fallback;
-  return `${value >= 0 ? '+' : ''}${value.toFixed(decimals)}%`;
+  const num = safeNumber(value, NaN);
+  if (!isValidNumber(num)) return fallback;
+  return `${num >= 0 ? '+' : ''}${num.toFixed(decimals)}%`;
 }
 
 /**
  * Format percentage (no sign) safely
+ * Accepts number or numeric string (handles Python Decimal serialized as string)
  */
 export function formatPercentNoSign(value: unknown, decimals: number = 2, fallback: string = '—'): string {
-  if (!isValidNumber(value)) return fallback;
-  return `${value.toFixed(decimals)}%`;
+  const num = safeNumber(value, NaN);
+  if (!isValidNumber(num)) return fallback;
+  return `${num.toFixed(decimals)}%`;
 }
 
 /**
