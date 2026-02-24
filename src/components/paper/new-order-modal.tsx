@@ -51,7 +51,7 @@ export function NewOrderModal({
 
   // Estimate order value
   const estimatedPrice = position?.current_price || 100; // Fallback for new symbols
-  const qty = parseInt(quantity) || 0;
+  const qty = parseFloat(quantity) || 0;
   const estimatedValue = qty * (orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : estimatedPrice);
 
   const canSubmit =
@@ -102,7 +102,7 @@ export function NewOrderModal({
             <Label htmlFor="symbol">Symbol</Label>
             <Input
               id="symbol"
-              placeholder="AAPL"
+              placeholder="e.g. MSFT, AAPL, TSLA"
               value={symbol}
               onChange={(e) => setSymbol(e.target.value.toUpperCase())}
               disabled={!!defaultSymbol}
@@ -146,9 +146,10 @@ export function NewOrderModal({
             <Input
               id="quantity"
               type="number"
-              min="1"
+              min="0.000001"
+              step="any"
               max={side === 'sell' ? maxSellQuantity : undefined}
-              placeholder="100"
+              placeholder="e.g. 1, 5, 0.5"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />
