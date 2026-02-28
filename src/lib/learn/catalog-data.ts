@@ -32,6 +32,12 @@ export const CATALOG_MODULES: CatalogModule[] = [
     tierRequired: 'free',
     prereqs: [],
     tags: ['stocks', 'bonds', 'asset classes', 'compounding'],
+    sections: [
+      { title: 'Why Invest?', summary: 'How investing beats inflation and grows wealth through compounding returns over time.' },
+      { title: 'Main Asset Classes', summary: 'Overview of stocks (equities), bonds (fixed income), and cash equivalents — their risk/return profiles and roles in a portfolio.' },
+      { title: 'Key Investing Principles', summary: 'Starting early, diversifying, understanding risk, staying disciplined, and committing to continuous learning.' },
+    ],
+    keyTermIds: ['term-012', 'term-013', 'term-003', 'term-010'],
     learningObjectives: [
       'Explain what investing is and why it matters',
       'Identify the main asset classes (stocks, bonds, cash)',
@@ -105,6 +111,13 @@ Investing is the act of allocating resources, usually money, with the expectatio
     tierRequired: 'free',
     prereqs: ['module-001'],
     tags: ['risk', 'volatility', 'beta', 'drawdown', 'risk tolerance'],
+    sections: [
+      { title: 'Types of Investment Risk', summary: 'Systematic (market-wide) risk vs. unsystematic (security-specific) risk — what can and cannot be diversified away.' },
+      { title: 'Measuring Risk', summary: 'How volatility (standard deviation), beta, and maximum drawdown quantify different dimensions of investment risk.' },
+      { title: 'Risk Tolerance', summary: 'How time horizon, financial situation, goals, and emotional temperament shape the appropriate level of risk for an individual.' },
+      { title: 'The Risk-Return Spectrum', summary: 'From cash through leveraged instruments — understanding the tradeoff between risk taken and potential return.' },
+    ],
+    keyTermIds: ['term-005', 'term-002', 'term-014', 'term-001'],
     learningObjectives: [
       'Distinguish between systematic and unsystematic risk',
       'Explain key risk measures: volatility, beta, and maximum drawdown',
@@ -189,6 +202,13 @@ The goal is not to avoid risk entirely, but to take appropriate, compensated ris
     tierRequired: 'free',
     prereqs: ['module-001', 'module-002'],
     tags: ['diversification', 'correlation', 'asset allocation', 'rebalancing'],
+    sections: [
+      { title: 'The Math Behind Diversification', summary: 'How correlation between assets determines the diversification benefit — from perfect positive (+1) to perfect negative (-1) correlation.' },
+      { title: 'Levels of Diversification', summary: 'Four dimensions: within asset classes, across asset classes, geographic diversification, and time diversification (dollar-cost averaging).' },
+      { title: 'Building a Diversified Portfolio', summary: 'Practical steps: determine asset allocation, diversify within each class using index funds or ETFs, and rebalance periodically.' },
+      { title: 'Common Mistakes', summary: 'Over-diversification, false diversification (correlated holdings), home bias, and ignoring correlation changes during market stress.' },
+    ],
+    keyTermIds: ['term-003', 'term-004', 'term-010', 'term-008'],
     learningObjectives: [
       'Explain why diversification reduces risk',
       'Define correlation and its role in portfolio construction',
@@ -274,6 +294,13 @@ Diversification does not eliminate risk or guarantee profits, but it is an essen
     tierRequired: 'free',
     prereqs: ['module-001'],
     tags: ['charts', 'trends', 'moving averages', 'support', 'resistance', 'candlestick'],
+    sections: [
+      { title: 'Core Principles', summary: 'Three foundational assumptions: price discounts all information, prices move in trends, and historical patterns recur due to consistent psychology.' },
+      { title: 'Types of Charts', summary: 'Line charts, OHLC bar charts, and candlestick charts — what each shows and when to use them.' },
+      { title: 'Trends', summary: 'Identifying uptrends (higher highs and lows), downtrends (lower highs and lows), and sideways (range-bound) markets.' },
+      { title: 'Support, Resistance, and Moving Averages', summary: 'Price levels where historical buying or selling pressure emerged, and how moving averages smooth noise to reveal underlying direction.' },
+    ],
+    keyTermIds: ['term-015', 'term-016', 'term-011'],
     learningObjectives: [
       'State the three core principles of technical analysis',
       'Identify common chart types (line, bar, candlestick)',
@@ -356,6 +383,12 @@ Technical analysis is the study of historical price and volume data to understan
     tierRequired: 'pro',
     prereqs: ['module-002'],
     tags: ['VaR', 'CVaR', 'expected shortfall', 'tail risk', 'Monte Carlo', 'quantitative'],
+    sections: [
+      { title: 'Value at Risk (VaR)', summary: 'Definition, components (confidence level, time horizon, loss amount), and three calculation methods: historical simulation, parametric, and Monte Carlo.' },
+      { title: 'Conditional Value at Risk (CVaR)', summary: 'Also called Expected Shortfall — measures the expected loss beyond the VaR threshold, capturing tail risk that VaR alone misses.' },
+      { title: 'Limitations and Best Practices', summary: 'Model risk, distribution assumptions, correlation instability during crises, and how to combine VaR/CVaR with stress testing and other metrics.' },
+    ],
+    keyTermIds: ['term-006', 'term-007', 'term-005', 'term-009'],
     learningObjectives: [
       'Define Value at Risk (VaR) and its three components',
       'Compare historical simulation, parametric, and Monte Carlo VaR methods',
@@ -453,6 +486,13 @@ If 95% VaR = $100,000 and CVaR = $150,000: when losses exceed VaR, expect to los
     tierRequired: 'pro',
     prereqs: ['module-002', 'module-004'],
     tags: ['regimes', 'volatility', 'trend', 'VIX', 'market cycle', 'adaptive'],
+    sections: [
+      { title: 'What Is a Market Regime?', summary: 'A regime is a period with stable statistical properties: trend direction, volatility level, correlation patterns, and return distribution shape.' },
+      { title: 'Common Regime Classifications', summary: 'Trend-based (bull/bear/range-bound), volatility-based (low/high/clustered), and economic cycle-based (expansion/peak/contraction/trough).' },
+      { title: 'Regime Detection Indicators', summary: 'Trend signals (moving averages, ADX, breadth), volatility signals (VIX, historical percentile, ATR), and macro signals (yield curve, credit spreads).' },
+      { title: 'Caveats and Limitations', summary: 'Regimes are identified in hindsight, transitions can be sudden and unpredictable, and past regimes do not repeat exactly.' },
+    ],
+    keyTermIds: ['term-011', 'term-012', 'term-013', 'term-005', 'term-014'],
     learningObjectives: [
       'Define what a market regime is and how regimes are categorized',
       'Identify indicators used to characterize different regime environments',
@@ -877,4 +917,15 @@ export function getModulesForPath(pathId: string): CatalogModule[] {
   return path.moduleIds
     .map((id) => getModuleById(id))
     .filter((m): m is CatalogModule => m !== undefined);
+}
+
+/**
+ * Returns the glossary terms explicitly listed in a module's keyTermIds.
+ */
+export function getKeyTermsForModule(moduleId: string): CatalogGlossaryTerm[] {
+  const m = getModuleById(moduleId);
+  if (!m) return [];
+  return m.keyTermIds
+    .map((id) => getGlossaryTermById(id))
+    .filter((t): t is CatalogGlossaryTerm => t !== undefined);
 }
