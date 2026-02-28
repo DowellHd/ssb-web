@@ -50,6 +50,28 @@ export const CATALOG_MODULES: CatalogModule[] = [
       'Diversification and discipline are foundational principles',
       'Risk and potential return are positively related',
     ],
+    videos: [
+      {
+        // Khan Academy Finance & Capital Markets — "Introduction to the stock market"
+        // Verify ID in browser before removing linkOnly.
+        title: 'Introduction to the Stock Market',
+        youtubeId: 'F3QpgXBtDeo',
+        source: 'Khan Academy',
+        durationLabel: '13 min',
+        tierRequired: 'free',
+        linkOnly: true,
+      },
+      {
+        // Khan Academy Finance — "Introduction to compound interest"
+        // Verify ID in browser before removing linkOnly.
+        title: 'Introduction to Compound Interest',
+        youtubeId: 'MXmFZAjqtLs',
+        source: 'Khan Academy',
+        durationLabel: '8 min',
+        tierRequired: 'free',
+        linkOnly: true,
+      },
+    ],
     externalResources: [
       {
         label: 'Introduction to Investing',
@@ -129,6 +151,28 @@ Investing is the act of allocating resources, usually money, with the expectatio
       'Systematic risk affects all investments; unsystematic risk is security-specific',
       'Volatility, beta, and drawdown are common ways to measure risk',
       'Risk tolerance is personal and depends on time horizon, goals, and temperament',
+    ],
+    videos: [
+      {
+        // Khan Academy Finance — "Risk and reward introduction"
+        // Verify ID in browser before removing linkOnly.
+        title: 'Risk and Reward Introduction',
+        youtubeId: 'nqTBE_Qxvyo',
+        source: 'Khan Academy',
+        durationLabel: '8 min',
+        tierRequired: 'free',
+        linkOnly: true,
+      },
+      {
+        // Khan Academy Finance — "Variance of returns"
+        // Verify ID in browser before removing linkOnly.
+        title: 'Variance of Returns and Expected Value',
+        youtubeId: 'JNm3M9cqWyc',
+        source: 'Khan Academy',
+        durationLabel: '10 min',
+        tierRequired: 'pro',
+        linkOnly: true,
+      },
     ],
     externalResources: [
       {
@@ -220,6 +264,28 @@ The goal is not to avoid risk entirely, but to take appropriate, compensated ris
       'Diversify across securities, asset classes, geographies, and time',
       'Asset allocation is a primary driver of portfolio risk and return',
       'Periodic rebalancing maintains your target risk level',
+    ],
+    videos: [
+      {
+        // Khan Academy Finance — "Diversification"
+        // Verify ID in browser before removing linkOnly.
+        title: 'Diversification and Portfolio Risk',
+        youtubeId: 'R1htiTBqW5s',
+        source: 'Khan Academy',
+        durationLabel: '7 min',
+        tierRequired: 'free',
+        linkOnly: true,
+      },
+      {
+        // Khan Academy Finance — "Portfolio possibilities curve"
+        // Verify ID in browser before removing linkOnly.
+        title: 'Portfolio Possibilities and the Efficient Frontier',
+        youtubeId: 'LGYJg-BxeaM',
+        source: 'Khan Academy',
+        durationLabel: '12 min',
+        tierRequired: 'pro',
+        linkOnly: true,
+      },
     ],
     externalResources: [
       {
@@ -313,6 +379,18 @@ Diversification does not eliminate risk or guarantee profits, but it is an essen
       'Key concepts include chart types, trends, support/resistance, and moving averages',
       'Technical analysis is not predictive with certainty and should be paired with risk management',
     ],
+    videos: [
+      {
+        // Khan Academy Finance — "Technical analysis introduction"
+        // Verify ID in browser before removing linkOnly.
+        title: 'Technical Analysis: Charts and Patterns',
+        youtubeId: 'eynxyoKgpng',
+        source: 'Khan Academy',
+        durationLabel: '10 min',
+        tierRequired: 'free',
+        linkOnly: true,
+      },
+    ],
     externalResources: [
       {
         label: 'Technical Analysis',
@@ -400,6 +478,17 @@ Technical analysis is the study of historical price and volume data to understan
       'Three calculation methods: historical simulation, parametric, and Monte Carlo',
       'CVaR (Expected Shortfall) captures tail risk beyond the VaR threshold',
       'Both measures have limitations and should be used alongside other risk tools',
+    ],
+    videos: [
+      {
+        // MIT OpenCourseWare / lecture on VaR — verify ID in browser before removing linkOnly.
+        title: 'Value at Risk (VaR) Explained',
+        youtubeId: 'T9kH9VZimxc',
+        source: 'MIT OpenCourseWare',
+        durationLabel: '15 min',
+        tierRequired: 'pro',
+        linkOnly: true,
+      },
     ],
     externalResources: [
       {

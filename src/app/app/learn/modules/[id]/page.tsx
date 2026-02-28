@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Tag,
   Info,
+  PlayCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,6 +34,8 @@ import {
   useRecordLearnVisit,
   useModuleCompletion,
 } from '@/lib/learn/use-learn-progress';
+import { useLearnVideoAccess } from '@/lib/learn/learn-video-entitlements';
+import type { VideoResource } from '@/lib/learn/catalog';
 
 // ============================================================================
 // Navigation helpers
@@ -69,6 +72,7 @@ export default function ModuleDetailPage() {
 
   const catalogModule = getModuleById(moduleId);
   const { isComplete, toggle } = useModuleCompletion();
+  const { canAccessTier } = useLearnVideoAccess();
 
   // Record visit unconditionally (hook); skips write when title is empty (not found)
   useRecordLearnVisit('module', moduleId, catalogModule?.title ?? '');
@@ -264,6 +268,11 @@ export default function ModuleDetailPage() {
         </div>
       )}
 
+      {/* Video resources */}
+      {catalogModule.videos && catalogModule.videos.length > 0 && (
+        <VideosPanel videos={catalogModule.videos} canAccessTier={canAccessTier} />
+      )}
+
       {/* External resources */}
       {catalogModule.externalResources.length > 0 && (
         <div className="rounded-lg border bg-card p-6">
@@ -343,6 +352,120 @@ export default function ModuleDetailPage() {
             </Button>
           </Link>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Videos panel
+// ============================================================================
+
+function VideosPanel({
+  videos,
+  canAccessTier,
+}: {
+  videos: VideoResource[];
+  canAccessTier: (tierRequired: import('@/lib/learn/catalog').TierRequired) => boolean;
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-6">
+      {/* Disclaimer */}
+      <div className="flex items-start gap-2 mb-5 rounded-md border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 px-3 py-2 text-xs">
+        <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
+        <span className="text-blue-800 dark:text-blue-300">
+          <strong>Educational content only.</strong> These videos are for learning purposes and do
+          not constitute investment advice.
+        </span>
+      </div>
+
+      <h2 className="font-semibold mb-4 flex items-center gap-2">
+        <PlayCircle className="h-5 w-5 text-muted-foreground" />
+        Video Explanations
+      </h2>
+
+      <div className="space-y-4">
+        {videos.map((video, i) => {
+          const unlocked = canAccessTier(video.tierRequired);
+          return <VideoCard key={i} video={video} unlocked={unlocked} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function VideoCard({ video, unlocked }: { video: VideoResource; unlocked: boolean }) {
+  const tierLabel =
+    video.tierRequired === 'free'
+      ? 'Free'
+      : video.tierRequired === 'starter'
+        ? 'Starter'
+        : video.tierRequired === 'pro'
+          ? 'Pro'
+          : 'Institutional';
+
+  if (!unlocked) {
+    return (
+      <div className="flex items-center gap-4 rounded-lg border bg-muted/30 px-4 py-3 opacity-75">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+          <Lock className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm text-muted-foreground line-clamp-1">{video.title}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {video.source} · {video.durationLabel}
+          </p>
+        </div>
+        <span className="shrink-0 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded flex items-center gap-1">
+          <Lock className="h-3 w-3" />
+          {tierLabel}
+        </span>
+      </div>
+    );
+  }
+
+  // Unlocked — render link card or iframe embed
+  if (video.linkOnly) {
+    return (
+      <div className="flex items-center gap-4 rounded-lg border px-4 py-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+          <PlayCircle className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm line-clamp-1">{video.title}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {video.source} · {video.durationLabel}
+          </p>
+        </div>
+        <a
+          href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+        >
+          Watch
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      </div>
+    );
+  }
+
+  // Embedded iframe (only used once youtubeId has been verified)
+  return (
+    <div className="rounded-lg border overflow-hidden">
+      <div className="aspect-video">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0&modestbranding=1`}
+          title={video.title}
+          allow="encrypted-media"
+          allowFullScreen
+          loading="lazy"
+          className="h-full w-full"
+        />
+      </div>
+      <div className="px-4 py-2 bg-muted/30 flex items-center justify-between text-xs text-muted-foreground">
+        <span>{video.source}</span>
+        <span>{video.durationLabel}</span>
       </div>
     </div>
   );

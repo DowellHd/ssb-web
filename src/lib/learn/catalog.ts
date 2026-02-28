@@ -39,12 +39,18 @@ export interface ResourceLink {
 /** An optional video explanation block. */
 export interface VideoResource {
   title: string;
-  /** YouTube video ID — embedded only. Never autoplay. */
+  /** YouTube video ID. Never autoplay. */
   youtubeId: string;
   /** Source name for attribution label (e.g. "Khan Academy"). */
   source: string;
   durationLabel: string;
   tierRequired: TierRequired;
+  /**
+   * When true, render as a link card ("Watch on YouTube") instead of an
+   * inline iframe embed. Use for videos whose IDs have not yet been
+   * visually verified in a browser.
+   */
+  linkOnly?: boolean;
 }
 
 // ============================================================================
