@@ -51,6 +51,13 @@ export interface VideoResource {
 // Core catalog types
 // ============================================================================
 
+/** A collapsible section within a module (acts as a table of contents). */
+export interface ModuleSection {
+  title: string;
+  /** One or two sentence overview shown when the section is expanded inline. */
+  summary: string;
+}
+
 export interface CatalogModule {
   /** Stable identifier matching the backend seed ID (e.g. "module-001"). */
   id: string;
@@ -68,8 +75,12 @@ export interface CatalogModule {
   learningObjectives: string[];
   keyTakeaways: string[];
   tags: string[];
+  /** Collapsible section headers shown before the main content body. */
+  sections: ModuleSection[];
   externalResources: ResourceLink[];
   videos?: VideoResource[];
+  /** Glossary term IDs surfaced as "Key Terms" on the module detail page. */
+  keyTermIds: string[];
   /** Optional IDs of SSB app features this module is conceptually related to.
    *  Used by the "Explore in SSB" panel (PR feat/learn-context-links). */
   relatedFeatures?: string[];

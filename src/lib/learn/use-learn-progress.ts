@@ -85,3 +85,98 @@ export function useClearLastVisited(): () => void {
     }
   }, []);
 }
+
+// ============================================================================
+// Module completion tracking
+// ============================================================================
+
+const COMPLETION_KEY = 'ssb_learn_completed';
+
+/** Map of moduleId → true for every completed module. */
+type CompletionMap = Record<string, true>;
+
+function readCompletionMap(): CompletionMap {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(COMPLETION_KEY);
+    return raw ? (JSON.parse(raw) as CompletionMap) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCompletionMap(map: CompletionMap): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(COMPLETION_KEY, JSON.stringify(map));
+  } catch {
+    // Ignore write errors
+  }
+}
+
+export interface ModuleCompletionResult {
+  /** Whether a given module ID is marked complete. */
+  isComplete: (moduleId: string) => boolean;
+  /** Toggle a module between complete/incomplete. */
+  toggle: (moduleId: string) => void;
+  /** Mark a module explicitly as complete. */
+  markComplete: (moduleId: string) => void;
+  /** Set of completed module IDs (snapshot). */
+  completedIds: Set<string>;
+}
+
+/**
+ * Hook for reading and writing per-module completion state.
+ * Safe to call unconditionally anywhere in a component tree.
+ */
+export function useModuleCompletion(): ModuleCompletionResult {
+  const [map, setMap] = useState<CompletionMap>({});
+
+  useEffect(() => {
+    setMap(readCompletionMap());
+  }, []);
+
+  const completedIds = new Set(Object.keys(map));
+
+  const isComplete = useCallback(
+    (moduleId: string) => moduleId in map,
+    [map]
+  );
+
+  const toggle = useCallback((moduleId: string) => {
+    setMap((prev) => {
+      const next = { ...prev };
+      if (moduleId in next) {
+        delete next[moduleId];
+      } else {
+        next[moduleId] = true;
+      }
+      writeCompletionMap(next);
+      return next;
+    });
+  }, []);
+
+  const markComplete = useCallback((moduleId: string) => {
+    setMap((prev) => {
+      if (moduleId in prev) return prev;
+      const next = { ...prev, [moduleId]: true as const };
+      writeCompletionMap(next);
+      return next;
+    });
+  }, []);
+
+  return { isComplete, toggle, markComplete, completedIds };
+}
+
+/**
+ * Calculate progress for a learning path.
+ * Returns a value 0–100 representing completion percentage.
+ */
+export function getPathProgress(
+  moduleIds: string[],
+  completedIds: Set<string>
+): number {
+  if (moduleIds.length === 0) return 0;
+  const done = moduleIds.filter((id) => completedIds.has(id)).length;
+  return Math.round((done / moduleIds.length) * 100);
+}
