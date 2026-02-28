@@ -18,6 +18,11 @@ import {
   Tag,
   Info,
   PlayCircle,
+  Compass,
+  LayoutDashboard,
+  ShieldAlert,
+  Activity,
+  FlaskConical,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +41,10 @@ import {
 } from '@/lib/learn/use-learn-progress';
 import { useLearnVideoAccess } from '@/lib/learn/learn-video-entitlements';
 import type { VideoResource } from '@/lib/learn/catalog';
+import {
+  getFeatureLinksForModule,
+  type FeatureLinkConfig,
+} from '@/lib/learn/learn-context-links';
 
 // ============================================================================
 // Navigation helpers
@@ -170,6 +179,14 @@ export default function ModuleDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Explore in SSB */}
+      {catalogModule.relatedFeatures && catalogModule.relatedFeatures.length > 0 && (
+        <ContextLinksPanel
+          featureIds={catalogModule.relatedFeatures}
+          canAccessTier={canAccessTier}
+        />
+      )}
 
       {/* Learning objectives */}
       {catalogModule.learningObjectives.length > 0 && (
@@ -354,6 +371,107 @@ export default function ModuleDetailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// ============================================================================
+// Context links panel ("Explore in SSB")
+// ============================================================================
+
+const ICON_MAP = {
+  LayoutDashboard,
+  ShieldAlert,
+  Activity,
+  FlaskConical,
+} as const;
+
+function ContextLinksPanel({
+  featureIds,
+  canAccessTier,
+}: {
+  featureIds: string[];
+  canAccessTier: (tierRequired: import('@/lib/learn/catalog').TierRequired) => boolean;
+}) {
+  const links = getFeatureLinksForModule(featureIds);
+  if (links.length === 0) return null;
+
+  return (
+    <div className="rounded-lg border bg-card p-6">
+      <h2 className="font-semibold mb-1 flex items-center gap-2">
+        <Compass className="h-5 w-5 text-primary" />
+        Explore in SSB
+      </h2>
+      <p className="text-xs text-muted-foreground mb-4">
+        See these concepts applied directly in the tools below.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {links.map((link) => (
+          <ContextLinkCard
+            key={link.id}
+            config={link}
+            unlocked={canAccessTier(link.tierRequired)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ContextLinkCard({
+  config,
+  unlocked,
+}: {
+  config: FeatureLinkConfig;
+  unlocked: boolean;
+}) {
+  const Icon = ICON_MAP[config.iconName];
+  const tierLabel =
+    config.tierRequired === 'free'
+      ? 'Free'
+      : config.tierRequired === 'starter'
+        ? 'Starter'
+        : config.tierRequired === 'pro'
+          ? 'Pro'
+          : 'Institutional';
+
+  if (!unlocked) {
+    return (
+      <div className="flex items-start gap-3 rounded-lg border bg-muted/20 px-4 py-3 opacity-70">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
+          <Lock className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+            <span className="font-medium text-sm text-muted-foreground">{config.title}</span>
+            <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+              <Lock className="h-2.5 w-2.5" />
+              {tierLabel}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground line-clamp-2">{config.description}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={config.href}
+      className="flex items-start gap-3 rounded-lg border px-4 py-3 hover:bg-muted/30 transition-colors group"
+    >
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+        <Icon className="h-4 w-4 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1 mb-0.5">
+          <span className="font-medium text-sm group-hover:text-primary transition-colors">
+            {config.title}
+          </span>
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+        </div>
+        <p className="text-xs text-muted-foreground line-clamp-2">{config.description}</p>
+      </div>
+    </Link>
   );
 }
 
