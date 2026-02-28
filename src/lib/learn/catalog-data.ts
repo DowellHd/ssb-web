@@ -1452,7 +1452,7 @@ Asset allocation is a framework, not a formula. Adjust it to your circumstances,
         source: 'FINRA',
       },
     ],
-    relatedFeatures: ['risk', 'regime'],
+    relatedFeatures: ['backtests', 'risk', 'regime'],
     lastUpdated: '2025-12-01',
     content: `# Introduction to Backtesting
 
