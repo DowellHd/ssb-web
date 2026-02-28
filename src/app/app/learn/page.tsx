@@ -11,9 +11,10 @@ import {
   Search,
   Award,
   Info,
+  X,
+  PlayCircle,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   CATALOG_MODULES,
   CATALOG_PATHS,
@@ -29,13 +30,91 @@ import {
   type CatalogPath,
   type CatalogGlossaryTerm,
 } from '@/lib/learn/catalog';
+import {
+  useLastVisited,
+  useClearLastVisited,
+  type LearnTab,
+} from '@/lib/learn/use-learn-progress';
+
+// ============================================================================
+// Duration buckets
+// ============================================================================
+
+type DurationBucket = 'all' | 'lt15' | '15to30' | '30to60' | 'gt60';
+
+const DURATION_BUCKET_LABELS: Record<DurationBucket, string> = {
+  all: 'Any duration',
+  lt15: '< 15 min',
+  '15to30': '15–30 min',
+  '30to60': '30–60 min',
+  gt60: '60+ min',
+};
+
+function matchesDurationBucket(minutes: number, bucket: DurationBucket): boolean {
+  if (bucket === 'all') return true;
+  if (bucket === 'lt15') return minutes < 15;
+  if (bucket === '15to30') return minutes >= 15 && minutes < 30;
+  if (bucket === '30to60') return minutes >= 30 && minutes < 60;
+  if (bucket === 'gt60') return minutes >= 60;
+  return true;
+}
+
+// ============================================================================
+// Search helpers
+// ============================================================================
+
+interface SearchResults {
+  modules: CatalogModule[];
+  paths: CatalogPath[];
+  terms: CatalogGlossaryTerm[];
+}
+
+function runSearch(query: string): SearchResults {
+  const q = query.toLowerCase().trim();
+  if (!q) return { modules: [], paths: [], terms: [] };
+
+  const modules = CATALOG_MODULES.filter(
+    (m) =>
+      m.title.toLowerCase().includes(q) ||
+      m.summary.toLowerCase().includes(q) ||
+      m.tags.some((t) => t.toLowerCase().includes(q)) ||
+      CATEGORY_LABELS[m.category].toLowerCase().includes(q)
+  );
+
+  const paths = CATALOG_PATHS.filter(
+    (p) =>
+      p.title.toLowerCase().includes(q) ||
+      p.summary.toLowerCase().includes(q) ||
+      p.tags.some((t) => t.toLowerCase().includes(q))
+  );
+
+  const terms = CATALOG_GLOSSARY.filter(
+    (t) =>
+      t.term.toLowerCase().includes(q) ||
+      t.definition.toLowerCase().includes(q) ||
+      t.relatedTerms.some((r) => r.toLowerCase().includes(q))
+  );
+
+  return { modules, paths, terms };
+}
 
 // ============================================================================
 // Page
 // ============================================================================
 
 export default function LearnPage() {
-  const [activeTab, setActiveTab] = useState<'modules' | 'paths' | 'glossary'>('modules');
+  const [activeTab, setActiveTab] = useState<LearnTab>('modules');
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [dismissed, setDismissed] = useState(false);
+
+  const lastVisited = useLastVisited();
+  const clearLastVisited = useClearLastVisited();
+
+  const isSearching = globalSearch.trim().length > 0;
+  const searchResults = isSearching ? runSearch(globalSearch) : null;
+  const totalSearchResults = searchResults
+    ? searchResults.modules.length + searchResults.paths.length + searchResults.terms.length
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -66,34 +145,196 @@ export default function LearnPage() {
         </p>
       </div>
 
-      {/* Tab navigation */}
-      <div className="flex gap-2 border-b">
-        <TabButton
-          label="Modules"
-          icon={<BookOpen className="h-4 w-4" />}
-          count={CATALOG_META.totalModules}
-          active={activeTab === 'modules'}
-          onClick={() => setActiveTab('modules')}
+      {/* Continue learning card */}
+      {lastVisited && !dismissed && !isSearching && (
+        <ContinueLearningCard
+          item={lastVisited}
+          onDismiss={() => {
+            clearLastVisited();
+            setDismissed(true);
+          }}
+          onNavigate={() => setActiveTab(lastVisited.tab)}
         />
-        <TabButton
-          label="Learning Paths"
-          icon={<Award className="h-4 w-4" />}
-          count={CATALOG_META.totalPaths}
-          active={activeTab === 'paths'}
-          onClick={() => setActiveTab('paths')}
+      )}
+
+      {/* Global search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search across modules, paths, and glossary…"
+          value={globalSearch}
+          onChange={(e) => setGlobalSearch(e.target.value)}
+          className="pl-9 pr-9"
         />
-        <TabButton
-          label="Glossary"
-          icon={<GraduationCap className="h-4 w-4" />}
-          count={CATALOG_META.totalGlossaryTerms}
-          active={activeTab === 'glossary'}
-          onClick={() => setActiveTab('glossary')}
-        />
+        {globalSearch && (
+          <button
+            onClick={() => setGlobalSearch('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
-      {activeTab === 'modules' && <ModulesTab />}
-      {activeTab === 'paths' && <PathsTab />}
-      {activeTab === 'glossary' && <GlossaryTab />}
+      {/* Search results or tabbed content */}
+      {isSearching ? (
+        <SearchResultsView results={searchResults!} totalCount={totalSearchResults} query={globalSearch} />
+      ) : (
+        <>
+          {/* Tab navigation */}
+          <div className="flex gap-2 border-b">
+            <TabButton
+              label="Modules"
+              icon={<BookOpen className="h-4 w-4" />}
+              count={CATALOG_META.totalModules}
+              active={activeTab === 'modules'}
+              onClick={() => setActiveTab('modules')}
+            />
+            <TabButton
+              label="Learning Paths"
+              icon={<Award className="h-4 w-4" />}
+              count={CATALOG_META.totalPaths}
+              active={activeTab === 'paths'}
+              onClick={() => setActiveTab('paths')}
+            />
+            <TabButton
+              label="Glossary"
+              icon={<GraduationCap className="h-4 w-4" />}
+              count={CATALOG_META.totalGlossaryTerms}
+              active={activeTab === 'glossary'}
+              onClick={() => setActiveTab('glossary')}
+            />
+          </div>
+
+          {activeTab === 'modules' && <ModulesTab />}
+          {activeTab === 'paths' && <PathsTab />}
+          {activeTab === 'glossary' && <GlossaryTab />}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Continue learning card
+// ============================================================================
+
+function ContinueLearningCard({
+  item,
+  onDismiss,
+  onNavigate,
+}: {
+  item: NonNullable<ReturnType<typeof useLastVisited>>;
+  onDismiss: () => void;
+  onNavigate: () => void;
+}) {
+  const href =
+    item.type === 'module'
+      ? `/app/learn/modules/${item.id}`
+      : item.type === 'path'
+        ? `/app/learn/paths/${item.id}`
+        : `/app/learn`; // glossary terms don't have their own page yet
+
+  const typeLabel =
+    item.type === 'module' ? 'Module' : item.type === 'path' ? 'Learning Path' : 'Glossary';
+
+  return (
+    <div className="flex items-center gap-4 rounded-lg border border-primary/20 bg-primary/5 dark:bg-primary/10 px-4 py-3">
+      <PlayCircle className="h-5 w-5 text-primary shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-muted-foreground mb-0.5">Continue where you left off</p>
+        <p className="text-sm font-medium truncate">{item.title}</p>
+        <p className="text-xs text-muted-foreground">{typeLabel}</p>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Link
+          href={href}
+          onClick={onNavigate}
+          className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+        >
+          Resume
+          <ChevronRight className="h-3 w-3" />
+        </Link>
+        <button
+          onClick={onDismiss}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label="Dismiss"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Search results view
+// ============================================================================
+
+function SearchResultsView({
+  results,
+  totalCount,
+  query,
+}: {
+  results: SearchResults;
+  totalCount: number;
+  query: string;
+}) {
+  if (totalCount === 0) {
+    return (
+      <EmptyState
+        icon={<Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
+        message={`No results for "${query}"`}
+        hint="Try different keywords or browse by tab"
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        {totalCount} result{totalCount !== 1 ? 's' : ''} for &ldquo;{query}&rdquo;
+      </p>
+
+      {results.modules.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            Modules ({results.modules.length})
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {results.modules.map((m) => (
+              <ModuleCard key={m.id} module={m} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {results.paths.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            Learning Paths ({results.paths.length})
+          </h3>
+          <div className="space-y-4">
+            {results.paths.map((p) => (
+              <PathCard key={p.id} path={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {results.terms.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            Glossary ({results.terms.length})
+          </h3>
+          <div className="space-y-4">
+            {results.terms.map((t) => (
+              <GlossaryCard key={t.id} term={t} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -138,17 +379,28 @@ function TabButton({
 function ModulesTab() {
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory | ''>('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<ContentDifficulty | ''>('');
+  const [selectedDuration, setSelectedDuration] = useState<DurationBucket>('all');
 
   const filtered = CATALOG_MODULES.filter((m) => {
     if (selectedCategory && m.category !== selectedCategory) return false;
     if (selectedDifficulty && m.level !== selectedDifficulty) return false;
+    if (!matchesDurationBucket(m.durationMinutes, selectedDuration)) return false;
     return true;
   });
+
+  const hasActiveFilters =
+    selectedCategory !== '' || selectedDifficulty !== '' || selectedDuration !== 'all';
+
+  function clearFilters() {
+    setSelectedCategory('');
+    setSelectedDifficulty('');
+    setSelectedDuration('all');
+  }
 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value as ContentCategory | '')}
@@ -172,18 +424,51 @@ function ModulesTab() {
           <option value="intermediate">Intermediate</option>
           <option value="advanced">Advanced</option>
         </select>
+
+        <select
+          value={selectedDuration}
+          onChange={(e) => setSelectedDuration(e.target.value as DurationBucket)}
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+        >
+          {(Object.entries(DURATION_BUCKET_LABELS) as [DurationBucket, string][]).map(
+            ([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            )
+          )}
+        </select>
+
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-3 w-3" />
+            Clear filters
+          </button>
+        )}
       </div>
 
       {filtered.length === 0 ? (
         <EmptyState
           icon={<BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
           message="No modules match your filters"
-          hint="Try clearing the category or level filter"
+          hint={
+            hasActiveFilters
+              ? 'Try clearing some filters to see more results'
+              : 'More content coming soon'
+          }
+          action={
+            hasActiveFilters
+              ? { label: 'Clear filters', onClick: clearFilters }
+              : undefined
+          }
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((module) => (
-            <ModuleCard key={module.id} module={module} />
+          {filtered.map((m) => (
+            <ModuleCard key={m.id} module={m} />
           ))}
         </div>
       )}
@@ -195,35 +480,35 @@ function ModulesTab() {
 // Module card
 // ============================================================================
 
-function ModuleCard({ module }: { module: CatalogModule }) {
-  const difficulty = DIFFICULTY_CONFIG[module.level];
+function ModuleCard({ module: m }: { module: CatalogModule }) {
+  const difficulty = DIFFICULTY_CONFIG[m.level];
 
   return (
     <Link
-      href={`/app/learn/modules/${module.id}`}
+      href={`/app/learn/modules/${m.id}`}
       className="rounded-lg border bg-card p-4 hover:border-primary/50 transition-colors block"
     >
       <div className="flex items-start justify-between mb-3">
         <span className={`text-xs px-2 py-0.5 rounded ${difficulty.badgeClass}`}>
           {difficulty.label}
         </span>
-        {module.tierRequired !== 'free' && (
+        {m.tierRequired !== 'free' && (
           <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded flex items-center gap-1">
             <Lock className="h-3 w-3" />
-            {module.tierRequired === 'pro' ? 'Pro' : 'Starter+'}
+            {m.tierRequired === 'pro' ? 'Pro' : 'Starter+'}
           </span>
         )}
       </div>
 
-      <h3 className="font-semibold mb-2">{module.title}</h3>
-      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{module.summary}</p>
+      <h3 className="font-semibold mb-2">{m.title}</h3>
+      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{m.summary}</p>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          {module.durationMinutes} min
+          {m.durationMinutes} min
         </span>
-        <span>{CATEGORY_LABELS[module.category]}</span>
+        <span>{CATEGORY_LABELS[m.category]}</span>
       </div>
     </Link>
   );
@@ -234,15 +519,55 @@ function ModuleCard({ module }: { module: CatalogModule }) {
 // ============================================================================
 
 function PathsTab() {
+  const [selectedDifficulty, setSelectedDifficulty] = useState<ContentDifficulty | ''>('');
+
+  const filtered = CATALOG_PATHS.filter((p) => {
+    if (selectedDifficulty && p.level !== selectedDifficulty) return false;
+    return true;
+  });
+
   return (
     <div className="space-y-4">
-      {CATALOG_PATHS.length === 0 ? (
+      {/* Level filter */}
+      <div className="flex flex-wrap items-center gap-3">
+        <select
+          value={selectedDifficulty}
+          onChange={(e) => setSelectedDifficulty(e.target.value as ContentDifficulty | '')}
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+        >
+          <option value="">All Levels</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+        {selectedDifficulty && (
+          <button
+            onClick={() => setSelectedDifficulty('')}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-3 w-3" />
+            Clear
+          </button>
+        )}
+      </div>
+
+      {filtered.length === 0 ? (
         <EmptyState
           icon={<Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
-          message="No learning paths available"
+          message="No learning paths match your filters"
+          hint="Try clearing the level filter"
+          action={
+            selectedDifficulty
+              ? { label: 'Clear filter', onClick: () => setSelectedDifficulty('') }
+              : undefined
+          }
         />
       ) : (
-        CATALOG_PATHS.map((path) => <PathCard key={path.id} path={path} />)
+        <div className="space-y-4">
+          {filtered.map((p) => (
+            <PathCard key={p.id} path={p} />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -252,12 +577,12 @@ function PathsTab() {
 // Path card
 // ============================================================================
 
-function PathCard({ path }: { path: CatalogPath }) {
-  const difficulty = DIFFICULTY_CONFIG[path.level];
+function PathCard({ path: p }: { path: CatalogPath }) {
+  const difficulty = DIFFICULTY_CONFIG[p.level];
 
   return (
     <Link
-      href={`/app/learn/paths/${path.id}`}
+      href={`/app/learn/paths/${p.id}`}
       className="rounded-lg border bg-card p-6 hover:border-primary/50 transition-colors block"
     >
       <div className="flex items-start justify-between mb-3">
@@ -267,21 +592,21 @@ function PathCard({ path }: { path: CatalogPath }) {
             {difficulty.label}
           </span>
         </div>
-        {path.tierRequired !== 'free' && (
+        {p.tierRequired !== 'free' && (
           <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded flex items-center gap-1">
             <Lock className="h-3 w-3" />
-            {path.tierRequired === 'pro' ? 'Pro' : 'Starter+'}
+            {p.tierRequired === 'pro' ? 'Pro' : 'Starter+'}
           </span>
         )}
       </div>
 
-      <h3 className="text-lg font-semibold mb-2">{path.title}</h3>
-      <p className="text-sm text-muted-foreground mb-4">{path.summary}</p>
+      <h3 className="text-lg font-semibold mb-2">{p.title}</h3>
+      <p className="text-sm text-muted-foreground mb-4">{p.summary}</p>
 
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <span>{path.moduleIds.length} modules</span>
+        <span>{p.moduleIds.length} modules</span>
         <span>•</span>
-        <span>{path.estimatedHours} hr{path.estimatedHours !== 1 ? 's' : ''}</span>
+        <span>{p.estimatedHours} hr{p.estimatedHours !== 1 ? 's' : ''}</span>
       </div>
 
       <div className="mt-4 flex items-center text-sm text-primary">
@@ -321,14 +646,23 @@ function GlossaryTab() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search terms..."
+          placeholder="Search glossary terms…"
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
             setSelectedLetter('');
           }}
-          className="pl-9"
+          className="pl-9 pr-9"
         />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {/* Alphabet filter */}
@@ -336,7 +670,9 @@ function GlossaryTab() {
         <button
           onClick={() => { setSelectedLetter(''); setSearchQuery(''); }}
           className={`px-2 py-1 text-xs rounded transition-colors ${
-            !selectedLetter ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'
+            !selectedLetter && !searchQuery
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted hover:bg-muted/80'
           }`}
         >
           All
@@ -346,7 +682,12 @@ function GlossaryTab() {
           return (
             <button
               key={letter}
-              onClick={() => has && (setSelectedLetter(letter), setSearchQuery(''))}
+              onClick={() => {
+                if (has) {
+                  setSelectedLetter(letter);
+                  setSearchQuery('');
+                }
+              }}
               disabled={!has}
               className={`px-2 py-1 text-xs rounded transition-colors ${
                 selectedLetter === letter
@@ -366,13 +707,16 @@ function GlossaryTab() {
       {filtered.length === 0 ? (
         <EmptyState
           icon={<GraduationCap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
-          message="No terms found"
+          message={searchQuery ? `No terms matching "${searchQuery}"` : 'No terms found'}
           hint={searchQuery ? 'Try a different search term' : undefined}
+          action={
+            searchQuery ? { label: 'Clear search', onClick: () => setSearchQuery('') } : undefined
+          }
         />
       ) : (
         <div className="space-y-4">
-          {filtered.map((term) => (
-            <GlossaryCard key={term.id} term={term} />
+          {filtered.map((t) => (
+            <GlossaryCard key={t.id} term={t} />
           ))}
         </div>
       )}
@@ -384,26 +728,26 @@ function GlossaryTab() {
 // Glossary card
 // ============================================================================
 
-function GlossaryCard({ term }: { term: CatalogGlossaryTerm }) {
-  const difficulty = DIFFICULTY_CONFIG[term.level];
+function GlossaryCard({ term: t }: { term: CatalogGlossaryTerm }) {
+  const difficulty = DIFFICULTY_CONFIG[t.level];
 
   return (
     <div className="rounded-lg border bg-card p-4">
       <div className="flex items-start justify-between mb-2">
-        <h3 className="font-semibold text-lg">{term.term}</h3>
+        <h3 className="font-semibold text-lg">{t.term}</h3>
         <span className={`text-xs px-2 py-0.5 rounded ${difficulty.badgeClass}`}>
           {difficulty.label}
         </span>
       </div>
-      <p className="text-muted-foreground mb-3 text-sm">{term.definition}</p>
-      {term.example && (
+      <p className="text-muted-foreground mb-3 text-sm">{t.definition}</p>
+      {t.example && (
         <div className="bg-muted/50 rounded p-3 text-sm mb-3">
-          <span className="font-medium">Example:</span> {term.example}
+          <span className="font-medium">Example:</span> {t.example}
         </div>
       )}
-      {term.relatedTerms.length > 0 && (
+      {t.relatedTerms.length > 0 && (
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium">Related:</span> {term.relatedTerms.join(', ')}
+          <span className="font-medium">Related:</span> {t.relatedTerms.join(', ')}
         </p>
       )}
     </div>
@@ -418,16 +762,26 @@ function EmptyState({
   icon,
   message,
   hint,
+  action,
 }: {
   icon: React.ReactNode;
   message: string;
   hint?: string;
+  action?: { label: string; onClick: () => void };
 }) {
   return (
     <div className="text-center py-12">
       {icon}
-      <p className="text-muted-foreground">{message}</p>
+      <p className="text-muted-foreground font-medium">{message}</p>
       {hint && <p className="text-sm text-muted-foreground mt-1">{hint}</p>}
+      {action && (
+        <button
+          onClick={action.onClick}
+          className="mt-4 text-sm text-primary hover:underline"
+        >
+          {action.label}
+        </button>
+      )}
     </div>
   );
 }

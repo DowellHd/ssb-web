@@ -24,6 +24,7 @@ import {
   DIFFICULTY_CONFIG,
   TIER_LABELS,
 } from '@/lib/learn/catalog';
+import { useRecordLearnVisit } from '@/lib/learn/use-learn-progress';
 
 // ============================================================================
 // Navigation helpers
@@ -59,6 +60,9 @@ export default function ModuleDetailPage() {
   const moduleId = params.id as string;
 
   const catalogModule = getModuleById(moduleId);
+
+  // Record visit unconditionally (hook); skips write when title is empty (not found)
+  useRecordLearnVisit('module', moduleId, catalogModule?.title ?? '');
 
   if (!catalogModule) {
     return (
