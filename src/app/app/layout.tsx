@@ -22,6 +22,7 @@ import {
   Map,
   ShieldCheck,
   AlertTriangle,
+  Layers,
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
 import { BRAND_NAME_TM } from '@/components/ui/brand-name';
@@ -38,6 +39,7 @@ const navItems = [
   { href: '/app/regime', label: 'Regime Analysis', icon: TrendingUp },
   { href: '/app/risk', label: 'Risk Analytics', icon: Shield },
   { href: '/app/paper', label: 'Paper Trading', icon: CandlestickChart },
+  { href: '/app/options', label: 'Options', icon: Layers },
   { href: '/app/backtests', label: 'Backtests', icon: LineChart },
   { href: '/app/audit', label: 'Audit Log', icon: ClipboardList },
   { href: '/app/changelog', label: 'Changelog', icon: History },
