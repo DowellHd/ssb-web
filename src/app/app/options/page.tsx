@@ -115,30 +115,54 @@ export default function OptionsPage() {
         {/* Chain viewer */}
         <OptionsChainViewer />
 
-        {/* Upcoming features */}
-        <div>
-          <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Coming in this area
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FeatureCard
-              icon={Layers}
-              title="Options Paper Trading"
-              description="Simulate long calls and puts with virtual funds. Track premium, P&L, and time to expiration."
-              available={paperTradingEnabled}
-              requiredTier="Pro"
-              badge={paperTradingEnabled ? undefined : 'Upcoming'}
-            />
-            <FeatureCard
-              icon={Activity}
-              title="Risk & Analytics"
-              description="Break-even, max profit/loss, payoff diagrams, and Greeks interpretation for paper positions."
-              available={analyticsEnabled}
-              requiredTier="Pro"
-              badge={analyticsEnabled ? undefined : 'Upcoming'}
-            />
+        {/* Paper trading link or upcoming card */}
+        {paperTradingEnabled ? (
+          <div className="rounded-lg border bg-card px-5 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Layers className="h-4 w-4 text-primary" />
+                  <h2 className="font-semibold">Options Paper Trading</h2>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Simulate buy-to-open orders directly from the chain. Track
+                  positions, P&amp;L, and time decay — all with virtual funds.
+                </p>
+              </div>
+              <Link
+                href="/app/options/paper"
+                className="ml-4 shrink-0 flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Open
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div>
+            <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Coming in this area
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <FeatureCard
+                icon={Layers}
+                title="Options Paper Trading"
+                description="Simulate long calls and puts with virtual funds. Track premium, P&L, and time to expiration."
+                available={false}
+                requiredTier="Pro"
+                badge="Upcoming"
+              />
+              <FeatureCard
+                icon={Activity}
+                title="Risk & Analytics"
+                description="Break-even, max profit/loss, payoff diagrams, and Greeks interpretation for paper positions."
+                available={analyticsEnabled}
+                requiredTier="Pro"
+                badge={analyticsEnabled ? undefined : 'Upcoming'}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Learn link */}
         <div className="rounded-lg border bg-card px-5 py-4">

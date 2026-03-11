@@ -72,16 +72,19 @@ function MoneynessLabel({
 
 interface TableRowProps {
   contract: OptionsContract;
+  onBuyToOpen?: (contract: OptionsContract) => void;
 }
 
-function TableRow({ contract }: TableRowProps) {
+function TableRow({ contract, onBuyToOpen }: TableRowProps) {
   const { moneyness, optionType } = contract;
   return (
     <tr
       className={cn(
         'border-b last:border-0 transition-colors hover:bg-muted/40',
+        onBuyToOpen && 'cursor-pointer',
         moneynessRowClass(moneyness, optionType),
       )}
+      onClick={() => onBuyToOpen?.(contract)}
     >
       {/* Strike + moneyness */}
       <td className="px-3 py-2">
@@ -142,6 +145,21 @@ function TableRow({ contract }: TableRowProps) {
       <td className="hidden md:table-cell px-3 py-2 text-right text-sm text-muted-foreground">
         {formatVolOI(contract.openInterest)}
       </td>
+
+      {/* Buy action */}
+      {onBuyToOpen && (
+        <td className="px-3 py-2 text-right">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onBuyToOpen(contract);
+            }}
+            className="rounded-md border bg-background px-2 py-1 text-xs font-medium hover:bg-muted transition-colors"
+          >
+            Buy
+          </button>
+        </td>
+      )}
     </tr>
   );
 }
@@ -150,14 +168,16 @@ function TableRow({ contract }: TableRowProps) {
 // Mobile card per contract
 // ============================================================================
 
-function ContractCard({ contract }: TableRowProps) {
+function ContractCard({ contract, onBuyToOpen }: TableRowProps) {
   const { moneyness, optionType } = contract;
   return (
     <div
       className={cn(
         'rounded-lg border p-3 text-sm',
+        onBuyToOpen && 'cursor-pointer',
         moneynessRowClass(moneyness, optionType),
       )}
+      onClick={() => onBuyToOpen?.(contract)}
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -194,6 +214,17 @@ function ContractCard({ contract }: TableRowProps) {
           <span>{formatVolOI(contract.volume)}</span>
         </div>
       </div>
+      {onBuyToOpen && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onBuyToOpen(contract);
+          }}
+          className="mt-2 w-full rounded-md border bg-background px-2 py-1 text-xs font-medium hover:bg-muted transition-colors"
+        >
+          Buy to Open
+        </button>
+      )}
     </div>
   );
 }
@@ -208,6 +239,8 @@ interface ChainTableProps {
   isLoading?: boolean;
   /** When true, renders compact mobile cards instead of the table. */
   mobileCards?: boolean;
+  /** When provided, adds a Buy column / button for paper trading. */
+  onBuyToOpen?: (contract: OptionsContract) => void;
 }
 
 export function ChainTable({
@@ -215,6 +248,7 @@ export function ChainTable({
   optionType,
   isLoading,
   mobileCards,
+  onBuyToOpen,
 }: ChainTableProps) {
   if (isLoading) {
     return (
@@ -239,7 +273,7 @@ export function ChainTable({
     return (
       <div className="space-y-2">
         {contracts.map((c) => (
-          <ContractCard key={c.optionSymbol} contract={c} />
+          <ContractCard key={c.optionSymbol} contract={c} onBuyToOpen={onBuyToOpen} />
         ))}
       </div>
     );
@@ -284,11 +318,12 @@ export function ChainTable({
               label="OI"
               description="Open interest — total number of outstanding contracts"
             />
+            {onBuyToOpen && <th className="px-3 py-2" />}
           </tr>
         </thead>
         <tbody>
           {contracts.map((contract) => (
-            <TableRow key={contract.optionSymbol} contract={contract} />
+            <TableRow key={contract.optionSymbol} contract={contract} onBuyToOpen={onBuyToOpen} />
           ))}
         </tbody>
       </table>

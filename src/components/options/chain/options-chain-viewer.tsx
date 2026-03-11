@@ -14,10 +14,13 @@ import { useState, useMemo } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOptionsExpirations, useOptionsChain } from '@/hooks/use-options-chain';
+import { useQuery } from '@tanstack/react-query';
+import { getOptionsEntitlements } from '@/lib/api/options';
 import { SimulatedDataBadge } from './simulated-data-badge';
 import { ExpirationSelector } from './expiration-selector';
 import { ChainFilters, type ContractDisplay } from './chain-filters';
 import { ChainTable } from './chain-table';
+import { BuyToOpenModal } from '@/components/options/paper/options-order-modal';
 import type { OptionsContract } from '@/lib/options/types';
 
 const DEFAULT_SYMBOL = 'SPY';
@@ -73,6 +76,16 @@ export function OptionsChainViewer() {
   const [display, setDisplay] = useState<ContractDisplay>('both');
   const [strikeMin, setStrikeMin] = useState('');
   const [strikeMax, setStrikeMax] = useState('');
+  const [buyingContract, setBuyingContract] = useState<OptionsContract | null>(null);
+
+  // Check paper trading entitlement to show buy buttons
+  const { data: entitlements } = useQuery({
+    queryKey: ['options', 'entitlements'],
+    queryFn: getOptionsEntitlements,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+  const paperTradingEnabled = entitlements?.paperTradingEnabled ?? false;
 
   // Expirations
   const {
@@ -195,6 +208,7 @@ export function OptionsChainViewer() {
                   contracts={filteredCalls}
                   optionType="call"
                   isLoading={isLoadingAny}
+                  onBuyToOpen={paperTradingEnabled ? setBuyingContract : undefined}
                 />
               </div>
               {/* Mobile cards */}
@@ -204,6 +218,7 @@ export function OptionsChainViewer() {
                   optionType="call"
                   isLoading={isLoadingAny}
                   mobileCards
+                  onBuyToOpen={paperTradingEnabled ? setBuyingContract : undefined}
                 />
               </div>
             </div>
@@ -219,6 +234,7 @@ export function OptionsChainViewer() {
                   contracts={filteredPuts}
                   optionType="put"
                   isLoading={isLoadingAny}
+                  onBuyToOpen={paperTradingEnabled ? setBuyingContract : undefined}
                 />
               </div>
               {/* Mobile cards */}
@@ -228,11 +244,25 @@ export function OptionsChainViewer() {
                   optionType="put"
                   isLoading={isLoadingAny}
                   mobileCards
+                  onBuyToOpen={paperTradingEnabled ? setBuyingContract : undefined}
                 />
               </div>
             </div>
           )}
         </>
+      )}
+
+      {/* Buy-to-open modal */}
+      {buyingContract && (
+        <BuyToOpenModal
+          symbol={buyingContract.symbol}
+          optionType={buyingContract.optionType}
+          expiration={buyingContract.expiration}
+          strike={buyingContract.strike}
+          estimatedPremium={buyingContract.ask}
+          maxContracts={entitlements?.maxContracts ?? 10}
+          onClose={() => setBuyingContract(null)}
+        />
       )}
 
       {/* Footer note */}
