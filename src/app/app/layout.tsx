@@ -50,6 +50,7 @@ const ANALYSIS_CHILDREN = [
 const TRADING_CHILDREN = [
   { href: '/app/paper', label: 'Paper Trading', icon: CandlestickChart },
   { href: '/app/options', label: 'Options', icon: Layers },
+  { href: '/app/crypto', label: 'Crypto', icon: Bitcoin },
 ];
 
 const MORE_CHILDREN = [
@@ -83,8 +84,8 @@ function NavLink({ href, label, icon: Icon, active, indent = false, onClick }: N
       href={href}
       onClick={onClick}
       className={cn(
-        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-        indent && 'ml-3 pl-3 border-l border-border',
+        'flex items-center gap-3 rounded-lg px-3 text-sm transition-colors',
+        indent ? 'py-2 ml-3 pl-3 border-l border-border' : 'py-2.5',
         active
           ? 'bg-primary text-primary-foreground'
           : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -128,7 +129,7 @@ function NavGroup({
         onClick={onToggle}
         aria-expanded={isOpen}
         className={cn(
-          'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
           hasActiveChild && !isOpen
             ? 'bg-primary/10 text-primary'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -152,7 +153,7 @@ function NavGroup({
         )}
         aria-hidden={!isOpen}
       >
-        <ul className="mt-1 space-y-0.5 pb-1">
+        <ul className="mt-1 space-y-0.5 pb-2">
           {items.map((item) => (
             <li key={item.href}>
               <NavLink
@@ -328,7 +329,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3" aria-label="Main navigation">
-        <ul className="space-y-0.5">
+        <ul className="space-y-1">
           {/* Dashboard */}
           <li>
             <NavLink
@@ -363,17 +364,6 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             isActive={isActive}
             onNavClick={onClose}
           />
-
-          {/* Crypto (standalone) */}
-          <li>
-            <NavLink
-              href="/app/crypto"
-              label="Crypto"
-              icon={Bitcoin}
-              active={isActive('/app/crypto')}
-              onClick={onClose}
-            />
-          </li>
 
           {/* More group */}
           <NavGroup
