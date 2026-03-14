@@ -54,12 +54,19 @@ export function useCryptoEntitlements() {
 // Market data
 // ============================================================================
 
+// Fast retry for market data: 2 attempts, 1s / 2s delays (backend also retries on 429)
+const MARKET_RETRY_OPTIONS = {
+  retry: 2,
+  retryDelay: (attempt: number) => Math.min(1000 * 2 ** attempt, 4000),
+} as const;
+
 export function useCryptoPrices(page = 1, perPage = 20) {
   return useQuery({
     queryKey: cryptoQueryKeys.prices(page, perPage),
     queryFn: () => getCryptoPrices(page, perPage),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
+    ...MARKET_RETRY_OPTIONS,
   });
 }
 
@@ -69,6 +76,7 @@ export function useMarketOverview() {
     queryFn: getMarketOverview,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
+    ...MARKET_RETRY_OPTIONS,
   });
 }
 
@@ -78,6 +86,7 @@ export function useGainersLosers() {
     queryFn: getGainersLosers,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
+    ...MARKET_RETRY_OPTIONS,
   });
 }
 
