@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { useCryptoPrices } from '@/hooks/use-crypto';
 import type { CoinPrice } from '@/lib/crypto/types';
+import { CATEGORIES, getCoinCategories, type CryptoCategory } from '@/lib/crypto/categories';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
@@ -29,6 +30,67 @@ function pctClass(value: number | null | undefined): string {
   if (value > 0) return 'text-green-600 dark:text-green-400';
   if (value < 0) return 'text-red-600 dark:text-red-400';
   return 'text-muted-foreground';
+}
+
+// ============================================================================
+// Category filter bar
+// ============================================================================
+
+interface CategoryFilterProps {
+  active: CryptoCategory | null;
+  onChange: (cat: CryptoCategory | null) => void;
+}
+
+function CategoryFilter({ active, onChange }: CategoryFilterProps) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      <button
+        onClick={() => onChange(null)}
+        className={cn(
+          'rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors',
+          active === null
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-muted-foreground hover:bg-muted/80',
+        )}
+      >
+        All
+      </button>
+      {CATEGORIES.map((cat) => (
+        <button
+          key={cat.id}
+          onClick={() => onChange(active === cat.id ? null : cat.id)}
+          className={cn(
+            'rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors',
+            active === cat.id ? cat.color + ' ring-1 ring-current' : 'bg-muted text-muted-foreground hover:bg-muted/80',
+          )}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// Category badge (inline in table rows)
+// ============================================================================
+
+function CategoryBadges({ coinId }: { coinId: string }) {
+  const cats = getCoinCategories(coinId);
+  if (cats.length === 0) return null;
+  return (
+    <div className="hidden lg:flex gap-1 ml-2">
+      {cats.slice(0, 2).map((catId) => {
+        const info = CATEGORIES.find((c) => c.id === catId);
+        if (!info) return null;
+        return (
+          <span key={catId} className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none', info.color)}>
+            {info.label}
+          </span>
+        );
+      })}
+    </div>
+  );
 }
 
 // ============================================================================
@@ -61,7 +123,7 @@ function CoinCard({ coin }: { coin: CoinPrice }) {
 }
 
 // ============================================================================
-// Desktop table
+// Desktop table row
 // ============================================================================
 
 function CoinTableRow({ coin, rank }: { coin: CoinPrice; rank: number }) {
@@ -76,6 +138,7 @@ function CoinTableRow({ coin, rank }: { coin: CoinPrice; rank: number }) {
           )}
           <span className="font-medium text-sm">{coin.name}</span>
           <span className="text-xs text-muted-foreground uppercase">{coin.symbol}</span>
+          <CategoryBadges coinId={coin.coin_id} />
         </div>
       </td>
       <td className="py-3 pr-4 text-right text-sm font-medium">
@@ -110,67 +173,103 @@ interface CryptoPriceTableProps {
 
 export function CryptoPriceTable({ isProUser }: CryptoPriceTableProps) {
   const [page, setPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState<CryptoCategory | null>(null);
   const perPage = isProUser ? 50 : 20;
 
-  const { data, isLoading, isError } = useCryptoPrices(page, perPage);
+  const { data, isLoading, isError, refetch, isFetching } = useCryptoPrices(page, perPage);
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
-        ))}
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-1.5">
+          {[...Array(9)].map((_, i) => (
+            <div key={i} className="h-5 w-12 animate-pulse rounded-full bg-muted" />
+          ))}
+        </div>
+        <div className="space-y-2">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (isError || !data) {
     return (
-      <p className="text-sm text-muted-foreground py-4 text-center">
-        Unable to load prices. Market data may be temporarily unavailable.
-      </p>
+      <div className="rounded-lg border bg-card p-6 text-center space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Unable to load prices. Market data may be temporarily unavailable.
+        </p>
+        <button
+          onClick={() => refetch()}
+          className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Try again
+        </button>
+      </div>
     );
   }
 
-  const coins = data.coins;
+  const allCoins = data.coins;
+  const filteredCoins = activeCategory
+    ? allCoins.filter((c) => getCoinCategories(c.coin_id).includes(activeCategory))
+    : allCoins;
+
   const startRank = (page - 1) * perPage + 1;
-  const hasNext = isProUser && coins.length === perPage;
+  const hasNext = isProUser && allCoins.length === perPage;
   const hasPrev = page > 1;
 
   return (
     <div className="space-y-3">
+      {/* Category filter */}
+      <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
+
       {/* Mobile cards */}
-      <div className="flex flex-col gap-2 sm:hidden">
-        {coins.map((coin, i) => (
-          <CoinCard key={coin.coin_id} coin={coin} />
-        ))}
-      </div>
-
-      {/* Desktop table */}
-      <div className="hidden sm:block overflow-x-auto rounded-lg border">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b bg-muted/40">
-              <th className="py-2.5 pl-4 pr-2 text-xs font-medium text-muted-foreground">#</th>
-              <th className="py-2.5 pr-4 text-xs font-medium text-muted-foreground">Name</th>
-              <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground">Price</th>
-              <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground">24h</th>
-              <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground hidden md:table-cell">7d</th>
-              <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground hidden lg:table-cell">30d</th>
-              <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground hidden md:table-cell">Market Cap</th>
-              <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground hidden lg:table-cell">Volume (24h)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coins.map((coin, i) => (
-              <CoinTableRow key={coin.coin_id} coin={coin} rank={startRank + i} />
+      {filteredCoins.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4 text-center">
+          No coins match this category on the current page.
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2 sm:hidden">
+            {filteredCoins.map((coin) => (
+              <CoinCard key={coin.coin_id} coin={coin} />
             ))}
-          </tbody>
-        </table>
-      </div>
+          </div>
 
-      {/* Pagination (Pro only) */}
-      {isProUser && (hasPrev || hasNext) && (
+          {/* Desktop table */}
+          <div className={cn('hidden sm:block overflow-x-auto rounded-lg border', isFetching && 'opacity-70 transition-opacity')}>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  <th className="py-2.5 pl-4 pr-2 text-xs font-medium text-muted-foreground">#</th>
+                  <th className="py-2.5 pr-4 text-xs font-medium text-muted-foreground">Name</th>
+                  <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground">Price</th>
+                  <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground">24h</th>
+                  <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground hidden md:table-cell">7d</th>
+                  <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground hidden lg:table-cell">30d</th>
+                  <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground hidden md:table-cell">Market Cap</th>
+                  <th className="py-2.5 pr-4 text-right text-xs font-medium text-muted-foreground hidden lg:table-cell">Volume (24h)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCoins.map((coin, i) => {
+                  // Rank reflects position in the full unfiltered list
+                  const unfilteredIndex = allCoins.findIndex((c) => c.coin_id === coin.coin_id);
+                  return (
+                    <CoinTableRow key={coin.coin_id} coin={coin} rank={startRank + unfilteredIndex} />
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {/* Pagination (Pro only, no category active) */}
+      {isProUser && !activeCategory && (hasPrev || hasNext) && (
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -190,6 +289,13 @@ export function CryptoPriceTable({ isProUser }: CryptoPriceTableProps) {
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
+      )}
+
+      {/* Pagination hint when category is filtered */}
+      {isProUser && activeCategory && (
+        <p className="text-xs text-muted-foreground text-center">
+          Showing filtered results from page {page}. Clear the filter to paginate.
+        </p>
       )}
 
       {/* Free tier note */}

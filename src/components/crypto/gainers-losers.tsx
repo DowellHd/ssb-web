@@ -1,6 +1,6 @@
 'use client';
 
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { useGainersLosers } from '@/hooks/use-crypto';
 import type { CoinPrice } from '@/lib/crypto/types';
 import { cn } from '@/lib/utils';
@@ -64,7 +64,22 @@ function SkeletonList() {
 }
 
 export function GainersLosersPanel() {
-  const { data, isLoading } = useGainersLosers();
+  const { data, isLoading, isError, refetch } = useGainersLosers();
+
+  if (isError) {
+    return (
+      <div className="rounded-lg border bg-card p-4 text-center space-y-2">
+        <p className="text-sm text-muted-foreground">Unable to load movers.</p>
+        <button
+          onClick={() => refetch()}
+          className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm hover:bg-muted transition-colors"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
