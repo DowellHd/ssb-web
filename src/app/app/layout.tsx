@@ -376,6 +376,19 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             isActive={isActive}
             onNavClick={onClose}
           />
+
+          {/* Admin — founder / admin role only */}
+          {(user.is_founder || user.role === 'admin') && (
+            <li>
+              <NavLink
+                href="/app/admin"
+                label="Admin"
+                icon={ShieldCheck}
+                active={isActive('/app/admin')}
+                onClick={onClose}
+              />
+            </li>
+          )}
         </ul>
       </nav>
 
