@@ -61,16 +61,6 @@ export const CATALOG_MODULES: CatalogModule[] = [
         tierRequired: 'free',
         linkOnly: true,
       },
-      {
-        // Khan Academy Finance — "Introduction to compound interest"
-        // Verify ID in browser before removing linkOnly.
-        title: 'Introduction to Compound Interest',
-        youtubeId: 'MXmFZAjqtLs',
-        source: 'Khan Academy',
-        durationLabel: '8 min',
-        tierRequired: 'free',
-        linkOnly: true,
-      },
     ],
     externalResources: [
       {
