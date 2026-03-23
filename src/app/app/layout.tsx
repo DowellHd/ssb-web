@@ -22,6 +22,7 @@ import {
   Map,
   Menu,
   MoreHorizontal,
+  Search,
   Settings,
   Shield,
   ShieldCheck,
@@ -45,6 +46,8 @@ import { usePlanStore } from '@/stores/plan-store';
 const ANALYSIS_CHILDREN = [
   { href: '/app/regime', label: 'Regime Analysis', icon: TrendingUp },
   { href: '/app/risk', label: 'Risk Analytics', icon: Shield },
+  { href: '/app/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/app/screening', label: 'Screener', icon: Search },
 ];
 
 const TRADING_CHILDREN = [
