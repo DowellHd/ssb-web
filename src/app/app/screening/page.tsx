@@ -389,6 +389,12 @@ export default function ScreeningPage() {
       {/* Results */}
       {result && (
         <div className="space-y-3">
+          {result.data_source === 'sample' && (
+            <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 px-4 py-2.5 text-sm text-amber-800 dark:text-amber-400">
+              <span className="font-medium">Sample data</span>
+              <span className="text-amber-700 dark:text-amber-500">— Representative values for illustration. Add an <code className="font-mono text-xs">ALPHA_VANTAGE_API_KEY</code> to Render for live fundamentals.</span>
+            </div>
+          )}
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
               Screened {result.universe_size} stocks · {result.matched_count} matched
