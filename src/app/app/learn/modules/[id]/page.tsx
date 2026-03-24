@@ -45,6 +45,8 @@ import {
   getFeatureLinksForModule,
   type FeatureLinkConfig,
 } from '@/lib/learn/learn-context-links';
+import { getQuizForModule } from '@/lib/learn/quiz-data';
+import { ModuleQuiz } from '@/components/learn/module-quiz';
 
 // ============================================================================
 // Navigation helpers
@@ -106,6 +108,7 @@ export default function ModuleDetailPage() {
   const { previous, next } = getAdjacentModules(moduleId);
   const done = isComplete(moduleId);
   const keyTerms = getKeyTermsForModule(moduleId);
+  const moduleQuiz = getQuizForModule(moduleId);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -319,6 +322,11 @@ export default function ModuleDetailPage() {
             ))}
           </ul>
         </div>
+      )}
+
+      {/* Quiz */}
+      {moduleQuiz && (
+        <ModuleQuiz moduleId={moduleId} questions={moduleQuiz.questions} />
       )}
 
       {/* Mark complete */}
