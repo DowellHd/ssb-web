@@ -70,7 +70,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
       },
       {
         label: 'Saving and Investing: A Roadmap to Your Financial Security',
-        url: 'https://www.investor.gov/sites/investorgov/files/2019-02/saving-and-investing.pdf',
+        url: 'https://www.investor.gov/additional-resources/general-resources/publications-research/publications/saving-investing-roadmap',
         source: 'SEC Investor.gov',
       },
     ],
@@ -280,7 +280,7 @@ The goal is not to avoid risk entirely, but to take appropriate, compensated ris
     externalResources: [
       {
         label: 'Diversification: An Important Risk Management Tool',
-        url: 'https://www.finra.org/investors/investing/investing-basics/diversification',
+        url: 'https://www.finra.org/investors/investing/investing-basics/asset-allocation-diversification',
         source: 'FINRA',
       },
       {
@@ -384,7 +384,7 @@ Diversification does not eliminate risk or guarantee profits, but it is an essen
     externalResources: [
       {
         label: 'Technical Analysis',
-        url: 'https://www.cfainstitute.org/en/membership/professional-development/refresher-readings/technical-analysis',
+        url: 'https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/market-efficiency',
         source: 'CFA Institute',
       },
     ],
@@ -483,7 +483,7 @@ Technical analysis is the study of historical price and volume data to understan
     externalResources: [
       {
         label: 'Risk Management (CFA Level I)',
-        url: 'https://www.cfainstitute.org/en/membership/professional-development/refresher-readings/risk-management-an-introduction',
+        url: 'https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2025/introduction-risk-management',
         source: 'CFA Institute',
       },
       {
@@ -592,7 +592,7 @@ If 95% VaR = $100,000 and CVaR = $150,000: when losses exceed VaR, expect to los
       },
       {
         label: 'Market Volatility — FINRA',
-        url: 'https://www.finra.org/investors/investing/investing-basics/market-volatility',
+        url: 'https://www.finra.org/investors/investing/investing-basics/volatility',
         source: 'FINRA',
       },
     ],
@@ -722,12 +722,12 @@ This framework is for developing market literacy, not for making directional pre
     externalResources: [
       {
         label: 'Long-Term Investing Basics',
-        url: 'https://www.investor.gov/introduction-investing/getting-started/start-save-early',
+        url: 'https://www.investor.gov/introduction-investing/investing-basics/building-wealth-over-time',
         source: 'SEC Investor.gov',
       },
       {
         label: 'The Costs of Jumping In and Out of Markets',
-        url: 'https://www.finra.org/investors/investing/investing-basics/buy-and-hold',
+        url: 'https://www.finra.org/investors/learn-to-invest/types-investments/stocks/trading-vs-buy-and-hold',
         source: 'FINRA',
       },
     ],
@@ -832,7 +832,7 @@ Long-term investing is not passive inattention — it is active discipline appli
       },
       {
         label: 'Systematic Investment Plans',
-        url: 'https://www.finra.org/investors/investing/investing-basics/dollar-cost-averaging',
+        url: 'https://www.finra.org/investors/insights/dollar-cost-averaging',
         source: 'FINRA',
       },
     ],
@@ -933,12 +933,12 @@ This is **not** a guarantee of profit — it simply reduces the risk of buying a
     externalResources: [
       {
         label: 'Exchange-Traded Funds — SEC',
-        url: 'https://www.sec.gov/investor/pubs/etfs.htm',
+        url: 'https://www.sec.gov/investor/alerts/etfs',
         source: 'SEC',
       },
       {
         label: 'Index Funds: A Brief Introduction',
-        url: 'https://www.finra.org/investors/investing/investment-products/mutual-funds/index-funds',
+        url: 'https://www.finra.org/investors/investing/investment-products/mutual-funds/types',
         source: 'FINRA',
       },
     ],
@@ -1060,12 +1060,12 @@ For most beginners, a combination of a broad domestic equity ETF and a broad bon
     externalResources: [
       {
         label: 'Behavioural Finance — CFA Institute',
-        url: 'https://www.cfainstitute.org/en/research/financial-analysts-journal/2015/behavioral-finance-where-do-investors-biases-come-from',
+        url: 'https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/the-behavioral-biases-of-individuals',
         source: 'CFA Institute',
       },
       {
         label: 'Investor Psychology — FINRA',
-        url: 'https://www.finra.org/investors/insights/investor-psychology',
+        url: 'https://www.finra.org/investors/insights/guardrails-market-volatility',
         source: 'FINRA',
       },
     ],
@@ -1179,12 +1179,12 @@ Awareness of biases does not eliminate them — but it can create the pause need
     externalResources: [
       {
         label: 'Investor Bulletin: Stop Orders — Understanding Drawdowns',
-        url: 'https://www.finra.org/investors/investing/investing-basics/market-volatility',
+        url: 'https://www.finra.org/investors/investing/investing-basics/volatility',
         source: 'FINRA',
       },
       {
         label: 'Portfolio Risk — CFA Institute',
-        url: 'https://www.cfainstitute.org/en/membership/professional-development/refresher-readings/portfolio-risk-and-return-part-i',
+        url: 'https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/portfolio-risk-return-part-1',
         source: 'CFA Institute',
       },
     ],
@@ -1311,7 +1311,7 @@ Drawdown analysis does not tell you when drawdowns will occur — it tells you w
       },
       {
         label: 'CFA: Portfolio Management — Setting Capital Market Expectations',
-        url: 'https://www.cfainstitute.org/en/membership/professional-development/refresher-readings/asset-allocation',
+        url: 'https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/overview-asset-allocation',
         source: 'CFA Institute',
       },
     ],
@@ -1433,12 +1433,12 @@ Asset allocation is a framework, not a formula. Adjust it to your circumstances,
     externalResources: [
       {
         label: 'Quantitative Investment Strategies — CFA Institute',
-        url: 'https://www.cfainstitute.org/en/membership/professional-development/refresher-readings/backtesting-and-simulation',
+        url: 'https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/backtesting-and-simulation',
         source: 'CFA Institute',
       },
       {
         label: 'Common Backtesting Mistakes',
-        url: 'https://www.finra.org/investors/investing/investing-basics/investment-research',
+        url: 'https://www.finra.org/investors/investing/investment-products/stocks/evaluating-stocks',
         source: 'FINRA',
       },
     ],
@@ -1579,7 +1579,7 @@ The most credible backtests have few parameters, realistic assumptions, robust O
     externalResources: [
       {
         label: 'Bonds — SEC Investor.gov',
-        url: 'https://www.investor.gov/introduction-investing/investing-basics/investment-products/bonds',
+        url: 'https://www.investor.gov/introduction-investing/investing-basics/investment-products/bonds-or-fixed-income-products/bonds',
         source: 'SEC Investor.gov',
       },
       {
