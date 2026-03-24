@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   BarChart3,
   Bitcoin,
+  BookOpen,
+  Calculator,
   CandlestickChart,
   ChevronDown,
   ClipboardList,
@@ -27,6 +29,7 @@ import {
   Shield,
   ShieldCheck,
   TrendingUp,
+  UserCheck,
   X,
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
@@ -54,6 +57,12 @@ const TRADING_CHILDREN = [
   { href: '/app/paper', label: 'Paper Trading', icon: CandlestickChart },
   { href: '/app/options', label: 'Options', icon: Layers },
   { href: '/app/crypto', label: 'Crypto', icon: Bitcoin },
+];
+
+const LEARN_CHILDREN = [
+  { href: '/app/learn', label: 'Learning Hub', icon: BookOpen },
+  { href: '/app/onboarding', label: 'Investment Style Quiz', icon: UserCheck },
+  { href: '/app/calculators', label: 'Calculators', icon: Calculator },
 ];
 
 const MORE_CHILDREN = [
@@ -299,16 +308,19 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
 
   const analysisActive = ANALYSIS_CHILDREN.some((c) => isActive(c.href));
   const tradingActive = TRADING_CHILDREN.some((c) => isActive(c.href));
+  const learnActive = LEARN_CHILDREN.some((c) => isActive(c.href));
   const moreActive = MORE_CHILDREN.some((c) => isActive(c.href));
 
   // Auto-expand the section that contains the current route
   const [analysisOpen, setAnalysisOpen] = useState(analysisActive);
   const [tradingOpen, setTradingOpen] = useState(tradingActive);
+  const [learnOpen, setLearnOpen] = useState(learnActive);
   const [moreOpen, setMoreOpen] = useState(moreActive);
 
   useEffect(() => {
     if (analysisActive) setAnalysisOpen(true);
     if (tradingActive) setTradingOpen(true);
+    if (learnActive) setLearnOpen(true);
     if (moreActive) setMoreOpen(true);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -364,6 +376,18 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             isOpen={tradingOpen}
             hasActiveChild={tradingActive}
             onToggle={() => setTradingOpen((v) => !v)}
+            isActive={isActive}
+            onNavClick={onClose}
+          />
+
+          {/* Learn & Tools group */}
+          <NavGroup
+            label="Learn & Tools"
+            icon={BookOpen}
+            items={LEARN_CHILDREN}
+            isOpen={learnOpen}
+            hasActiveChild={learnActive}
+            onToggle={() => setLearnOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
           />
