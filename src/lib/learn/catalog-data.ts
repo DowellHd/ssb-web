@@ -144,23 +144,12 @@ Investing is the act of allocating resources, usually money, with the expectatio
     ],
     videos: [
       {
-        // Khan Academy Finance — "Risk and reward introduction"
-        // Verify ID in browser before removing linkOnly.
-        title: 'Risk and Reward Introduction',
-        youtubeId: 'nqTBE_Qxvyo',
-        source: 'Khan Academy',
-        durationLabel: '8 min',
-        tierRequired: 'free',
-        linkOnly: true,
-      },
-      {
-        // Khan Academy Finance — "Variance of returns"
-        // Verify ID in browser before removing linkOnly.
-        title: 'Variance of Returns and Expected Value',
-        youtubeId: 'JNm3M9cqWyc',
-        source: 'Khan Academy',
+        // Ben Felix (Common Sense Investing) — "Is Investing Risky?" — confirmed live
+        title: 'Is Investing Risky?',
+        youtubeId: 'thNrIsU88y8',
+        source: 'Common Sense Investing',
         durationLabel: '10 min',
-        tierRequired: 'pro',
+        tierRequired: 'free',
         linkOnly: true,
       },
     ],
