@@ -15,12 +15,7 @@ import {
   PlayCircle,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import {
-  CATALOG_MODULES,
-  CATALOG_PATHS,
-  CATALOG_GLOSSARY,
-  CATALOG_META,
-} from '@/lib/learn/catalog-data';
+import { useCatalog } from '@/lib/learn/use-catalog';
 import {
   CATEGORY_LABELS,
   DIFFICULTY_CONFIG,
@@ -69,33 +64,36 @@ interface SearchResults {
   terms: CatalogGlossaryTerm[];
 }
 
-function runSearch(query: string): SearchResults {
+function runSearch(
+  query: string,
+  modules: CatalogModule[],
+  paths: CatalogPath[],
+  glossary: CatalogGlossaryTerm[]
+): SearchResults {
   const q = query.toLowerCase().trim();
   if (!q) return { modules: [], paths: [], terms: [] };
 
-  const modules = CATALOG_MODULES.filter(
-    (m) =>
-      m.title.toLowerCase().includes(q) ||
-      m.summary.toLowerCase().includes(q) ||
-      m.tags.some((t) => t.toLowerCase().includes(q)) ||
-      CATEGORY_LABELS[m.category].toLowerCase().includes(q)
-  );
-
-  const paths = CATALOG_PATHS.filter(
-    (p) =>
-      p.title.toLowerCase().includes(q) ||
-      p.summary.toLowerCase().includes(q) ||
-      p.tags.some((t) => t.toLowerCase().includes(q))
-  );
-
-  const terms = CATALOG_GLOSSARY.filter(
-    (t) =>
-      t.term.toLowerCase().includes(q) ||
-      t.definition.toLowerCase().includes(q) ||
-      t.relatedTerms.some((r) => r.toLowerCase().includes(q))
-  );
-
-  return { modules, paths, terms };
+  return {
+    modules: modules.filter(
+      (m) =>
+        m.title.toLowerCase().includes(q) ||
+        m.summary.toLowerCase().includes(q) ||
+        m.tags.some((t) => t.toLowerCase().includes(q)) ||
+        CATEGORY_LABELS[m.category].toLowerCase().includes(q)
+    ),
+    paths: paths.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.summary.toLowerCase().includes(q) ||
+        p.tags.some((t) => t.toLowerCase().includes(q))
+    ),
+    terms: glossary.filter(
+      (t) =>
+        t.term.toLowerCase().includes(q) ||
+        t.definition.toLowerCase().includes(q) ||
+        t.relatedTerms.some((r) => r.toLowerCase().includes(q))
+    ),
+  };
 }
 
 // ============================================================================
@@ -107,11 +105,12 @@ export default function LearnPage() {
   const [globalSearch, setGlobalSearch] = useState('');
   const [dismissed, setDismissed] = useState(false);
 
+  const { modules, paths, glossary, meta } = useCatalog();
   const lastVisited = useLastVisited();
   const clearLastVisited = useClearLastVisited();
 
   const isSearching = globalSearch.trim().length > 0;
-  const searchResults = isSearching ? runSearch(globalSearch) : null;
+  const searchResults = isSearching ? runSearch(globalSearch, modules, paths, glossary) : null;
   const totalSearchResults = searchResults
     ? searchResults.modules.length + searchResults.paths.length + searchResults.terms.length
     : 0;
@@ -138,7 +137,7 @@ export default function LearnPage() {
         </div>
         <p className="text-xs text-muted-foreground pt-1">
           Updated{' '}
-          {new Date(CATALOG_META.catalogLastUpdated).toLocaleDateString('en-US', {
+          {new Date(meta.catalogLastUpdated).toLocaleDateString('en-US', {
             month: 'long',
             year: 'numeric',
           })}
@@ -187,29 +186,29 @@ export default function LearnPage() {
             <TabButton
               label="Modules"
               icon={<BookOpen className="h-4 w-4" />}
-              count={CATALOG_META.totalModules}
+              count={meta.totalModules}
               active={activeTab === 'modules'}
               onClick={() => setActiveTab('modules')}
             />
             <TabButton
               label="Learning Paths"
               icon={<Award className="h-4 w-4" />}
-              count={CATALOG_META.totalPaths}
+              count={meta.totalPaths}
               active={activeTab === 'paths'}
               onClick={() => setActiveTab('paths')}
             />
             <TabButton
               label="Glossary"
               icon={<GraduationCap className="h-4 w-4" />}
-              count={CATALOG_META.totalGlossaryTerms}
+              count={meta.totalGlossaryTerms}
               active={activeTab === 'glossary'}
               onClick={() => setActiveTab('glossary')}
             />
           </div>
 
-          {activeTab === 'modules' && <ModulesTab />}
-          {activeTab === 'paths' && <PathsTab />}
-          {activeTab === 'glossary' && <GlossaryTab />}
+          {activeTab === 'modules' && <ModulesTab modules={modules} />}
+          {activeTab === 'paths' && <PathsTab paths={paths} />}
+          {activeTab === 'glossary' && <GlossaryTab glossary={glossary} />}
         </>
       )}
     </div>
@@ -376,12 +375,12 @@ function TabButton({
 // Modules tab
 // ============================================================================
 
-function ModulesTab() {
+function ModulesTab({ modules }: { modules: CatalogModule[] }) {
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory | ''>('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<ContentDifficulty | ''>('');
   const [selectedDuration, setSelectedDuration] = useState<DurationBucket>('all');
 
-  const filtered = CATALOG_MODULES.filter((m) => {
+  const filtered = modules.filter((m) => {
     if (selectedCategory && m.category !== selectedCategory) return false;
     if (selectedDifficulty && m.level !== selectedDifficulty) return false;
     if (!matchesDurationBucket(m.durationMinutes, selectedDuration)) return false;
@@ -518,10 +517,10 @@ function ModuleCard({ module: m }: { module: CatalogModule }) {
 // Paths tab
 // ============================================================================
 
-function PathsTab() {
+function PathsTab({ paths }: { paths: CatalogPath[] }) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<ContentDifficulty | ''>('');
 
-  const filtered = CATALOG_PATHS.filter((p) => {
+  const filtered = paths.filter((p) => {
     if (selectedDifficulty && p.level !== selectedDifficulty) return false;
     return true;
   });
@@ -621,15 +620,15 @@ function PathCard({ path: p }: { path: CatalogPath }) {
 // Glossary tab
 // ============================================================================
 
-function GlossaryTab() {
+function GlossaryTab({ glossary }: { glossary: CatalogGlossaryTerm[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLetter, setSelectedLetter] = useState('');
 
   const availableLetters = Array.from(
-    new Set(CATALOG_GLOSSARY.map((t) => t.term[0].toUpperCase()))
+    new Set(glossary.map((t) => t.term[0].toUpperCase()))
   ).sort();
 
-  const filtered = CATALOG_GLOSSARY.filter((t) => {
+  const filtered = glossary.filter((t) => {
     if (selectedLetter && t.term[0].toUpperCase() !== selectedLetter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();

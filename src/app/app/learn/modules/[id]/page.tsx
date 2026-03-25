@@ -26,10 +26,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  CATALOG_MODULES,
-  getModuleById,
-  getKeyTermsForModule,
-} from '@/lib/learn/catalog-data';
+  useCatalog,
+  getCatalogKeyTerms,
+  getAdjacentCatalogModules,
+} from '@/lib/learn/use-catalog';
 import {
   CATEGORY_LABELS,
   DIFFICULTY_CONFIG,
@@ -49,30 +49,6 @@ import { getQuizForModule } from '@/lib/learn/quiz-data';
 import { ModuleQuiz } from '@/components/learn/module-quiz';
 
 // ============================================================================
-// Navigation helpers
-// ============================================================================
-
-function getAdjacentModules(currentId: string): {
-  previous: string | null;
-  next: string | null;
-} {
-  const current = getModuleById(currentId);
-  if (!current) return { previous: null, next: null };
-
-  const currentIdx = CATALOG_MODULES.findIndex((m) => m.id === currentId);
-  const prevMod = currentIdx > 0 ? CATALOG_MODULES[currentIdx - 1] : null;
-  const nextMod = currentIdx < CATALOG_MODULES.length - 1 ? CATALOG_MODULES[currentIdx + 1] : null;
-
-  // Only navigate within the same category
-  const previous =
-    prevMod && prevMod.category === current.category ? prevMod.id : null;
-  const next =
-    nextMod && nextMod.category === current.category ? nextMod.id : null;
-
-  return { previous, next };
-}
-
-// ============================================================================
 // Page
 // ============================================================================
 
@@ -81,14 +57,15 @@ export default function ModuleDetailPage() {
   const router = useRouter();
   const moduleId = params.id as string;
 
-  const catalogModule = getModuleById(moduleId);
+  const { modules: allModules, glossary, isLoading } = useCatalog();
+  const catalogModule = allModules.find((m) => m.id === moduleId) ?? null;
   const { isComplete, toggle } = useModuleCompletion();
   const { canAccessTier } = useLearnVideoAccess();
 
   // Record visit unconditionally (hook); skips write when title is empty (not found)
   useRecordLearnVisit('module', moduleId, catalogModule?.title ?? '');
 
-  if (!catalogModule) {
+  if (!isLoading && !catalogModule) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
@@ -104,10 +81,12 @@ export default function ModuleDetailPage() {
     );
   }
 
+  if (!catalogModule) return null;
+
   const difficulty = DIFFICULTY_CONFIG[catalogModule.level];
-  const { previous, next } = getAdjacentModules(moduleId);
+  const { previous, next } = getAdjacentCatalogModules(moduleId, allModules);
   const done = isComplete(moduleId);
-  const keyTerms = getKeyTermsForModule(moduleId);
+  const keyTerms = getCatalogKeyTerms(moduleId, allModules, glossary);
   const moduleQuiz = getQuizForModule(moduleId);
 
   return (
@@ -166,7 +145,7 @@ export default function ModuleDetailPage() {
           <div className="mt-4 text-sm text-muted-foreground">
             <span className="font-medium">Prerequisites:</span>{' '}
             {catalogModule.prereqs.map((prereqId, i) => {
-              const prereq = getModuleById(prereqId);
+              const prereq = allModules.find((m) => m.id === prereqId);
               return prereq ? (
                 <span key={prereqId}>
                   {i > 0 && ', '}
