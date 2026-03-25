@@ -70,8 +70,6 @@ const LEARN_CHILDREN = [
 const COMMUNITY_CHILDREN = [
   { href: '/app/community', label: 'Feed', icon: MessageSquare },
   { href: '/app/community/ideas/new', label: 'Share Idea', icon: TrendingUp },
-  { href: '/app/community/watchlists', label: 'Watchlists', icon: BookOpen },
-  { href: '/app/community/clubs', label: 'Clubs', icon: Users },
 ];
 
 const MORE_CHILDREN = [
