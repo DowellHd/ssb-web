@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  AlertTriangle,
   BookOpen,
   Clock,
   Heart,
@@ -181,19 +180,33 @@ export default function CommunityPage() {
   const [clubs, setClubs] = useState<InvestmentClub[]>([]);
   const [watchlists, setWatchlists] = useState<CommunityWatchlist[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
+      // Fetch entitlements — if the endpoint doesn't exist yet, assume full access
+      let ent: CommunityEntitlements = {
+        can_access_community: true,
+        can_post: true,
+        can_create_trade_ideas: true,
+        can_create_watchlists: true,
+        can_join_clubs: true,
+        can_rate_stocks: true,
+        tier: 'unknown',
+      };
       try {
-        const ent = await getCommunityEntitlements();
-        setEntitlements(ent);
+        ent = await getCommunityEntitlements();
+      } catch {
+        // Backend not deployed yet — continue with defaults
+      }
+      setEntitlements(ent);
 
-        if (!ent.can_access_community) {
-          setIsLoading(false);
-          return;
-        }
+      if (!ent.can_access_community) {
+        setIsLoading(false);
+        return;
+      }
 
+      // Load feed data — show empty state on error rather than crashing
+      try {
         const [ideasRes, postsRes] = await Promise.all([
           listTradeIdeas({ page: 1, page_size: 10 }),
           listCommunityPosts({ page: 1, page_size: 10 }),
@@ -201,10 +214,9 @@ export default function CommunityPage() {
         setIdeas(ideasRes.ideas);
         setPosts(postsRes.posts);
       } catch {
-        setError('Failed to load community content.');
-      } finally {
-        setIsLoading(false);
+        // API not available — stay with empty arrays (empty state shown)
       }
+      setIsLoading(false);
     }
     load();
   }, []);
@@ -230,14 +242,6 @@ export default function CommunityPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
-        <AlertTriangle className="h-10 w-10 text-destructive" />
-        <p className="text-muted-foreground">{error}</p>
-      </div>
-    );
-  }
 
   // Not accessible — shouldn't happen (free has community_access=true) but guard anyway
   if (entitlements && !entitlements.can_access_community) {
