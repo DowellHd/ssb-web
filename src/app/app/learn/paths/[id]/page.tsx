@@ -14,11 +14,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  getPathById,
-  getModuleById,
-  getModulesForPath,
-} from '@/lib/learn/catalog-data';
+import { useCatalogPath, useCatalog } from '@/lib/learn/use-catalog';
 import {
   CATEGORY_LABELS,
   DIFFICULTY_CONFIG,
@@ -39,13 +35,14 @@ export default function PathDetailPage() {
   const router = useRouter();
   const pathId = params.id as string;
 
-  const catalogPath = getPathById(pathId);
+  const { path: catalogPath, pathModules, isLoading } = useCatalogPath(pathId);
+  const { paths } = useCatalog();
   const { isComplete, completedIds } = useModuleCompletion();
 
   // Record visit unconditionally; skips write when title is empty (not found)
   useRecordLearnVisit('path', pathId, catalogPath?.title ?? '');
 
-  if (!catalogPath) {
+  if (!isLoading && !catalogPath) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
@@ -61,7 +58,8 @@ export default function PathDetailPage() {
     );
   }
 
-  const pathModules = getModulesForPath(pathId);
+  if (!catalogPath) return null;
+
   const difficulty = DIFFICULTY_CONFIG[catalogPath.level];
   const progressPercent = getPathProgress(catalogPath.moduleIds, completedIds);
   const completedCount = catalogPath.moduleIds.filter((id) => isComplete(id)).length;
@@ -71,7 +69,9 @@ export default function PathDetailPage() {
   const isFullyComplete = completedCount === pathModules.length && pathModules.length > 0;
 
   // "Next up" path suggestion
-  const nextPath = catalogPath.nextPathId ? getPathById(catalogPath.nextPathId) : null;
+  const nextPath = catalogPath.nextPathId
+    ? paths.find((p) => p.id === catalogPath.nextPathId) ?? null
+    : null;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">

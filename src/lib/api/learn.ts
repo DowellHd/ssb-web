@@ -44,6 +44,29 @@ export interface GlossarySearchResponse {
   total_matches: number;
 }
 
+export interface VideoResource {
+  title: string;
+  youtube_id: string;
+  source: string;
+  duration_label: string;
+  tier_required: string;
+  link_only: boolean;
+}
+
+export interface ExternalResource {
+  label: string;
+  url: string;
+  source: string;
+  tier_required: string;
+}
+
+export interface CatalogMetaResponse {
+  total_modules: number;
+  total_paths: number;
+  total_glossary_terms: number;
+  catalog_last_updated: string;
+}
+
 export interface LearningModule {
   id: string;
   title: string;
@@ -59,6 +82,10 @@ export interface LearningModule {
   order: number;
   created_at: string;
   updated_at: string;
+  topics: string[];
+  related_features: string[];
+  videos: VideoResource[];
+  external_resources: ExternalResource[];
 }
 
 export interface ModuleProgress {
@@ -210,5 +237,13 @@ export async function getLearningPath(pathId: string): Promise<LearningPathDetai
  */
 export async function getLearnCategories(): Promise<string[]> {
   const response = await apiClient.get('/learn/meta/categories');
+  return response.data;
+}
+
+/**
+ * Get catalog metadata (counts, last updated date).
+ */
+export async function getCatalogMeta(): Promise<CatalogMetaResponse> {
+  const response = await apiClient.get('/learn/meta');
   return response.data;
 }
