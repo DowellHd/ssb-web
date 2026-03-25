@@ -23,6 +23,7 @@ import {
   LogOut,
   Map,
   Menu,
+  MessageSquare,
   MoreHorizontal,
   Search,
   Settings,
@@ -30,6 +31,7 @@ import {
   ShieldCheck,
   TrendingUp,
   UserCheck,
+  Users,
   X,
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
@@ -63,6 +65,13 @@ const LEARN_CHILDREN = [
   { href: '/app/learn', label: 'Learning Hub', icon: BookOpen },
   { href: '/app/onboarding', label: 'Investment Style Quiz', icon: UserCheck },
   { href: '/app/calculators', label: 'Calculators', icon: Calculator },
+];
+
+const COMMUNITY_CHILDREN = [
+  { href: '/app/community', label: 'Feed', icon: MessageSquare },
+  { href: '/app/community/ideas/new', label: 'Share Idea', icon: TrendingUp },
+  { href: '/app/community/watchlists', label: 'Watchlists', icon: BookOpen },
+  { href: '/app/community/clubs', label: 'Clubs', icon: Users },
 ];
 
 const MORE_CHILDREN = [
@@ -309,18 +318,21 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
   const analysisActive = ANALYSIS_CHILDREN.some((c) => isActive(c.href));
   const tradingActive = TRADING_CHILDREN.some((c) => isActive(c.href));
   const learnActive = LEARN_CHILDREN.some((c) => isActive(c.href));
+  const communityActive = pathname.startsWith('/app/community');
   const moreActive = MORE_CHILDREN.some((c) => isActive(c.href));
 
   // Auto-expand the section that contains the current route
   const [analysisOpen, setAnalysisOpen] = useState(analysisActive);
   const [tradingOpen, setTradingOpen] = useState(tradingActive);
   const [learnOpen, setLearnOpen] = useState(learnActive);
+  const [communityOpen, setCommunityOpen] = useState(communityActive);
   const [moreOpen, setMoreOpen] = useState(moreActive);
 
   useEffect(() => {
     if (analysisActive) setAnalysisOpen(true);
     if (tradingActive) setTradingOpen(true);
     if (learnActive) setLearnOpen(true);
+    if (communityActive) setCommunityOpen(true);
     if (moreActive) setMoreOpen(true);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -388,6 +400,18 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             isOpen={learnOpen}
             hasActiveChild={learnActive}
             onToggle={() => setLearnOpen((v) => !v)}
+            isActive={isActive}
+            onNavClick={onClose}
+          />
+
+          {/* Community group */}
+          <NavGroup
+            label="Community"
+            icon={Users}
+            items={COMMUNITY_CHILDREN}
+            isOpen={communityOpen}
+            hasActiveChild={communityActive}
+            onToggle={() => setCommunityOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
           />
