@@ -427,19 +427,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onNavClick={onClose}
           />
 
-          {/* More group */}
-          <NavGroup
-            label="More"
-            icon={MoreHorizontal}
-            items={MORE_CHILDREN}
-            isOpen={moreOpen}
-            hasActiveChild={moreActive}
-            onToggle={() => setMoreOpen((v) => !v)}
-            isActive={isActive}
-            onNavClick={onClose}
-          />
-
-          {/* Enterprise — pro tier and above; all admins and founders */}
+          {/* Enterprise — founders and admins */}
           {(user.is_founder || user.role === 'admin') && (
             <NavGroup
               label="Enterprise"
@@ -465,6 +453,29 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
               />
             </li>
           )}
+
+          {/* Billing — quick access */}
+          <li>
+            <NavLink
+              href="/app/billing"
+              label="Billing"
+              icon={CreditCard}
+              active={isActive('/app/billing')}
+              onClick={onClose}
+            />
+          </li>
+
+          {/* More — secondary/utility links, always last */}
+          <NavGroup
+            label="More"
+            icon={MoreHorizontal}
+            items={MORE_CHILDREN}
+            isOpen={moreOpen}
+            hasActiveChild={moreActive}
+            onToggle={() => setMoreOpen((v) => !v)}
+            isActive={isActive}
+            onNavClick={onClose}
+          />
         </ul>
       </nav>
 
