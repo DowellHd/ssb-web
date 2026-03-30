@@ -38,6 +38,7 @@ import {
 import { ChatBubble } from '@/components/assistant';
 import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { getCurrentUser, logout, type User } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
@@ -270,10 +271,8 @@ function UserMenu({ user, onLogout, isActive, onNavClick }: UserMenuProps) {
         aria-label="Account menu"
         className="flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted transition-colors group"
       >
-        {/* Avatar initials */}
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
-          {(user.full_name || user.email).charAt(0).toUpperCase()}
-        </div>
+        {/* Avatar */}
+        <UserAvatar avatarUrl={user.avatar_url} name={user.full_name || user.email} size={32} />
 
         <div className="flex-1 min-w-0 text-left">
           <div className="flex items-center gap-1.5">

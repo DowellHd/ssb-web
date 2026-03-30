@@ -16,6 +16,8 @@ import {
   AlertTriangle,
   Bug,
   RotateCcw,
+  Camera,
+  Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,11 +31,13 @@ import {
   confirmMFA,
   disableMFA,
   getMFAStatus,
+  updateAvatar,
   type User,
   type SessionInfo,
   type MFAEnableResponse,
   type MFAStatusResponse,
 } from '@/lib/api/auth';
+import { UserAvatar, PRESET_COLORS } from '@/components/ui/user-avatar';
 import { getErrorMessage } from '@/lib/api-client';
 import { resetAssistantHint } from '@/lib/assistant-hint';
 
@@ -43,6 +47,12 @@ export default function SettingsPage() {
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [mfaStatus, setMfaStatus] = useState<MFAStatusResponse | null>(null);
+
+  // Avatar state
+  const [avatarTab, setAvatarTab] = useState<'preset' | 'upload'>('preset');
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [avatarSaving, setAvatarSaving] = useState(false);
 
   // Change password state
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -195,6 +205,64 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSavePresetAvatar = async () => {
+    if (!selectedPreset) return;
+    setAvatarSaving(true);
+    try {
+      const updated = await updateAvatar(`preset:${selectedPreset}`);
+      setUser(updated);
+      toast.success('Profile picture updated');
+      setSelectedPreset(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setAvatarSaving(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File must be under 5MB');
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, 256, 256);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      if (dataUrl.length > 204_800) {
+        toast.error('Image too large after compression. Try a smaller file.');
+        return;
+      }
+      setUploadPreview(dataUrl);
+    };
+    img.src = URL.createObjectURL(file);
+  };
+
+  const handleSaveUploadAvatar = async () => {
+    if (!uploadPreview) return;
+    setAvatarSaving(true);
+    try {
+      const updated = await updateAvatar(uploadPreview);
+      setUser(updated);
+      toast.success('Profile picture updated');
+      setUploadPreview(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setAvatarSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -210,6 +278,134 @@ export default function SettingsPage() {
         <p className="text-muted-foreground mt-1">
           Manage your account security and preferences
         </p>
+      </div>
+
+      {/* Profile Picture section */}
+      <div className="rounded-lg border bg-card p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Camera className="h-5 w-5 text-primary" />
+          </div>
+          <h2 className="text-lg font-semibold">Profile Picture</h2>
+        </div>
+
+        <div className="flex items-center gap-4 mb-6">
+          <UserAvatar
+            avatarUrl={user?.avatar_url}
+            name={user?.full_name || user?.email || '?'}
+            size={64}
+          />
+          <div>
+            <p className="font-medium">{user?.full_name || user?.email}</p>
+            <p className="text-sm text-muted-foreground">
+              {user?.avatar_url
+                ? user.avatar_url.startsWith('preset:')
+                  ? `Color: ${user.avatar_url.split(':')[1]}`
+                  : 'Custom photo'
+                : 'Using auto-generated color'}
+            </p>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-4 border-b">
+          <button
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              avatarTab === 'preset'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+            onClick={() => setAvatarTab('preset')}
+          >
+            Color Preset
+          </button>
+          <button
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              avatarTab === 'upload'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+            onClick={() => setAvatarTab('upload')}
+          >
+            Upload Photo
+          </button>
+        </div>
+
+        {avatarTab === 'preset' && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(PRESET_COLORS).map(([colorName, colors]) => (
+                <button
+                  key={colorName}
+                  title={colorName}
+                  onClick={() => setSelectedPreset(colorName)}
+                  className={`rounded-full flex items-center justify-center font-semibold text-xs transition-all ${colors.bg} ${colors.text} ${
+                    selectedPreset === colorName
+                      ? 'ring-2 ring-offset-2 ring-primary scale-110'
+                      : 'hover:scale-105'
+                  }`}
+                  style={{ width: 40, height: 40 }}
+                >
+                  {(user?.full_name || user?.email || '?').slice(0, 2).toUpperCase()}
+                </button>
+              ))}
+            </div>
+            {selectedPreset && (
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-muted-foreground">
+                  Selected: <span className="capitalize font-medium">{selectedPreset}</span>
+                </p>
+                <Button size="sm" onClick={handleSavePresetAvatar} disabled={avatarSaving}>
+                  {avatarSaving ? 'Saving...' : 'Save'}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setSelectedPreset(null)}>
+                  Cancel
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {avatarTab === 'upload' && (
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="avatar-upload"
+                className="flex items-center gap-2 cursor-pointer w-fit px-4 py-2 rounded-md border text-sm hover:bg-muted transition-colors"
+              >
+                <Upload className="h-4 w-4" />
+                Choose image
+              </label>
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                Max 5MB · JPG, PNG or WebP · Resized to 256×256
+              </p>
+            </div>
+
+            {uploadPreview && (
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={uploadPreview} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleSaveUploadAvatar} disabled={avatarSaving}>
+                    {avatarSaving ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setUploadPreview(null)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Profile section */}

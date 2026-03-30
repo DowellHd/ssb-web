@@ -28,6 +28,7 @@ export interface User {
   created_at: string;
   last_login_at?: string;
   is_founder?: boolean;
+  avatar_url?: string | null;
 }
 
 export interface LoginResponse {
@@ -196,5 +197,10 @@ export async function getSessions(): Promise<SessionListResponse> {
 
 export async function revokeSession(sessionId: string): Promise<MessageResponse> {
   const response = await apiClient.post(`/auth/sessions/${sessionId}/revoke`);
+  return response.data;
+}
+
+export async function updateAvatar(avatarUrl: string): Promise<User> {
+  const response = await apiClient.patch<User>('/auth/me/avatar', { avatar_url: avatarUrl });
   return response.data;
 }

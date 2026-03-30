@@ -15,6 +15,7 @@ import {
   Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import {
   getCommunityEntitlements,
   listTradeIdeas,
@@ -85,7 +86,10 @@ function TradeIdeaCard({ idea }: { idea: TradeIdea }) {
       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{idea.thesis}</p>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{idea.author_display_name ?? 'Anonymous'}</span>
+        <div className="flex items-center gap-1.5">
+          <UserAvatar name={idea.author_display_name ?? 'Anonymous'} size={20} />
+          <span>{idea.author_display_name ?? 'Anonymous'}</span>
+        </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">
             <Heart className="h-3.5 w-3.5" />
@@ -138,7 +142,10 @@ function PostCard({ post }: { post: CommunityPost }) {
       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{post.body}</p>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{post.author_display_name ?? 'Anonymous'}</span>
+        <div className="flex items-center gap-1.5">
+          <UserAvatar name={post.author_display_name ?? 'Anonymous'} size={20} />
+          <span>{post.author_display_name ?? 'Anonymous'}</span>
+        </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">
             <Heart className="h-3.5 w-3.5" />
