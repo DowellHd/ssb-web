@@ -396,6 +396,7 @@ export interface ScreeningResponse {
   matched_count: number;
   results: ScreenerResult[];
   criteria_applied: ScreenerCriterion[];
+  data_source: 'live' | 'sample';
 }
 
 export async function screenStocks(
