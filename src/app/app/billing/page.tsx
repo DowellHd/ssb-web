@@ -17,30 +17,37 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Delayed regime data',
     'Basic risk analytics',
     'Limited paper trading',
-    'Basic chart overlays',
+    'Community access',
+    'Learning hub (4 modules)',
     'Community support',
   ],
   starter: [
     'Reduced data delay',
     'Standard risk analytics',
     'Standard paper trading',
-    'Standard chart overlays',
+    'Options chain viewer',
+    'Crypto portfolio tracker',
+    'All learning modules',
     'Email support',
   ],
   pro: [
     'Real-time regime data',
     'Advanced risk analytics',
-    'Advanced paper trading',
-    'All chart overlays',
-    'Stress testing access',
+    'Advanced paper trading + options',
+    'Webhooks (up to 20)',
+    'Alternative investments tracker',
+    'Algo strategies (up to 5)',
+    'Backtesting engine',
     'Priority support',
   ],
   institutional: [
     'Real-time + priority data',
     'Full risk analytics suite',
     'Unlimited paper trading',
-    'All overlays + custom',
-    'Full API access',
+    'API keys + webhooks (unlimited)',
+    'Advisor CRM platform',
+    'Unlimited algo strategies',
+    'Compliance & audit reports',
     'Dedicated support',
   ],
 };
@@ -65,21 +72,53 @@ const COMPARISON_SECTIONS: ComparisonSection[] = [
     features: [
       { label: 'Regime Data', free: 'Delayed', starter: 'Reduced delay', pro: 'Real-time', institutional: 'Real-time' },
       { label: 'Risk Analytics', free: 'Basic', starter: 'Standard', pro: 'Advanced', institutional: 'Full Suite' },
+      { label: 'Stock Screener', free: 'Basic', starter: 'Standard', pro: 'Advanced', institutional: 'Advanced' },
       { label: 'Stress Testing', free: false, starter: false, pro: true, institutional: true },
-    ],
-  },
-  {
-    section: 'Simulation & Scenarios',
-    features: [
       { label: 'Scenario Mode', free: 'Lite', starter: 'Standard', pro: 'Standard', institutional: 'Advanced' },
       { label: 'Scenario Export', free: false, starter: false, pro: false, institutional: true },
     ],
   },
   {
-    section: 'Paper Trading',
+    section: 'Paper Trading & Options',
     features: [
-      { label: 'Positions & Orders', free: 'Limited', starter: 'Standard', pro: 'Advanced', institutional: 'Unlimited' },
+      { label: 'Paper Positions & Orders', free: 'Limited', starter: 'Standard', pro: 'Advanced', institutional: 'Unlimited' },
       { label: 'Chart Overlays', free: 'Basic', starter: 'Standard', pro: 'Advanced', institutional: 'Advanced' },
+      { label: 'Options Chain Viewer', free: false, starter: true, pro: true, institutional: true },
+      { label: 'Options Paper Trading', free: false, starter: false, pro: true, institutional: true },
+    ],
+  },
+  {
+    section: 'Crypto',
+    features: [
+      { label: 'Crypto Watchlist', free: true, starter: true, pro: true, institutional: true },
+      { label: 'Crypto Portfolio', free: false, starter: true, pro: true, institutional: true },
+    ],
+  },
+  {
+    section: 'Learning',
+    features: [
+      { label: 'Learning Hub', free: '4 free modules', starter: 'All modules', pro: 'All modules', institutional: 'All modules' },
+      { label: 'Learning Paths', free: 'Beginner only', starter: 'All paths', pro: 'All paths', institutional: 'All paths' },
+    ],
+  },
+  {
+    section: 'Community',
+    features: [
+      { label: 'Community Feed', free: true, starter: true, pro: true, institutional: true },
+      { label: 'Trade Ideas & Posts', free: true, starter: true, pro: true, institutional: true },
+      { label: 'Investment Clubs', free: 'View only', starter: 'Standard', pro: 'Standard', institutional: 'Unlimited' },
+    ],
+  },
+  {
+    section: 'Enterprise',
+    features: [
+      { label: 'Backtesting', free: false, starter: false, pro: 'Standard', institutional: 'Advanced' },
+      { label: 'Alternative Investments', free: false, starter: false, pro: true, institutional: true },
+      { label: 'Algo Strategies', free: false, starter: false, pro: 'Up to 5', institutional: 'Unlimited' },
+      { label: 'Webhooks', free: false, starter: false, pro: 'Up to 20', institutional: 'Unlimited' },
+      { label: 'API Keys', free: false, starter: false, pro: false, institutional: true },
+      { label: 'Advisor CRM', free: false, starter: false, pro: false, institutional: true },
+      { label: 'Compliance Reports', free: false, starter: false, pro: false, institutional: true },
     ],
   },
   {
@@ -87,6 +126,7 @@ const COMPARISON_SECTIONS: ComparisonSection[] = [
     features: [
       { label: 'API Access', free: false, starter: 'Limited', pro: 'Full', institutional: 'Priority' },
       { label: 'Data Export', free: false, starter: 'Basic', pro: 'Standard', institutional: 'Full' },
+      { label: 'Audit Log', free: true, starter: true, pro: true, institutional: true },
       { label: 'Support', free: 'Community', starter: 'Email', pro: 'Priority', institutional: 'Dedicated' },
     ],
   },
