@@ -9,6 +9,7 @@ import {
   BarChart3,
   Bitcoin,
   BookOpen,
+  Building2,
   Calculator,
   CandlestickChart,
   ChevronDown,
@@ -77,6 +78,15 @@ const MORE_CHILDREN = [
   { href: '/app/audit', label: 'Audit Log', icon: ClipboardList },
   { href: '/app/changelog', label: 'Changelog', icon: History },
   { href: '/app/roadmap', label: 'Roadmap', icon: Map },
+];
+
+const ENTERPRISE_CHILDREN = [
+  { href: '/app/enterprise/advisor', label: 'Advisor CRM', icon: Users },
+  { href: '/app/enterprise/alternatives', label: 'Alternatives', icon: BarChart3 },
+  { href: '/app/enterprise/strategies', label: 'Algo Strategies', icon: TrendingUp },
+  { href: '/app/enterprise/webhooks', label: 'Webhooks', icon: FileText },
+  { href: '/app/enterprise/api-keys', label: 'API Keys', icon: Shield },
+  { href: '/app/enterprise/compliance', label: 'Compliance', icon: ShieldCheck },
 ];
 
 const ACCOUNT_ITEMS = [
@@ -318,6 +328,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
   const learnActive = LEARN_CHILDREN.some((c) => isActive(c.href));
   const communityActive = pathname.startsWith('/app/community');
   const moreActive = MORE_CHILDREN.some((c) => isActive(c.href));
+  const enterpriseActive = pathname.startsWith('/app/enterprise');
 
   // Auto-expand the section that contains the current route
   const [analysisOpen, setAnalysisOpen] = useState(analysisActive);
@@ -325,6 +336,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
   const [learnOpen, setLearnOpen] = useState(learnActive);
   const [communityOpen, setCommunityOpen] = useState(communityActive);
   const [moreOpen, setMoreOpen] = useState(moreActive);
+  const [enterpriseOpen, setEnterpriseOpen] = useState(enterpriseActive);
 
   useEffect(() => {
     if (analysisActive) setAnalysisOpen(true);
@@ -332,6 +344,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
     if (learnActive) setLearnOpen(true);
     if (communityActive) setCommunityOpen(true);
     if (moreActive) setMoreOpen(true);
+    if (enterpriseActive) setEnterpriseOpen(true);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -425,6 +438,20 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             isActive={isActive}
             onNavClick={onClose}
           />
+
+          {/* Enterprise — pro tier and above; all admins and founders */}
+          {(user.is_founder || user.role === 'admin') && (
+            <NavGroup
+              label="Enterprise"
+              icon={Building2}
+              items={ENTERPRISE_CHILDREN}
+              isOpen={enterpriseOpen}
+              hasActiveChild={enterpriseActive}
+              onToggle={() => setEnterpriseOpen((v) => !v)}
+              isActive={isActive}
+              onNavClick={onClose}
+            />
+          )}
 
           {/* Admin — founder / admin role only */}
           {(user.is_founder || user.role === 'admin') && (
