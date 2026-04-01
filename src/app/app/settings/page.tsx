@@ -18,6 +18,10 @@ import {
   RotateCcw,
   Camera,
   Upload,
+  Bell,
+  Mail,
+  MonitorSmartphone,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +41,12 @@ import {
   type MFAEnableResponse,
   type MFAStatusResponse,
 } from '@/lib/api/auth';
+import {
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  type NotificationPreferences,
+  type AlertThresholds,
+} from '@/lib/api/notifications';
 import { UserAvatar, PRESET_COLORS } from '@/components/ui/user-avatar';
 import { getErrorMessage } from '@/lib/api-client';
 import { resetAssistantHint } from '@/lib/assistant-hint';
@@ -78,20 +88,26 @@ export default function SettingsPage() {
   const [disableCode, setDisableCode] = useState('');
   const [disablingMFA, setDisablingMFA] = useState(false);
 
+  // Notification preferences state
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences | null>(null);
+  const [savingNotif, setSavingNotif] = useState(false);
+
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
     try {
-      const [userData, sessionsData, mfaStatusData] = await Promise.all([
+      const [userData, sessionsData, mfaStatusData, notifData] = await Promise.all([
         getCurrentUser(),
         getSessions(),
         getMFAStatus(),
+        getNotificationPreferences(),
       ]);
       setUser(userData);
       setSessions(sessionsData.sessions);
       setMfaStatus(mfaStatusData);
+      setNotifPrefs(notifData);
     } catch (error) {
       toast.error('Failed to load settings');
     } finally {
@@ -260,6 +276,50 @@ export default function SettingsPage() {
       toast.error(getErrorMessage(error));
     } finally {
       setAvatarSaving(false);
+    }
+  };
+
+  const handleNotifToggle = async (key: keyof NotificationPreferences, value: boolean) => {
+    if (!notifPrefs) return;
+    const optimistic = { ...notifPrefs, [key]: value };
+    setNotifPrefs(optimistic);
+    setSavingNotif(true);
+    try {
+      const updated = await updateNotificationPreferences({ [key]: value });
+      setNotifPrefs(updated);
+    } catch (error) {
+      setNotifPrefs(notifPrefs);
+      toast.error(getErrorMessage(error));
+    } finally {
+      setSavingNotif(false);
+    }
+  };
+
+  const handleThresholdChange = async (
+    key: keyof AlertThresholds,
+    value: number
+  ) => {
+    if (!notifPrefs) return;
+    const updated = {
+      ...notifPrefs,
+      thresholds: { ...notifPrefs.thresholds, [key]: value },
+    };
+    setNotifPrefs(updated);
+  };
+
+  const saveThresholds = async () => {
+    if (!notifPrefs) return;
+    setSavingNotif(true);
+    try {
+      const updated = await updateNotificationPreferences({
+        thresholds: notifPrefs.thresholds,
+      });
+      setNotifPrefs(updated);
+      toast.success('Alert thresholds saved');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setSavingNotif(false);
     }
   };
 
@@ -768,6 +828,253 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Notifications section */}
+      <div className="rounded-lg border bg-card p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 rounded-lg bg-orange-100">
+            <Bell className="h-5 w-5 text-orange-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold">Notifications</h2>
+            <p className="text-sm text-muted-foreground">
+              Choose what you hear about and how
+            </p>
+          </div>
+        </div>
+
+        {notifPrefs ? (
+          <div className="space-y-8">
+            {/* Email notifications */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-medium text-sm">Email Notifications</h3>
+              </div>
+              <div className="space-y-4">
+                {(
+                  [
+                    {
+                      key: 'email_security_alerts' as const,
+                      label: 'Security alerts',
+                      description: 'New sign-ins, password changes, suspicious activity',
+                      locked: true,
+                    },
+                    {
+                      key: 'email_billing' as const,
+                      label: 'Billing & subscription',
+                      description: 'Payment confirmations and subscription changes',
+                      locked: true,
+                    },
+                    {
+                      key: 'email_portfolio_summary' as const,
+                      label: 'Weekly portfolio summary',
+                      description: 'A digest of your portfolio performance every week',
+                      locked: false,
+                    },
+                    {
+                      key: 'email_signal_alerts' as const,
+                      label: 'Signal alerts',
+                      description: 'Email when new trading signals fire for your watchlist',
+                      locked: false,
+                    },
+                    {
+                      key: 'email_price_alerts' as const,
+                      label: 'Price threshold alerts',
+                      description: 'Email when a stock hits your configured price target',
+                      locked: false,
+                    },
+                    {
+                      key: 'email_news_digest' as const,
+                      label: 'Daily market news digest',
+                      description: 'Morning summary of key market events and news',
+                      locked: false,
+                    },
+                    {
+                      key: 'email_paper_trade_fills' as const,
+                      label: 'Paper trade confirmations',
+                      description: 'Email when paper orders are filled or rejected',
+                      locked: false,
+                    },
+                    {
+                      key: 'email_product_updates' as const,
+                      label: 'Product updates',
+                      description: 'New features, improvements, and platform news',
+                      locked: false,
+                    },
+                  ] satisfies Array<{
+                    key: keyof NotificationPreferences;
+                    label: string;
+                    description: string;
+                    locked: boolean;
+                  }>
+                ).map(({ key, label, description, locked }) => (
+                  <div key={key} className="flex items-start justify-between py-2 border-b last:border-0">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <p className="text-sm font-medium">{label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                      {locked && (
+                        <p className="text-xs text-muted-foreground mt-0.5 italic">
+                          Required for account safety
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={locked || savingNotif}
+                      onClick={() =>
+                        !locked && handleNotifToggle(key, !notifPrefs[key])
+                      }
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                        notifPrefs[key] ? 'bg-primary' : 'bg-input'
+                      }`}
+                      aria-pressed={notifPrefs[key] as boolean}
+                    >
+                      <span
+                        className={`pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                          notifPrefs[key] ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* In-app notifications */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <MonitorSmartphone className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-medium text-sm">In-App Notifications</h3>
+              </div>
+              <div className="space-y-4">
+                {([
+                  {
+                    key: 'push_signal_alerts' as const,
+                    label: 'Signal alerts',
+                    description: 'In-app banner when signals fire for your watchlist',
+                  },
+                  {
+                    key: 'push_portfolio_alerts' as const,
+                    label: 'Portfolio risk warnings',
+                    description: 'Drawdown and concentration alerts inside the app',
+                  },
+                  {
+                    key: 'push_paper_trade_fills' as const,
+                    label: 'Paper trade fills',
+                    description: 'In-app notification when paper orders execute',
+                  },
+                  {
+                    key: 'push_earnings_reminders' as const,
+                    label: 'Earnings reminders',
+                    description: 'Reminder before earnings for stocks you follow',
+                  },
+                  {
+                    key: 'push_community_activity' as const,
+                    label: 'Community activity',
+                    description: 'Likes, comments, and mentions on your posts',
+                  },
+                ] as const).map(({ key, label, description }) => (
+                  <div key={key} className="flex items-start justify-between py-2 border-b last:border-0">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <p className="text-sm font-medium">{label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={savingNotif}
+                      onClick={() => handleNotifToggle(key, !notifPrefs[key])}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                        notifPrefs[key] ? 'bg-primary' : 'bg-input'
+                      }`}
+                      aria-pressed={notifPrefs[key] as boolean}
+                    >
+                      <span
+                        className={`pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                          notifPrefs[key] ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Alert thresholds */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-medium text-sm">Alert Thresholds</h3>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">
+                Trigger portfolio and position alerts at these levels
+              </p>
+              <div className="space-y-5">
+                {([
+                  {
+                    key: 'portfolio_drawdown_pct' as const,
+                    label: 'Portfolio drawdown alert',
+                    description: 'Alert when overall portfolio drops this % from its peak',
+                    min: 1,
+                    max: 50,
+                    step: 1,
+                  },
+                  {
+                    key: 'position_loss_pct' as const,
+                    label: 'Single position loss alert',
+                    description: 'Alert when any position loses this % from your entry price',
+                    min: 1,
+                    max: 75,
+                    step: 1,
+                  },
+                  {
+                    key: 'paper_drawdown_pct' as const,
+                    label: 'Paper account drawdown alert',
+                    description: 'Alert when your paper trading account drawdown exceeds this %',
+                    min: 1,
+                    max: 75,
+                    step: 1,
+                  },
+                ] as const).map(({ key, label, description, min, max, step }) => (
+                  <div key={key}>
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-sm font-medium">{label}</Label>
+                      <span className="text-sm font-semibold tabular-nums text-primary">
+                        {notifPrefs.thresholds[key]}%
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">{description}</p>
+                    <input
+                      type="range"
+                      min={min}
+                      max={max}
+                      step={step}
+                      value={notifPrefs.thresholds[key]}
+                      onChange={(e) =>
+                        handleThresholdChange(key, Number(e.target.value))
+                      }
+                      className="w-full h-2 accent-primary cursor-pointer"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>{min}%</span>
+                      <span>{max}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5">
+                <Button size="sm" onClick={saveThresholds} disabled={savingNotif}>
+                  {savingNotif ? 'Saving...' : 'Save thresholds'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        )}
       </div>
 
       {/* Active sessions */}
