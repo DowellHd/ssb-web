@@ -4,19 +4,37 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import {
-  TrendingUp,
-  Shield,
-  LineChart,
+  Activity,
+  AlertCircle,
+  BarChart3,
+  Bitcoin,
+  BookOpen,
+  Building2,
+  Calculator,
+  Calendar,
+  CandlestickChart,
+  CheckCircle,
   ClipboardList,
   CreditCard,
-  Settings,
-  ArrowRight,
-  RefreshCw,
-  CheckCircle,
-  AlertCircle,
+  Layers,
+  Leaf,
+  LineChart,
+  Lock,
   Mail,
+  Map,
+  MessageSquare,
   Newspaper,
-  BookOpen,
+  RefreshCw,
+  Search,
+  Settings,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+  UserCheck,
+  Users,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getDashboardSummary, getCapabilities, type DashboardSummary, type Capabilities } from '@/lib/api/meta';
@@ -24,10 +42,177 @@ import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/in
 import { getMarketSummary, type MarketSummaryResponse } from '@/lib/api/news';
 import { resendVerification } from '@/lib/api/auth';
 import { getPlanDisplayName } from '@/lib/plan-config';
+import { cn } from '@/lib/utils';
+import { useCommandPaletteStore } from '@/stores/command-palette-store';
 
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
+// ============================================================================
+// Capability map data
+// ============================================================================
+
+interface FeatureTile {
+  label: string;
+  description: string;
+  href: string;
+  icon: React.ElementType;
+  tier?: 'starter' | 'pro' | 'institutional';
+  isNew?: boolean;
 }
+
+interface FeatureSection {
+  title: string;
+  icon: React.ElementType;
+  color: string;         // Tailwind accent color class
+  features: FeatureTile[];
+}
+
+const CAPABILITY_MAP: FeatureSection[] = [
+  {
+    title: 'Analysis',
+    icon: BarChart3,
+    color: 'text-blue-500',
+    features: [
+      { label: 'Regime Analysis',      description: 'Market cycle classification',         href: '/app/regime',    icon: TrendingUp },
+      { label: 'Risk Analytics',       description: 'VaR, drawdown, correlation',           href: '/app/risk',      icon: Shield },
+      { label: 'Portfolio Optimizer',  description: 'Efficient frontier & Sharpe',          href: '/app/analytics', icon: BarChart3,   tier: 'starter' },
+      { label: 'Technical Analysis',   description: '30+ indicators',                        href: '/app/analytics', icon: Activity },
+      { label: 'Sector Rotation',      description: 'RRG quadrant positioning',             href: '/app/analytics', icon: Map,         tier: 'starter' },
+      { label: 'Monte Carlo',          description: '1,000-path portfolio simulation',       href: '/app/analytics', icon: Sparkles,    tier: 'starter' },
+    ],
+  },
+  {
+    title: 'AI & Predictive',
+    icon: Sparkles,
+    color: 'text-violet-500',
+    features: [
+      { label: 'GARCH Volatility',     description: 'Volatility forecast & VaR',           href: '/app/analytics', icon: Zap,         tier: 'pro',     isNew: true },
+      { label: 'Anomaly Detection',    description: 'Statistical market anomalies',         href: '/app/analytics', icon: ShieldAlert, tier: 'starter', isNew: true },
+      { label: 'Sentiment Analysis',   description: 'NLP on news headlines',                href: '/app/analytics', icon: Newspaper,   tier: 'pro',     isNew: true },
+      { label: 'ESG Scoring',          description: 'E/S/G ratings & controversy flags',   href: '/app/analytics', icon: Leaf,        tier: 'starter', isNew: true },
+      { label: 'Earnings Surprise',    description: 'Beat/miss probability model',          href: '/app/analytics', icon: Calendar,    tier: 'pro',     isNew: true },
+      { label: 'Factor Analysis',      description: 'Fama-French multi-factor model',       href: '/app/analytics', icon: BarChart3,   tier: 'pro' },
+    ],
+  },
+  {
+    title: 'Trading',
+    icon: CandlestickChart,
+    color: 'text-emerald-500',
+    features: [
+      { label: 'Paper Trading',        description: 'Simulated order management',           href: '/app/paper',     icon: CandlestickChart },
+      { label: 'Options Chain',        description: 'Greeks, IV, expiration viewer',        href: '/app/options',   icon: Layers,      tier: 'starter' },
+      { label: 'Crypto',               description: 'Crypto market analytics',              href: '/app/crypto',    icon: Bitcoin },
+      { label: 'Backtests',            description: 'Historical strategy testing',          href: '/app/backtests', icon: LineChart,   tier: 'starter' },
+      { label: 'Screener',             description: 'Multi-factor stock screening',         href: '/app/screening', icon: Search },
+      { label: 'Sector Heatmap',       description: 'S&P 500 sector performance',           href: '/app/analytics', icon: Map,         isNew: true },
+    ],
+  },
+  {
+    title: 'Learn & Tools',
+    icon: BookOpen,
+    color: 'text-orange-500',
+    features: [
+      { label: 'Learning Hub',         description: '14 modules across 4 paths',            href: '/app/learn',       icon: BookOpen },
+      { label: 'Market News',          description: 'Latest financial intelligence',         href: '/app/news',        icon: Newspaper },
+      { label: 'Calculators',          description: 'Compound interest, CAGR & more',       href: '/app/calculators', icon: Calculator },
+      { label: 'Style Quiz',           description: 'Discover your risk profile',           href: '/app/onboarding',  icon: UserCheck },
+      { label: 'DCF Valuation',        description: 'Intrinsic value models',               href: '/app/analytics',   icon: Calculator, tier: 'pro' },
+      { label: 'Roadmap',              description: "What's coming next",                    href: '/app/roadmap',     icon: Map },
+    ],
+  },
+  {
+    title: 'Community',
+    icon: Users,
+    color: 'text-pink-500',
+    features: [
+      { label: 'Social Feed',          description: 'Ideas and market discussion',          href: '/app/community',           icon: MessageSquare },
+      { label: 'Share Idea',           description: 'Post your market thesis',              href: '/app/community/ideas/new', icon: TrendingUp },
+      { label: 'Investment Clubs',     description: 'Group investing and analysis',         href: '/app/community',           icon: Users },
+    ],
+  },
+  {
+    title: 'Enterprise',
+    icon: Building2,
+    color: 'text-amber-500',
+    features: [
+      { label: 'Advisor CRM',          description: 'Client relationship management',       href: '/app/enterprise/advisor',     icon: Users,      tier: 'institutional' },
+      { label: 'Algo Strategies',      description: 'Systematic trading strategies',        href: '/app/enterprise/strategies',  icon: TrendingUp, tier: 'institutional' },
+      { label: 'Compliance Center',    description: 'Regulatory monitoring & reporting',    href: '/app/enterprise/compliance',  icon: ShieldCheck, tier: 'institutional' },
+      { label: 'Webhooks',             description: 'Real-time event integration',          href: '/app/enterprise/webhooks',    icon: Zap,        tier: 'institutional' },
+      { label: 'API Keys',             description: 'Programmatic access management',       href: '/app/enterprise/api-keys',    icon: Shield,     tier: 'institutional' },
+      { label: 'Alternatives',         description: 'Private equity & hedge fund data',     href: '/app/enterprise/alternatives', icon: Layers,    tier: 'institutional' },
+    ],
+  },
+];
+
+const TIER_BADGE: Record<string, string> = {
+  starter:      'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  pro:          'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400',
+  institutional:'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+};
+const TIER_LABEL: Record<string, string> = {
+  starter: 'Starter',
+  pro: 'Pro',
+  institutional: 'Enterprise',
+};
+
+// ============================================================================
+// Sub-components
+// ============================================================================
+
+function FeatureTileCard({ feature }: { feature: FeatureTile }) {
+  const Icon = feature.icon;
+  const tierLabel = feature.tier ? TIER_LABEL[feature.tier] : null;
+  const tierBadge = feature.tier ? TIER_BADGE[feature.tier] : null;
+
+  return (
+    <Link
+      href={feature.href}
+      className="group flex items-start gap-3 rounded-lg border bg-card/50 p-3 hover:border-primary/40 hover:bg-card transition-all"
+    >
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-sm font-medium leading-tight">{feature.label}</span>
+          {feature.isNew && (
+            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+              NEW
+            </span>
+          )}
+          {tierLabel && (
+            <span className={cn('flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase', tierBadge)}>
+              <Lock className="h-2 w-2" />
+              {tierLabel}
+            </span>
+          )}
+        </div>
+        <p className="mt-0.5 text-xs text-muted-foreground leading-tight">{feature.description}</p>
+      </div>
+    </Link>
+  );
+}
+
+function CapabilitySection({ section }: { section: FeatureSection }) {
+  const Icon = section.icon;
+  return (
+    <div className="rounded-xl border bg-card">
+      <div className="flex items-center gap-2.5 border-b px-4 py-3">
+        <Icon className={cn('h-4 w-4', section.color)} />
+        <h3 className="font-semibold text-sm">{section.title}</h3>
+        <span className="ml-auto text-xs text-muted-foreground">
+          {section.features.length} tools
+        </span>
+      </div>
+      <div className="grid grid-cols-1 gap-1.5 p-3 sm:grid-cols-2">
+        {section.features.map((f) => (
+          <FeatureTileCard key={f.href + f.label} feature={f} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Dashboard page
+// ============================================================================
 
 export default function AppDashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardSummary | null>(null);
@@ -40,6 +225,8 @@ export default function AppDashboardPage() {
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [verificationCooldown, setVerificationCooldown] = useState(0);
+
+  const openPalette = useCommandPaletteStore((s) => s.openPalette);
 
   const loadData = async () => {
     setLoading(true);
@@ -54,12 +241,11 @@ export default function AppDashboardPage() {
       setCapabilities(capabilitiesData);
       setEntitlements(entitlementsData);
 
-      // Load market summary separately (don't fail dashboard on this)
       try {
         const summaryData = await getMarketSummary();
         setMarketSummary(summaryData);
       } catch {
-        // Silently fail - market summary is optional
+        // Market summary is optional
       }
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to load dashboard');
@@ -68,73 +254,33 @@ export default function AppDashboardPage() {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  // Cooldown timer for verification resend
   useEffect(() => {
     if (verificationCooldown > 0) {
-      const timer = setTimeout(() => setVerificationCooldown(c => c - 1), 1000);
+      const timer = setTimeout(() => setVerificationCooldown((c) => c - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [verificationCooldown]);
 
   const handleResendVerification = async () => {
     if (!dashboard?.email || verificationSending || verificationCooldown > 0) return;
-
     setVerificationSending(true);
     setVerificationError(null);
     setVerificationSent(false);
-
     try {
       await resendVerification(dashboard.email);
       setVerificationSent(true);
-      setVerificationCooldown(30); // 30 second cooldown
+      setVerificationCooldown(30);
       toast.success('Verification email sent! Check your inbox.');
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.detail || 'Failed to send verification email';
-      setVerificationError(errorMessage);
-      toast.error(errorMessage);
+      const msg = err?.response?.data?.detail || 'Failed to send verification email';
+      setVerificationError(msg);
+      toast.error(msg);
     } finally {
       setVerificationSending(false);
     }
   };
-
-  const features = [
-    {
-      title: 'Market News',
-      description: 'Latest market intelligence and analysis',
-      icon: Newspaper,
-      href: '/app/news',
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-100',
-    },
-    {
-      title: 'Regime Analysis',
-      description: 'Market regime classification with confidence scores',
-      icon: TrendingUp,
-      href: '/app/regime',
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-100',
-    },
-    {
-      title: 'Risk Analytics',
-      description: 'Portfolio risk metrics and VaR analysis',
-      icon: Shield,
-      href: '/app/risk',
-      color: 'text-green-500',
-      bgColor: 'bg-green-100',
-    },
-    {
-      title: 'Learn',
-      description: 'Educational modules and glossary',
-      icon: BookOpen,
-      href: '/app/learn',
-      color: 'text-indigo-500',
-      bgColor: 'bg-indigo-100',
-    },
-  ];
 
   if (loading) {
     return (
@@ -160,90 +306,112 @@ export default function AppDashboardPage() {
     );
   }
 
+  const totalFeatures = CAPABILITY_MAP.reduce((acc, s) => acc + s.features.length, 0);
+  const newFeatures = CAPABILITY_MAP.flatMap((s) => s.features).filter((f) => f.isNew).length;
+
   return (
-    <div className="space-y-8">
-      {/* Welcome section */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 max-w-6xl">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">
             Welcome{dashboard?.full_name ? `, ${dashboard.full_name.split(' ')[0]}` : ''}!
           </h1>
           <p className="text-muted-foreground mt-1">
-            Your AI-powered financial intelligence dashboard
+            {getPlanDisplayName(entitlements?.plan_name)} plan
+            {entitlements?.can_upgrade && (
+              <> &middot; <Link href="/app/billing" className="text-primary hover:underline">Upgrade for more</Link></>
+            )}
           </p>
         </div>
-        <Button onClick={loadData} variant="ghost" size="icon">
-          <RefreshCw className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={openPalette} className="gap-2 hidden sm:flex">
+            <Search className="h-3.5 w-3.5" />
+            Search features
+            <kbd className="ml-1 hidden sm:inline-flex h-4 items-center rounded border bg-muted px-1 text-[10px] font-medium text-muted-foreground">
+              ⌘K
+            </kbd>
+          </Button>
+          <Button onClick={loadData} variant="ghost" size="icon">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      {/* Quick actions */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {features.map((feature) => {
-          const Icon = feature.icon;
-          return (
-            <Link
-              key={feature.title}
-              href={feature.href}
-              className="rounded-lg border bg-card p-6 relative overflow-hidden hover:border-primary/50 transition-colors group"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className={cn('p-2 rounded-lg', feature.bgColor, feature.color)}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="font-semibold">{feature.title}</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                {feature.description}
-              </p>
-              <span className="inline-flex items-center gap-1 text-sm text-primary">
-                Open <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Link>
-          );
-        })}
+      {/* Email verification banner */}
+      {dashboard && !dashboard.email_verified && (
+        <div className="flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30 p-4">
+          <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+          <div className="flex-1 text-sm">
+            <p className="font-medium text-yellow-800 dark:text-yellow-400">Email not verified</p>
+            <p className="text-yellow-700 dark:text-yellow-500 text-xs mt-0.5">
+              Verify your email to unlock all features.
+            </p>
+          </div>
+          <button
+            onClick={handleResendVerification}
+            disabled={verificationSending || verificationCooldown > 0}
+            className="shrink-0 inline-flex items-center gap-1.5 text-xs bg-yellow-600 text-white px-3 py-1.5 rounded hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Mail className="h-3 w-3" />
+            {verificationSending ? 'Sending…' : verificationCooldown > 0 ? `Resend in ${verificationCooldown}s` : 'Resend'}
+          </button>
+          {verificationSent && <p className="text-xs text-green-600">Sent!</p>}
+          {verificationError && <p className="text-xs text-red-600">{verificationError}</p>}
+        </div>
+      )}
+
+      {/* Quick stats row */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <QuickStat label="Total Features" value={String(totalFeatures)} icon={BarChart3} />
+        <QuickStat label="New This Release" value={String(newFeatures)} icon={Sparkles} accent="text-violet-500" />
+        <QuickStat label="Backtests" value={String(dashboard?.backtests_count ?? 0)} icon={LineChart} />
+        <QuickStat
+          label="Risk Level"
+          value={entitlements?.risk_analytics_level ?? 'basic'}
+          icon={Shield}
+          accent="text-emerald-500"
+          capitalize
+        />
       </div>
 
-      {/* Daily Market Summary */}
+      {/* Market summary — compact */}
       {marketSummary && (
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="rounded-xl border bg-card p-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Newspaper className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Daily Market Summary</h2>
+              <Newspaper className="h-4 w-4 text-muted-foreground" />
+              <span className="font-semibold text-sm">Daily Market Summary</span>
               {marketSummary.is_delayed && (
                 <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">
                   {marketSummary.delay_minutes}min delay
                 </span>
               )}
             </div>
-            <Link href="/app/news" className="text-sm text-primary hover:underline">
-              View all news →
+            <Link href="/app/news" className="text-xs text-primary hover:underline">
+              All news →
             </Link>
           </div>
-          <p className="text-lg font-medium mb-2">{marketSummary.summary.headline}</p>
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {marketSummary.summary.overview}
-          </p>
+          <p className="text-sm font-medium mb-3">{marketSummary.summary.headline}</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h3 className="text-sm font-medium mb-2 text-green-600">Top Gainers</h3>
+              <p className="text-xs font-medium text-green-600 mb-1.5">Top Gainers</p>
               <div className="space-y-1">
-                {marketSummary.summary.top_gainers.slice(0, 3).map((mover) => (
-                  <div key={mover.symbol} className="flex justify-between text-sm">
-                    <span className="font-medium">{mover.symbol}</span>
-                    <span className="text-green-600">+{mover.change_percent.toFixed(2)}%</span>
+                {marketSummary.summary.top_gainers.slice(0, 3).map((m) => (
+                  <div key={m.symbol} className="flex justify-between text-xs">
+                    <span className="font-medium">{m.symbol}</span>
+                    <span className="text-green-600">+{m.change_percent.toFixed(2)}%</span>
                   </div>
                 ))}
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-medium mb-2 text-red-600">Top Losers</h3>
+              <p className="text-xs font-medium text-red-600 mb-1.5">Top Losers</p>
               <div className="space-y-1">
-                {marketSummary.summary.top_losers.slice(0, 3).map((mover) => (
-                  <div key={mover.symbol} className="flex justify-between text-sm">
-                    <span className="font-medium">{mover.symbol}</span>
-                    <span className="text-red-600">{mover.change_percent.toFixed(2)}%</span>
+                {marketSummary.summary.top_losers.slice(0, 3).map((m) => (
+                  <div key={m.symbol} className="flex justify-between text-xs">
+                    <span className="font-medium">{m.symbol}</span>
+                    <span className="text-red-600">{m.change_percent.toFixed(2)}%</span>
                   </div>
                 ))}
               </div>
@@ -252,152 +420,121 @@ export default function AppDashboardPage() {
         </div>
       )}
 
-      {/* Account status */}
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-xl font-semibold mb-4">Account Status</h2>
-        <div className="grid gap-6 md:grid-cols-5">
-          <div>
-            <p className="text-sm text-muted-foreground">Email</p>
-            <p className="font-medium text-sm" style={{ overflowWrap: 'break-word' }}>{dashboard?.email ? dashboard.email.replace('@', '\u200B@') : '—'}</p>
-            {dashboard && !dashboard.email_verified && (
-              <div className="mt-2 space-y-2">
-                <p className="text-xs text-yellow-600 flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" /> Not verified
-                </p>
-                <button
-                  onClick={handleResendVerification}
-                  disabled={verificationSending || verificationCooldown > 0}
-                  className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary px-2 py-1 rounded hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Mail className="h-3 w-3" />
-                  {verificationSending
-                    ? 'Sending...'
-                    : verificationCooldown > 0
-                      ? `Resend in ${verificationCooldown}s`
-                      : 'Resend verification email'}
-                </button>
-                {verificationSent && (
-                  <p className="text-xs text-green-600">Check your inbox!</p>
-                )}
-                {verificationError && (
-                  <p className="text-xs text-red-600">{verificationError}</p>
-                )}
-              </div>
-            )}
-            {dashboard?.email_verified && (
-              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                <CheckCircle className="h-3 w-3" /> Verified
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Analysis as of</p>
-            <p className="font-medium">
-              {new Date().toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                timeZoneName: 'short',
-              })}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Plan</p>
-            <p className="font-medium">{getPlanDisplayName(entitlements?.plan_name)}</p>
+      {/* ── Capability Map ──────────────────────────────────────────────── */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Everything in SSB</h2>
+          <button
+            onClick={openPalette}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Search className="h-3.5 w-3.5" />
+            Search
+            <kbd className="hidden sm:inline-flex h-4 items-center rounded border bg-muted px-1.5 text-[10px] font-medium">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {CAPABILITY_MAP.map((section) => (
+            <CapabilitySection key={section.title} section={section} />
+          ))}
+        </div>
+      </div>
+
+      {/* Account status — collapsed to a single row */}
+      <div className="rounded-xl border bg-card p-4">
+        <h3 className="text-sm font-semibold mb-3">Account Status</h3>
+        <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
+          <AccountStat label="Plan" value={getPlanDisplayName(entitlements?.plan_name)} />
+          <AccountStat
+            label="Email"
+            value={dashboard?.email_verified ? 'Verified' : 'Unverified'}
+            valueClass={dashboard?.email_verified ? 'text-green-600' : 'text-yellow-600'}
+            icon={dashboard?.email_verified ? CheckCircle : AlertCircle}
+          />
+          <AccountStat
+            label="MFA"
+            value={dashboard?.mfa_enabled ? 'Enabled' : 'Disabled'}
+            valueClass={dashboard?.mfa_enabled ? 'text-green-600' : 'text-muted-foreground'}
+            icon={dashboard?.mfa_enabled ? ShieldCheck : undefined}
+          />
+          <AccountStat
+            label="Member Since"
+            value={dashboard?.member_since ? new Date(dashboard.member_since).toLocaleDateString() : '—'}
+          />
+          <div className="flex items-center gap-3 ml-auto">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/app/settings" className="gap-1.5">
+                <Settings className="h-3.5 w-3.5" /> Settings
+              </Link>
+            </Button>
             {entitlements?.can_upgrade && (
-              <Link href="/app/billing" className="text-xs text-primary hover:underline">
-                Upgrade
-              </Link>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/app/billing">Upgrade Plan</Link>
+              </Button>
             )}
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">MFA</p>
-            <p className="font-medium">
-              {dashboard?.mfa_enabled ? (
-                <span className="text-green-600 flex items-center gap-1">
-                  <CheckCircle className="h-4 w-4" /> Enabled
-                </span>
-              ) : (
-                <span className="text-muted-foreground">Disabled</span>
-              )}
-            </p>
-            {!dashboard?.mfa_enabled && capabilities?.mfa_enabled && (
-              <Link href="/app/settings" className="text-xs text-primary hover:underline">
-                Enable MFA
-              </Link>
-            )}
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Member Since</p>
-            <p className="font-medium">
-              {dashboard?.member_since
-                ? new Date(dashboard.member_since).toLocaleDateString()
-                : '—'}
-            </p>
-          </div>
         </div>
-      </div>
-
-      {/* Activity summary */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <LineChart className="h-5 w-5 text-purple-500" />
-            <h3 className="font-semibold">Backtests</h3>
-          </div>
-          <p className="text-3xl font-bold">{dashboard?.backtests_count || 0}</p>
-          <p className="text-sm text-muted-foreground">Total backtests created</p>
-        </div>
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <ClipboardList className="h-5 w-5 text-slate-500" />
-            <h3 className="font-semibold">Recent Logins</h3>
-          </div>
-          <p className="text-3xl font-bold">{dashboard?.recent_login_count || 0}</p>
-          <p className="text-sm text-muted-foreground">Last 30 days</p>
-        </div>
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="h-5 w-5 text-green-500" />
-            <h3 className="font-semibold">Risk Level</h3>
-          </div>
-          <p className="text-3xl font-bold capitalize">{entitlements?.risk_analytics_level || 'basic'}</p>
-          <p className="text-sm text-muted-foreground">Analytics tier</p>
-        </div>
-      </div>
-
-      {/* Quick links */}
-      <div className="flex flex-wrap gap-3">
-        <Button asChild variant="outline" size="sm">
-          <Link href="/app/backtests" className="gap-2">
-            <LineChart className="h-4 w-4" /> Backtests
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/app/audit" className="gap-2">
-            <ClipboardList className="h-4 w-4" /> Audit Log
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/app/settings" className="gap-2">
-            <Settings className="h-4 w-4" /> Settings
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/app/billing" className="gap-2">
-            <CreditCard className="h-4 w-4" /> Billing
-          </Link>
-        </Button>
       </div>
 
       {/* Disclaimer */}
-      <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
-        <strong>Important:</strong> This platform is a read-only analytical tool.
-        It does not execute trades, provide buy/sell recommendations, or guarantee
-        profits. All outputs are for educational and informational purposes only.
+      <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 p-4 text-sm text-slate-800 dark:text-amber-200">
+        <strong>Important:</strong> This platform is a read-only analytical tool. It does not execute trades,
+        provide buy/sell recommendations, or guarantee profits. All outputs are for educational and
+        informational purposes only.
       </div>
+    </div>
+  );
+}
+
+// ── Small helpers ──────────────────────────────────────────────────────────────
+
+function QuickStat({
+  label,
+  value,
+  icon: Icon,
+  accent = 'text-muted-foreground',
+  capitalize = false,
+}: {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+  accent?: string;
+  capitalize?: boolean;
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-4 flex items-center gap-3">
+      <Icon className={cn('h-5 w-5 shrink-0', accent)} />
+      <div>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className={cn('font-bold text-lg tabular-nums leading-tight', capitalize && 'capitalize')}>
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AccountStat({
+  label,
+  value,
+  valueClass,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  valueClass?: string;
+  icon?: React.ElementType;
+}) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={cn('font-medium flex items-center gap-1', valueClass)}>
+        {Icon && <Icon className="h-3.5 w-3.5" />}
+        {value}
+      </p>
     </div>
   );
 }
