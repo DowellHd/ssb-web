@@ -19,6 +19,7 @@ import {
   Layers,
   Leaf,
   LineChart,
+  Lock,
   Mail,
   Map,
   MessageSquare,
@@ -148,6 +149,12 @@ const TIER_LABEL: Record<string, string> = {
   institutional: 'Enterprise',
 };
 
+const TIER_BADGE: Record<string, string> = {
+  starter:       'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  pro:           'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400',
+  institutional: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+};
+
 function canAccessTier(tier: string, planName: string | undefined): boolean {
   const plan = (planName ?? 'free').toLowerCase();
   if (['founder', 'full_access', 'institutional'].includes(plan)) return true;
@@ -190,7 +197,8 @@ function FeatureTileCard({ feature, planName }: { feature: FeatureTile; planName
               </span>
             )}
             {locked && feature.tier && (
-              <span className="text-[10px] font-medium text-muted-foreground/50 capitalize">
+              <span className={cn('flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase', TIER_BADGE[feature.tier])}>
+                <Lock className="h-2.5 w-2.5" />
                 {TIER_LABEL[feature.tier]}
               </span>
             )}
