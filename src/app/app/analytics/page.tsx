@@ -9,8 +9,14 @@ import {
   Activity,
   Globe,
   Cpu,
+  Zap,
+  ShieldAlert,
+  Newspaper,
+  Leaf,
+  Calendar,
   ChevronDown,
   ChevronUp,
+  Map,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,10 +31,28 @@ import {
   type SectorRotationResponse,
   type MonteCarloResponse,
 } from '@/lib/api/analytics';
+import {
+  forecastVolatility,
+  detectAnomalies,
+  analyzeSentimentHeadlines,
+  getESGScore,
+  estimateEarningsSurprise,
+  type GarchResponse,
+  type AnomalyReportResponse,
+  type SentimentResponse,
+  type ESGReportResponse,
+  type EarningsSurpriseResponse,
+} from '@/lib/api/predictive';
 import { EfficientFrontierChart } from '@/components/analytics/efficient-frontier-chart';
 import { TechnicalIndicatorsView } from '@/components/analytics/technical-indicators-view';
 import { SectorRotationView } from '@/components/analytics/sector-rotation-view';
 import { MonteCarloChart } from '@/components/analytics/monte-carlo-chart';
+import { VolatilityForecast } from '@/components/analytics/volatility-forecast';
+import { AnomalyAlerts } from '@/components/analytics/anomaly-alerts';
+import { SentimentView } from '@/components/analytics/sentiment-view';
+import { ESGScores } from '@/components/analytics/esg-scores';
+import { EarningsSurpriseView } from '@/components/analytics/earnings-surprise-view';
+import { SectorHeatmap, getDemoSectorData } from '@/components/analytics/sector-heatmap';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
@@ -88,11 +112,29 @@ export default function AnalyticsPage() {
   const [portfolioSymbols, setPortfolioSymbols] = useState('AAPL,MSFT,GOOGL,AMZN,NVDA');
   const [technicalSymbol, setTechnicalSymbol] = useState('SPY');
 
+  // Phase 7 inputs
+  const [garchSymbol, setGarchSymbol] = useState('SPY');
+  const [anomalySymbol, setAnomalySymbol] = useState('SPY');
+  const [sentimentHeadlines, setSentimentHeadlines] = useState(
+    'Tech earnings beat estimates across the board\nFed signals potential rate cuts this year\nStrong jobs report eases recession fears'
+  );
+  const [sentimentSubject, setSentimentSubject] = useState('market');
+  const [esgSymbol, setEsgSymbol] = useState('AAPL');
+  const [esgSector, setEsgSector] = useState('technology');
+  const [earningsSymbol, setEarningsSymbol] = useState('AAPL');
+
   // Results state
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResponse | null>(null);
   const [technicalResult, setTechnicalResult] = useState<TechnicalAnalysisResponse | null>(null);
   const [sectorResult, setSectorResult] = useState<SectorRotationResponse | null>(null);
   const [monteCarloResult, setMonteCarloResult] = useState<MonteCarloResponse | null>(null);
+
+  // Phase 7 results
+  const [garchResult, setGarchResult] = useState<GarchResponse | null>(null);
+  const [anomalyResult, setAnomalyResult] = useState<AnomalyReportResponse | null>(null);
+  const [sentimentResult, setSentimentResult] = useState<SentimentResponse | null>(null);
+  const [esgResult, setEsgResult] = useState<ESGReportResponse | null>(null);
+  const [earningsSurpriseResult, setEarningsSurpriseResult] = useState<EarningsSurpriseResponse | null>(null);
 
   // Loading / error state per section
   const [loadingOptimize, setLoadingOptimize] = useState(false);
@@ -100,10 +142,24 @@ export default function AnalyticsPage() {
   const [loadingSector, setLoadingSector] = useState(false);
   const [loadingMonteCarlo, setLoadingMonteCarlo] = useState(false);
 
+  // Phase 7 loading states
+  const [loadingGarch, setLoadingGarch] = useState(false);
+  const [loadingAnomaly, setLoadingAnomaly] = useState(false);
+  const [loadingSentiment, setLoadingSentiment] = useState(false);
+  const [loadingEsg, setLoadingEsg] = useState(false);
+  const [loadingEarnings, setLoadingEarnings] = useState(false);
+
   const [errorOptimize, setErrorOptimize] = useState<string | null>(null);
   const [errorTechnical, setErrorTechnical] = useState<string | null>(null);
   const [errorSector, setErrorSector] = useState<string | null>(null);
   const [errorMonteCarlo, setErrorMonteCarlo] = useState<string | null>(null);
+
+  // Phase 7 errors
+  const [errorGarch, setErrorGarch] = useState<string | null>(null);
+  const [errorAnomaly, setErrorAnomaly] = useState<string | null>(null);
+  const [errorSentiment, setErrorSentiment] = useState<string | null>(null);
+  const [errorEsg, setErrorEsg] = useState<string | null>(null);
+  const [errorEarnings, setErrorEarnings] = useState<string | null>(null);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -190,6 +246,102 @@ export default function AnalyticsPage() {
     }
   };
 
+  // ── Phase 7 actions ──────────────────────────────────────────────────────
+
+  /** Generate demo daily returns (GBM simulation for UI testing) */
+  function genDemoReturns(n = 252, mu = 0.0003, sigma = 0.012): number[] {
+    const returns: number[] = [];
+    for (let i = 0; i < n; i++) {
+      // Box-Muller transform for normal random
+      const u1 = Math.random();
+      const u2 = Math.random();
+      const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+      returns.push(mu + sigma * z);
+    }
+    return returns;
+  }
+
+  const runGarch = async () => {
+    const sym = garchSymbol.trim().toUpperCase();
+    if (!sym) return;
+    setLoadingGarch(true);
+    setErrorGarch(null);
+    try {
+      const returns = genDemoReturns(252);
+      const result = await forecastVolatility(sym, returns, 10);
+      setGarchResult(result);
+    } catch (err: any) {
+      setErrorGarch(err?.response?.data?.detail || err?.message || 'Volatility forecast failed');
+    } finally {
+      setLoadingGarch(false);
+    }
+  };
+
+  const runAnomaly = async () => {
+    const sym = anomalySymbol.trim().toUpperCase();
+    if (!sym) return;
+    setLoadingAnomaly(true);
+    setErrorAnomaly(null);
+    try {
+      const returns = genDemoReturns(120);
+      const result = await detectAnomalies(sym, returns);
+      setAnomalyResult(result);
+    } catch (err: any) {
+      setErrorAnomaly(err?.response?.data?.detail || err?.message || 'Anomaly detection failed');
+    } finally {
+      setLoadingAnomaly(false);
+    }
+  };
+
+  const runSentiment = async () => {
+    const lines = sentimentHeadlines
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+    if (lines.length === 0) return;
+    setLoadingSentiment(true);
+    setErrorSentiment(null);
+    try {
+      const result = await analyzeSentimentHeadlines(lines, sentimentSubject || 'market');
+      setSentimentResult(result);
+    } catch (err: any) {
+      setErrorSentiment(err?.response?.data?.detail || err?.message || 'Sentiment analysis failed');
+    } finally {
+      setLoadingSentiment(false);
+    }
+  };
+
+  const runEsg = async () => {
+    const sym = esgSymbol.trim().toUpperCase();
+    if (!sym) return;
+    setLoadingEsg(true);
+    setErrorEsg(null);
+    try {
+      const result = await getESGScore(sym, esgSector || 'default');
+      setEsgResult(result);
+    } catch (err: any) {
+      setErrorEsg(err?.response?.data?.detail || err?.message || 'ESG analysis failed');
+    } finally {
+      setLoadingEsg(false);
+    }
+  };
+
+  const runEarningsSurprise = async () => {
+    const sym = earningsSymbol.trim().toUpperCase();
+    if (!sym) return;
+    setLoadingEarnings(true);
+    setErrorEarnings(null);
+    try {
+      const returns = genDemoReturns(30, 0.0005, 0.013);
+      const result = await estimateEarningsSurprise(sym, returns);
+      setEarningsSurpriseResult(result);
+    } catch (err: any) {
+      setErrorEarnings(err?.response?.data?.detail || err?.message || 'Earnings analysis failed');
+    } finally {
+      setLoadingEarnings(false);
+    }
+  };
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -201,7 +353,8 @@ export default function AnalyticsPage() {
           Analytics
         </h1>
         <p className="text-muted-foreground mt-1">
-          Portfolio optimization, technical analysis, sector rotation, and Monte Carlo simulation.
+          Portfolio optimization, technical analysis, sector rotation, Monte Carlo simulation,
+          GARCH volatility forecasting, anomaly detection, sentiment analysis, and ESG scoring.
         </p>
       </div>
 
@@ -405,6 +558,238 @@ export default function AnalyticsPage() {
 
           {!monteCarloResult && !loadingMonteCarlo && !errorMonteCarlo && (
             <EmptyState message="Simulate portfolio outcomes across 1,000 paths using Geometric Brownian Motion." />
+          )}
+        </div>
+      </Section>
+
+      {/* ======================================================================
+          Phase 7: Advanced Analytics & AI Integration
+          ====================================================================== */}
+
+      {/* ── Sector Heatmap ── */}
+      <Section title="Sector Performance Heatmap" icon={Map} defaultOpen={false}>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Visual heatmap of S&P 500 sector performance. Color intensity reflects magnitude.
+          </p>
+          <SectorHeatmap
+            sectors={getDemoSectorData()}
+            title="S&P 500 Sectors — Weekly Performance"
+          />
+          <p className="text-xs text-muted-foreground">
+            Demo data shown. Connect live market data feeds for real-time sector returns.
+          </p>
+        </div>
+      </Section>
+
+      {/* ── GARCH Volatility Forecast ── */}
+      <Section title="GARCH Volatility Forecast" icon={Zap} defaultOpen={false}>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            GARCH(1,1) volatility estimation with multi-step forecasting, VaR estimates,
+            and volatility regime classification. Analytical only.
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 max-w-xs">
+              <Label htmlFor="garch-symbol">Symbol</Label>
+              <Input
+                id="garch-symbol"
+                value={garchSymbol}
+                onChange={(e) => setGarchSymbol(e.target.value.toUpperCase())}
+                placeholder="SPY"
+                className="mt-1"
+              />
+            </div>
+            <Button onClick={runGarch} disabled={loadingGarch}>
+              {loadingGarch ? (
+                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Forecasting...</>
+              ) : (
+                'Run GARCH Forecast'
+              )}
+            </Button>
+          </div>
+
+          {errorGarch && <ErrorNotice message={errorGarch} />}
+
+          {garchResult && <VolatilityForecast result={garchResult} />}
+
+          {!garchResult && !loadingGarch && !errorGarch && (
+            <EmptyState message="Uses simulated returns for demo. In production, supply real historical return series." />
+          )}
+        </div>
+      </Section>
+
+      {/* ── Anomaly Detection ── */}
+      <Section title="Anomaly Detection" icon={ShieldAlert} defaultOpen={false}>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Statistical detection of unusual price movements, volatility bursts, drawdowns,
+            and volume surges using rolling Z-score and IQR methods.
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 max-w-xs">
+              <Label htmlFor="anomaly-symbol">Symbol</Label>
+              <Input
+                id="anomaly-symbol"
+                value={anomalySymbol}
+                onChange={(e) => setAnomalySymbol(e.target.value.toUpperCase())}
+                placeholder="SPY"
+                className="mt-1"
+              />
+            </div>
+            <Button onClick={runAnomaly} disabled={loadingAnomaly}>
+              {loadingAnomaly ? (
+                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Detecting...</>
+              ) : (
+                'Detect Anomalies'
+              )}
+            </Button>
+          </div>
+
+          {errorAnomaly && <ErrorNotice message={errorAnomaly} />}
+
+          {anomalyResult && <AnomalyAlerts result={anomalyResult} />}
+
+          {!anomalyResult && !loadingAnomaly && !errorAnomaly && (
+            <EmptyState message="Analyzes 120 days of returns for price spikes, volatility bursts, drawdowns, and consecutive moves." />
+          )}
+        </div>
+      </Section>
+
+      {/* ── Sentiment Analysis ── */}
+      <Section title="Market Sentiment Analysis" icon={Newspaper} defaultOpen={false}>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            NLP-powered sentiment analysis on news headlines or market commentary.
+            Uses GPT-4o-mini when available; lexicon fallback otherwise.
+          </p>
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="sentiment-headlines">
+                News Headlines (one per line)
+              </Label>
+              <textarea
+                id="sentiment-headlines"
+                value={sentimentHeadlines}
+                onChange={(e) => setSentimentHeadlines(e.target.value)}
+                rows={4}
+                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Enter headlines, one per line..."
+              />
+            </div>
+            <div className="flex gap-2 items-end">
+              <div className="max-w-xs flex-1">
+                <Label htmlFor="sentiment-subject">Subject (symbol or topic)</Label>
+                <Input
+                  id="sentiment-subject"
+                  value={sentimentSubject}
+                  onChange={(e) => setSentimentSubject(e.target.value)}
+                  placeholder="market"
+                  className="mt-1"
+                />
+              </div>
+              <Button onClick={runSentiment} disabled={loadingSentiment}>
+                {loadingSentiment ? (
+                  <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Analyzing...</>
+                ) : (
+                  'Analyze Sentiment'
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {errorSentiment && <ErrorNotice message={errorSentiment} />}
+
+          {sentimentResult && <SentimentView result={sentimentResult} />}
+
+          {!sentimentResult && !loadingSentiment && !errorSentiment && (
+            <EmptyState message="Paste news headlines and run analysis to extract sentiment scores, themes, and risk factors." />
+          )}
+        </div>
+      </Section>
+
+      {/* ── ESG Scoring ── */}
+      <Section title="ESG Scoring" icon={Leaf} defaultOpen={false}>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Environmental, Social, and Governance scoring with sector-calibrated ratings,
+            controversy flags, and portfolio-level ESG analysis. Simulated data.
+          </p>
+          <div className="flex flex-wrap gap-2 items-end">
+            <div className="max-w-xs flex-1">
+              <Label htmlFor="esg-symbol">Symbol</Label>
+              <Input
+                id="esg-symbol"
+                value={esgSymbol}
+                onChange={(e) => setEsgSymbol(e.target.value.toUpperCase())}
+                placeholder="AAPL"
+                className="mt-1"
+              />
+            </div>
+            <div className="max-w-xs flex-1">
+              <Label htmlFor="esg-sector">Sector</Label>
+              <Input
+                id="esg-sector"
+                value={esgSector}
+                onChange={(e) => setEsgSector(e.target.value.toLowerCase())}
+                placeholder="technology"
+                className="mt-1"
+              />
+            </div>
+            <Button onClick={runEsg} disabled={loadingEsg}>
+              {loadingEsg ? (
+                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Scoring...</>
+              ) : (
+                'Get ESG Score'
+              )}
+            </Button>
+          </div>
+
+          {errorEsg && <ErrorNotice message={errorEsg} />}
+
+          {esgResult && <ESGScores result={esgResult} />}
+
+          {!esgResult && !loadingEsg && !errorEsg && (
+            <EmptyState message="Enter a symbol and sector to get ESG scores, rating, controversies, and improvement areas." />
+          )}
+        </div>
+      </Section>
+
+      {/* ── Earnings Surprise Probability ── */}
+      <Section title="Earnings Surprise Probability" icon={Calendar} defaultOpen={false}>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Statistical estimate of earnings beat/miss probability using pre-earnings
+            price momentum and volatility signals. Not a fundamental earnings forecast.
+          </p>
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 max-w-xs">
+              <Label htmlFor="earnings-symbol">Symbol</Label>
+              <Input
+                id="earnings-symbol"
+                value={earningsSymbol}
+                onChange={(e) => setEarningsSymbol(e.target.value.toUpperCase())}
+                placeholder="AAPL"
+                className="mt-1"
+              />
+            </div>
+            <Button onClick={runEarningsSurprise} disabled={loadingEarnings}>
+              {loadingEarnings ? (
+                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Estimating...</>
+              ) : (
+                'Estimate Surprise Probability'
+              )}
+            </Button>
+          </div>
+
+          {errorEarnings && <ErrorNotice message={errorEarnings} />}
+
+          {earningsSurpriseResult && (
+            <EarningsSurpriseView result={earningsSurpriseResult} />
+          )}
+
+          {!earningsSurpriseResult && !loadingEarnings && !errorEarnings && (
+            <EmptyState message="Uses simulated pre-earnings returns. Base rate: ~68% historical S&P 500 beat rate." />
           )}
         </div>
       </Section>
