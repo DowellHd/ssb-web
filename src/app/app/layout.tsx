@@ -392,7 +392,6 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setAnalysisOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
-            count={ANALYSIS_CHILDREN.length}
           />
 
           {/* Trading — now includes Backtests */}
@@ -405,7 +404,6 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setTradingOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
-            count={TRADING_CHILDREN.length}
           />
 
           {/* Learn & Tools */}
@@ -418,7 +416,6 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setLearnOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
-            count={LEARN_CHILDREN.length}
           />
 
           {/* Community */}
@@ -444,7 +441,6 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
               onToggle={() => setEnterpriseOpen((v) => !v)}
               isActive={isActive}
               onNavClick={onClose}
-              count={ENTERPRISE_CHILDREN.length}
             />
           )}
 
