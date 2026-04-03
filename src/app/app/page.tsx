@@ -19,7 +19,6 @@ import {
   Layers,
   Leaf,
   LineChart,
-  Lock,
   Mail,
   Map,
   MessageSquare,
@@ -143,54 +142,69 @@ const CAPABILITY_MAP: FeatureSection[] = [
   },
 ];
 
-const TIER_BADGE: Record<string, string> = {
-  starter:      'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-  pro:          'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-400',
-  institutional:'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
-};
 const TIER_LABEL: Record<string, string> = {
   starter: 'Starter',
   pro: 'Pro',
   institutional: 'Enterprise',
 };
 
+function canAccessTier(tier: string, planName: string | undefined): boolean {
+  const plan = (planName ?? 'free').toLowerCase();
+  if (['founder', 'full_access', 'institutional'].includes(plan)) return true;
+  if (plan === 'pro') return tier === 'starter' || tier === 'pro';
+  if (plan === 'starter') return tier === 'starter';
+  return false;
+}
+
 // ============================================================================
 // Sub-components
 // ============================================================================
 
-function FeatureTileCard({ feature }: { feature: FeatureTile }) {
+function FeatureTileCard({ feature, planName }: { feature: FeatureTile; planName: string | undefined }) {
   const Icon = feature.icon;
-  const tierLabel = feature.tier ? TIER_LABEL[feature.tier] : null;
-  const tierBadge = feature.tier ? TIER_BADGE[feature.tier] : null;
+  const locked = feature.tier ? !canAccessTier(feature.tier, planName) : false;
 
   return (
     <Link
       href={feature.href}
-      className="group flex items-start gap-3 rounded-lg border bg-card/50 p-3 hover:border-primary/40 hover:bg-card transition-all"
+      className={cn(
+        'group flex items-center gap-3 rounded-lg border p-3 transition-all',
+        locked
+          ? 'bg-muted/20 hover:bg-muted/30 hover:border-border/80'
+          : 'bg-card/50 hover:border-primary/40 hover:bg-card',
+      )}
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
+      <Icon className={cn(
+        'h-4 w-4 shrink-0 transition-colors',
+        locked ? 'text-muted-foreground/40' : 'text-muted-foreground group-hover:text-primary',
+      )} />
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-sm font-medium leading-tight">{feature.label}</span>
-          {feature.isNew && (
-            <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
-              NEW
-            </span>
-          )}
-          {tierLabel && (
-            <span className={cn('flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase', tierBadge)}>
-              <Lock className="h-2 w-2" />
-              {tierLabel}
-            </span>
-          )}
+        <div className="flex items-center justify-between gap-2">
+          <span className={cn('text-sm font-medium leading-tight truncate', locked && 'text-muted-foreground/60')}>
+            {feature.label}
+          </span>
+          <div className="flex items-center gap-1 shrink-0">
+            {feature.isNew && !locked && (
+              <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+                NEW
+              </span>
+            )}
+            {locked && feature.tier && (
+              <span className="text-[10px] font-medium text-muted-foreground/50 capitalize">
+                {TIER_LABEL[feature.tier]}
+              </span>
+            )}
+          </div>
         </div>
-        <p className="mt-0.5 text-xs text-muted-foreground leading-tight">{feature.description}</p>
+        <p className={cn('mt-0.5 text-xs leading-tight', locked ? 'text-muted-foreground/40' : 'text-muted-foreground')}>
+          {feature.description}
+        </p>
       </div>
     </Link>
   );
 }
 
-function CapabilitySection({ section }: { section: FeatureSection }) {
+function CapabilitySection({ section, planName }: { section: FeatureSection; planName: string | undefined }) {
   const Icon = section.icon;
   return (
     <div className="rounded-xl border bg-card">
@@ -203,7 +217,7 @@ function CapabilitySection({ section }: { section: FeatureSection }) {
       </div>
       <div className="grid grid-cols-1 gap-1.5 p-3 sm:grid-cols-2">
         {section.features.map((f) => (
-          <FeatureTileCard key={f.href + f.label} feature={f} />
+          <FeatureTileCard key={f.href + f.label} feature={f} planName={planName} />
         ))}
       </div>
     </div>
@@ -306,9 +320,6 @@ export default function AppDashboardPage() {
     );
   }
 
-  const totalFeatures = CAPABILITY_MAP.reduce((acc, s) => acc + s.features.length, 0);
-  const newFeatures = CAPABILITY_MAP.flatMap((s) => s.features).filter((f) => f.isNew).length;
-
   return (
     <div className="space-y-8 max-w-6xl">
       {/* Header */}
@@ -362,9 +373,7 @@ export default function AppDashboardPage() {
       )}
 
       {/* Quick stats row */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <QuickStat label="Total Features" value={String(totalFeatures)} icon={BarChart3} />
-        <QuickStat label="New This Release" value={String(newFeatures)} icon={Sparkles} accent="text-violet-500" />
+      <div className="grid grid-cols-2 gap-3">
         <QuickStat label="Backtests" value={String(dashboard?.backtests_count ?? 0)} icon={LineChart} />
         <QuickStat
           label="Risk Level"
@@ -438,7 +447,7 @@ export default function AppDashboardPage() {
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {CAPABILITY_MAP.map((section) => (
-            <CapabilitySection key={section.title} section={section} />
+            <CapabilitySection key={section.title} section={section} planName={entitlements?.plan_name} />
           ))}
         </div>
       </div>
