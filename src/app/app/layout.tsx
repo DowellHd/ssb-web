@@ -20,11 +20,13 @@ import {
   History,
   LayoutDashboard,
   Layers,
+  Lightbulb,
   LineChart,
   LogOut,
   Map,
   Menu,
   MessageSquare,
+  PieChart,
   Search,
   Settings,
   Shield,
@@ -32,6 +34,7 @@ import {
   TrendingUp,
   UserCheck,
   Users,
+  Wifi,
   X,
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
@@ -56,13 +59,17 @@ const ANALYSIS_CHILDREN = [
   { href: '/app/risk',      label: 'Risk Analytics',   icon: Shield },
   { href: '/app/analytics', label: 'Analytics',        icon: BarChart3 },
   { href: '/app/screening', label: 'Screener',         icon: Search },
+  { href: '/app/portfolio', label: 'Portfolio Mgmt',   icon: PieChart,    badge: 'NEW' },
+  { href: '/app/trade-ideas', label: 'Trade Ideas',    icon: Lightbulb,   badge: 'NEW' },
 ];
 
 const TRADING_CHILDREN = [
-  { href: '/app/paper',     label: 'Paper Trading', icon: CandlestickChart },
-  { href: '/app/backtests', label: 'Backtests',     icon: LineChart },
-  { href: '/app/options',   label: 'Options',       icon: Layers },
-  { href: '/app/crypto',    label: 'Crypto',        icon: Bitcoin },
+  { href: '/app/paper',      label: 'Paper Trading', icon: CandlestickChart },
+  { href: '/app/backtests',  label: 'Backtests',     icon: LineChart },
+  { href: '/app/options',    label: 'Options',       icon: Layers },
+  { href: '/app/crypto',     label: 'Crypto',        icon: Bitcoin },
+  { href: '/app/order-prep', label: 'Order Prep',    icon: ClipboardList, badge: 'NEW' },
+  { href: '/app/brokers',    label: 'Broker Connections', icon: Wifi, badge: 'NEW' },
 ];
 
 const LEARN_CHILDREN = [
@@ -93,9 +100,10 @@ const USER_MENU_ITEMS = [
 
 // Secondary / utility links — collapsed under "More"
 const MORE_CHILDREN = [
-  { href: '/app/audit',     label: 'Audit Log', icon: ClipboardList },
-  { href: '/app/changelog', label: 'Changelog', icon: History },
-  { href: '/app/roadmap',   label: 'Roadmap',   icon: Map },
+  { href: '/app/investment-compliance', label: 'Compliance Tools', icon: ShieldCheck, badge: 'NEW' },
+  { href: '/app/audit',                 label: 'Audit Log',        icon: ClipboardList },
+  { href: '/app/changelog',             label: 'Changelog',        icon: History },
+  { href: '/app/roadmap',               label: 'Roadmap',          icon: Map },
 ];
 
 // ============================================================================
