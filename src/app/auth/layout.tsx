@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { TrendingUp, Shield, LineChart, BarChart3 } from 'lucide-react';
+import { TrendingUp, Shield, LineChart, BrainCircuit } from 'lucide-react';
 
 function AuthMarketingPanel({ className = '' }: { className?: string }) {
   return (
@@ -10,17 +10,17 @@ function AuthMarketingPanel({ className = '' }: { className?: string }) {
         AI-Powered Financial Intelligence
       </h1>
       <p className="text-sm lg:text-lg text-muted-foreground mb-4 lg:mb-8">
-        Analyze market regimes, stress test portfolios, and backtest strategies with institutional-grade tools.
+        From real-time market signals to institutional portfolio tools — 40+ professional features built for serious traders.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0">
-            <BarChart3 className="h-5 w-5" />
+            <BrainCircuit className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm lg:text-base">Market Regime Analysis</h3>
-            <p className="text-xs lg:text-sm text-muted-foreground">Real-time regime classification with confidence scores</p>
+            <h3 className="font-semibold text-sm lg:text-base">Market Intelligence & Signals</h3>
+            <p className="text-xs lg:text-sm text-muted-foreground">Regime analysis, AI trade ideas, predictive analytics, and real-time news</p>
           </div>
         </div>
         <div className="flex items-start gap-3">
@@ -28,8 +28,8 @@ function AuthMarketingPanel({ className = '' }: { className?: string }) {
             <Shield className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm lg:text-base">Risk Analytics</h3>
-            <p className="text-xs lg:text-sm text-muted-foreground">VaR, volatility, and portfolio risk metrics</p>
+            <h3 className="font-semibold text-sm lg:text-base">Portfolio & Risk Management</h3>
+            <p className="text-xs lg:text-sm text-muted-foreground">Attribution, rebalancing, stress testing, VaR, correlation, and tax-loss harvesting</p>
           </div>
         </div>
         <div className="flex items-start gap-3">
@@ -37,8 +37,8 @@ function AuthMarketingPanel({ className = '' }: { className?: string }) {
             <LineChart className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm lg:text-base">Strategy Backtesting</h3>
-            <p className="text-xs lg:text-sm text-muted-foreground">Deterministic backtests with historical data</p>
+            <h3 className="font-semibold text-sm lg:text-base">Trading & Compliance Tools</h3>
+            <p className="text-xs lg:text-sm text-muted-foreground">Options chain, backtesting, order prep, broker integration, and trade journaling</p>
           </div>
         </div>
       </div>
