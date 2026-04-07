@@ -273,13 +273,28 @@ export async function getBrokerLinks(symbol: string): Promise<{ symbol: string; 
 
 // ── Broker Connections ─────────────────────────────────────────────────────────
 
-export async function listBrokerConnections(): Promise<BrokerConnection[]> {
-  const res = await apiClient.get('/brokers/');
-  return res.data;
+export interface PlaidHolding {
+  symbol: string;
+  name: string;
+  quantity: number;
+  institution_price: number;
+  institution_value: number;
+  cost_basis: number | null;
+  security_type: string;
 }
 
-export async function connectBroker(data: { broker_name: string; display_name?: string }): Promise<BrokerConnection> {
-  const res = await apiClient.post('/brokers/connect', data);
+export interface PlaidAccount {
+  account_id: string;
+  name: string;
+  type: string;
+  subtype: string;
+  current: number;
+  available: number;
+  iso_currency_code: string;
+}
+
+export async function listBrokerConnections(): Promise<BrokerConnection[]> {
+  const res = await apiClient.get('/brokers/');
   return res.data;
 }
 
@@ -287,17 +302,38 @@ export async function removeBrokerConnection(id: string): Promise<void> {
   await apiClient.delete(`/brokers/${id}`);
 }
 
-export async function getBrokerAccountSummary(id: string): Promise<Record<string, unknown>> {
-  const res = await apiClient.get(`/brokers/${id}/summary`);
+export async function syncBrokerAccount(id: string): Promise<{ synced_at: string; total_balance: number; holding_count: number }> {
+  const res = await apiClient.post(`/brokers/${id}/sync`);
   return res.data;
 }
 
-export async function syncBrokerAccount(id: string): Promise<void> {
-  await apiClient.post(`/brokers/${id}/sync`);
+export async function getBrokerHoldings(id: string): Promise<{ holdings: PlaidHolding[]; accounts: PlaidAccount[]; disclaimer: string }> {
+  const res = await apiClient.get(`/brokers/${id}/holdings`);
+  return res.data;
+}
+
+export async function getBrokerBalances(id: string): Promise<{ total_balance: number; accounts: PlaidAccount[]; disclaimer: string }> {
+  const res = await apiClient.get(`/brokers/${id}/balances`);
+  return res.data;
 }
 
 export async function getSupportedBrokers(): Promise<{ brokers: { key: string; name: string; status: string }[]; disclaimer: string }> {
   const res = await apiClient.get('/brokers/supported');
+  return res.data;
+}
+
+// Plaid OAuth
+export async function createPlaidLinkToken(): Promise<{ link_token: string }> {
+  const res = await apiClient.post('/brokers/plaid/link-token');
+  return res.data;
+}
+
+export async function exchangePlaidToken(data: {
+  public_token: string;
+  institution_name: string;
+  institution_id: string;
+}): Promise<{ id: string; display_name: string; connection_status: string; connected: boolean }> {
+  const res = await apiClient.post('/brokers/plaid/exchange', data);
   return res.data;
 }
 
