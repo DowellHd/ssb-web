@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCommandPaletteStore } from '@/stores/command-palette-store';
+import { usePlanStore } from '@/stores/plan-store';
 
 // ============================================================================
 // Feature registry — the single source of truth for all SSB features
@@ -497,6 +498,19 @@ const CATEGORY_ORDER = [
   'Community', 'Enterprise', 'Account', 'Navigation',
 ];
 
+// Tier hierarchy: higher index = higher tier
+const TIER_RANK: Record<string, number> = {
+  free: 0, starter: 1, pro: 2, institutional: 3,
+  // founder / full_access get max rank (all access)
+  founder: 99, full_access: 99,
+};
+
+function userHasAccess(userPlan: string, requiredTier: FeatureTier): boolean {
+  const userRank = TIER_RANK[userPlan] ?? 0;
+  const reqRank  = TIER_RANK[requiredTier] ?? 0;
+  return userRank >= reqRank;
+}
+
 // ============================================================================
 // Command Palette component
 // ============================================================================
@@ -504,6 +518,7 @@ const CATEGORY_ORDER = [
 export function CommandPalette() {
   const router = useRouter();
   const { open, closePalette } = useCommandPaletteStore();
+  const userPlan = usePlanStore((s) => s.normalized.plan);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -661,7 +676,7 @@ export function CommandPalette() {
                               )}
                               {tierLabel && (
                                 <span className={cn('rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase flex items-center gap-0.5', tierBadge)}>
-                                  {item.tier !== 'free' && <Lock className="h-2 w-2" />}
+                                  {!userHasAccess(userPlan, item.tier) && <Lock className="h-2 w-2" />}
                                   {tierLabel}
                                 </span>
                               )}
