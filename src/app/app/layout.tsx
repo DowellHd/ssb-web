@@ -17,6 +17,7 @@ import {
   CreditCard,
   Crown,
   FileText,
+  Globe,
   History,
   LayoutDashboard,
   Layers,
@@ -81,6 +82,12 @@ const LEARN_CHILDREN = [
 const COMMUNITY_CHILDREN = [
   { href: '/app/community',           label: 'Feed',        icon: MessageSquare },
   { href: '/app/community/ideas/new', label: 'Share Idea',  icon: TrendingUp },
+];
+
+const MARKETS_CHILDREN = [
+  { href: '/app/global-markets', label: 'Global Markets',   icon: Globe,      badge: 'NEW' },
+  { href: '/app/fixed-income',   label: 'Fixed Income',     icon: BarChart3,  badge: 'NEW' },
+  { href: '/app/alternatives',   label: 'Alternatives',     icon: TrendingUp, badge: 'NEW' },
 ];
 
 const ENTERPRISE_CHILDREN = [
@@ -337,6 +344,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
   const tradingActive    = TRADING_CHILDREN.some((c) => isActive(c.href));
   const learnActive      = LEARN_CHILDREN.some((c) => isActive(c.href));
   const communityActive  = pathname.startsWith('/app/community');
+  const marketsActive    = MARKETS_CHILDREN.some((c) => isActive(c.href));
   const moreActive       = MORE_CHILDREN.some((c) => isActive(c.href));
   const enterpriseActive = pathname.startsWith('/app/enterprise');
 
@@ -344,6 +352,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
   const [tradingOpen,   setTradingOpen]   = useState(tradingActive);
   const [learnOpen,     setLearnOpen]     = useState(learnActive);
   const [communityOpen, setCommunityOpen] = useState(communityActive);
+  const [marketsOpen,   setMarketsOpen]   = useState(marketsActive);
   const [moreOpen,      setMoreOpen]      = useState(moreActive);
   const [enterpriseOpen,setEnterpriseOpen]= useState(enterpriseActive);
 
@@ -352,6 +361,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
     if (tradingActive)    setTradingOpen(true);
     if (learnActive)      setLearnOpen(true);
     if (communityActive)  setCommunityOpen(true);
+    if (marketsActive)    setMarketsOpen(true);
     if (moreActive)       setMoreOpen(true);
     if (enterpriseActive) setEnterpriseOpen(true);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -422,6 +432,18 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             isOpen={learnOpen}
             hasActiveChild={learnActive}
             onToggle={() => setLearnOpen((v) => !v)}
+            isActive={isActive}
+            onNavClick={onClose}
+          />
+
+          {/* Global Markets & Alternatives (Phase 9) */}
+          <NavGroup
+            label="Global Markets"
+            icon={Globe}
+            items={MARKETS_CHILDREN}
+            isOpen={marketsOpen}
+            hasActiveChild={marketsActive}
+            onToggle={() => setMarketsOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
           />
