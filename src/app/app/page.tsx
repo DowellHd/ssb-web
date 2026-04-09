@@ -443,7 +443,7 @@ export default function AppDashboardPage() {
       {/* ── Capability Map ──────────────────────────────────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Everything in SSB</h2>
+          <h2 className="text-xl font-bold">Platform Capabilities</h2>
           <button
             onClick={openPalette}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
