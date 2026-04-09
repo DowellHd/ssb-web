@@ -385,7 +385,7 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
           className="flex w-full items-center gap-2.5 rounded-lg border bg-muted/50 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
           <Search className="h-3.5 w-3.5 shrink-0" />
-          <span className="flex-1 text-left text-xs">Search features…</span>
+          <span className="flex-1 text-left text-xs">Quick access…</span>
           <kbd className="hidden sm:inline-flex h-4 items-center rounded border bg-background px-1.5 text-[10px] font-medium">
             ⌘K
           </kbd>
