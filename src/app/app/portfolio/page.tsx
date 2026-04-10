@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   AlertCircle,
   BarChart3,
+  BookOpen,
+  Building2,
   ChevronDown,
   ChevronRight,
   Leaf,
@@ -24,11 +27,21 @@ import {
   getRebalance,
   runStressTest,
   getTaxLoss,
+  getBenchmarks,
+  getBenchmarkComparison,
+  getPortfolioSummary,
+  getWashSaleScan,
+  getRealVsPaperComparison,
   type AttributionResponse,
   type CorrelationResponse,
   type RebalanceResponse,
   type StressTestResponse,
   type TaxLossResponse,
+  type Benchmark,
+  type BenchmarkComparisonResult,
+  type PortfolioSummary,
+  type WashSaleScanResult,
+  type RealVsPaperResult,
 } from '@/lib/api/portfolio';
 
 // ── Demo helpers ──────────────────────────────────────────────────────────────
@@ -49,7 +62,19 @@ const DEMO_POSITIONS = [
   { symbol: 'PFE',  cost_basis: 32.00,  current_price: 26.80,  quantity: 100, purchase_date: '2024-06-20' },
 ];
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
+// ── Tab config ────────────────────────────────────────────────────────────────
+
+const TABS = [
+  { id: 'tools',      label: 'Tools',        icon: Zap },
+  { id: 'portfolio',  label: 'My Portfolio', icon: PieChart },
+  { id: 'vs-paper',   label: 'vs Paper',     icon: BarChart3 },
+  { id: 'wash-sales', label: 'Wash Sales',   icon: Leaf },
+  { id: 'benchmarks', label: 'Benchmarks',   icon: Shield },
+] as const;
+
+type TabId = (typeof TABS)[number]['id'];
+
+// ── Shared sub-components ─────────────────────────────────────────────────────
 
 function Section({ title, icon: Icon, children, defaultOpen = false }: {
   title: string;
@@ -76,9 +101,7 @@ function Section({ title, icon: Icon, children, defaultOpen = false }: {
 }
 
 function Disclaimer({ text }: { text: string }) {
-  return (
-    <p className="mt-3 text-xs text-muted-foreground bg-muted/40 rounded p-2">{text}</p>
-  );
+  return <p className="mt-3 text-xs text-muted-foreground bg-muted/40 rounded p-2">{text}</p>;
 }
 
 function StatCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: string }) {
@@ -91,9 +114,25 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string;
   );
 }
 
-// ── Main Page ──────────────────────────────────────────────────────────────────
+function EmptyState({ icon: Icon, title, description, action }: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+      <Icon className="h-10 w-10 text-muted-foreground/40" />
+      <p className="font-semibold text-sm">{title}</p>
+      <p className="text-xs text-muted-foreground max-w-sm">{description}</p>
+      {action}
+    </div>
+  );
+}
 
-export default function PortfolioPage() {
+// ── Tools Tab ─────────────────────────────────────────────────────────────────
+
+function ToolsTab() {
   const [attribution, setAttribution] = useState<AttributionResponse | null>(null);
   const [rebalance, setRebalance] = useState<RebalanceResponse | null>(null);
   const [stress, setStress] = useState<StressTestResponse | null>(null);
@@ -113,20 +152,7 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Portfolio Management</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Advanced analytics for portfolio optimization, attribution, and risk management.
-        </p>
-      </div>
-
-      <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-3 text-xs text-amber-800 dark:text-amber-300">
-        <strong>Disclaimer:</strong> All portfolio analysis is educational and analytical only.
-        No investment advice, trade execution, or profit guarantee. Consult a qualified financial advisor.
-      </div>
-
+    <div className="space-y-4">
       {/* Performance Attribution */}
       <Section title="Performance Attribution" icon={BarChart3} defaultOpen>
         <p className="text-sm text-muted-foreground mb-4">
@@ -359,6 +385,559 @@ export default function PortfolioPage() {
           </div>
         )}
       </Section>
+    </div>
+  );
+}
+
+// ── My Portfolio Tab ──────────────────────────────────────────────────────────
+
+function MyPortfolioTab() {
+  const [summary, setSummary] = useState<PortfolioSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getPortfolioSummary();
+      setSummary(data);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to load portfolio');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (error) return <div className="flex flex-col items-center gap-3 py-12 text-center"><AlertCircle className="h-8 w-8 text-destructive" /><p className="text-sm text-destructive">{error}</p><Button size="sm" variant="outline" onClick={load}>Retry</Button></div>;
+
+  if (!summary || summary.holding_count === 0) {
+    return (
+      <EmptyState
+        icon={Building2}
+        title="No broker connections"
+        description="Connect a brokerage account to see your real portfolio here."
+        action={<Button asChild size="sm"><Link href="/app/brokers">Connect Broker</Link></Button>}
+      />
+    );
+  }
+
+  const isProfit = summary.unrealized_pl >= 0;
+  const plColor = isProfit ? 'text-green-600' : 'text-red-500';
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+          {summary.holding_count} Holdings · {summary.connections.length} Connection{summary.connections.length !== 1 ? 's' : ''}
+        </h2>
+        <Button size="sm" variant="ghost" onClick={load} className="gap-1.5">
+          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard
+          label="Total Value"
+          value={`$${summary.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+        />
+        {summary.total_cost_basis > 0 && (
+          <>
+            <StatCard
+              label="Cost Basis"
+              value={`$${summary.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            />
+            <StatCard
+              label="Unrealized P&L"
+              value={`${isProfit ? '+' : ''}$${Math.abs(summary.unrealized_pl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              accent={plColor}
+            />
+            <StatCard
+              label="Return"
+              value={`${isProfit ? '+' : ''}${summary.unrealized_pl_pct.toFixed(2)}%`}
+              accent={plColor}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Sector allocation */}
+      {summary.sector_allocation.length > 0 && (
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <p className="font-semibold text-sm">Sector Allocation</p>
+          <div className="space-y-2">
+            {summary.sector_allocation.map(s => (
+              <div key={s.sector} className="flex items-center gap-3">
+                <span className="text-xs w-40 truncate text-muted-foreground">{s.sector}</span>
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(s.weight, 100)}%` }} />
+                </div>
+                <span className="text-xs tabular-nums w-16 text-right">{s.weight.toFixed(1)}%</span>
+                <span className="text-xs tabular-nums w-20 text-right text-muted-foreground">
+                  ${s.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Connection breakdown */}
+      <div className="rounded-xl border bg-card p-4 space-y-3">
+        <p className="font-semibold text-sm">Connections</p>
+        <div className="space-y-2">
+          {summary.connections.map(conn => (
+            <div key={conn.id} className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                {conn.logo ? (
+                  <img
+                    src={conn.logo.startsWith('data:') ? conn.logo : `data:image/png;base64,${conn.logo}`}
+                    alt={conn.display_name}
+                    className="h-6 w-6 rounded object-contain bg-white"
+                  />
+                ) : (
+                  <div className="h-6 w-6 rounded bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
+                    {(conn.display_name ?? '?')[0].toUpperCase()}
+                  </div>
+                )}
+                <span className="font-medium">{conn.display_name}</span>
+                <span className="text-xs text-muted-foreground">{conn.holding_count} holdings</span>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold tabular-nums">${conn.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                {conn.last_sync_at && (
+                  <p className="text-xs text-muted-foreground">
+                    Synced {new Date(conn.last_sync_at).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <Link href="/app/brokers" className="text-xs text-primary hover:underline">
+          Manage connections →
+        </Link>
+      </div>
+
+      <Disclaimer text={summary.disclaimer} />
+    </div>
+  );
+}
+
+// ── vs Paper Tab ──────────────────────────────────────────────────────────────
+
+function VsPaperTab() {
+  const [data, setData] = useState<RealVsPaperResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setData(await getRealVsPaperComparison());
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to load comparison');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (error) return <div className="flex flex-col items-center gap-3 py-12 text-center"><AlertCircle className="h-8 w-8 text-destructive" /><p className="text-sm text-destructive">{error}</p><Button size="sm" variant="outline" onClick={load}>Retry</Button></div>;
+
+  if (!data) return null;
+
+  const real = data.real_portfolio;
+  const paper = data.paper_portfolio;
+  const realPl = real.unrealized_pl;
+  const paperPl = paper.unrealized_pl;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">Side-by-side comparison of your real and paper portfolios.</p>
+        <Button size="sm" variant="ghost" onClick={load} className="gap-1.5">
+          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* Real */}
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            <p className="font-semibold text-sm">Real Portfolio</p>
+          </div>
+          {real.holding_count === 0 ? (
+            <p className="text-xs text-muted-foreground">No connected broker accounts.</p>
+          ) : (
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Value</span>
+                <span className="font-semibold tabular-nums">${real.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              {real.total_cost_basis > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Cost Basis</span>
+                    <span className="tabular-nums">${real.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Unrealized P&L</span>
+                    <span className={cn('font-semibold tabular-nums', realPl >= 0 ? 'text-green-600' : 'text-red-500')}>
+                      {realPl >= 0 ? '+' : ''}${Math.abs(realPl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({real.unrealized_pl_pct.toFixed(2)}%)
+                    </span>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Holdings</span>
+                <span className="tabular-nums">{real.holding_count}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Paper */}
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-purple-500" />
+            <p className="font-semibold text-sm">Paper Portfolio</p>
+          </div>
+          {paper.account_count === 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">No paper trading accounts.</p>
+              <Link href="/app/paper" className="text-xs text-primary hover:underline">Start paper trading →</Link>
+            </div>
+          ) : (
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Equity</span>
+                <span className="font-semibold tabular-nums">${paper.total_equity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              {paper.total_cost_basis > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Cost Basis</span>
+                    <span className="tabular-nums">${paper.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Unrealized P&L</span>
+                    <span className={cn('font-semibold tabular-nums', paperPl >= 0 ? 'text-green-600' : 'text-red-500')}>
+                      {paperPl >= 0 ? '+' : ''}${Math.abs(paperPl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({paper.unrealized_pl_pct.toFixed(2)}%)
+                    </span>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Positions</span>
+                <span className="tabular-nums">{paper.position_count} ({paper.account_count} accounts)</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Shared symbols */}
+      {data.shared_symbols.length > 0 && (
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <p className="font-semibold text-sm">Shared Positions ({data.shared_symbols.length})</p>
+          <div className="rounded-lg border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Symbol</th>
+                  <th className="px-3 py-2 text-right font-medium text-blue-500">Real Value</th>
+                  <th className="px-3 py-2 text-right font-medium text-blue-500">Real Qty</th>
+                  <th className="px-3 py-2 text-right font-medium text-purple-500">Paper Value</th>
+                  <th className="px-3 py-2 text-right font-medium text-purple-500">Paper Qty</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {data.shared_symbols.map(s => (
+                  <tr key={s.symbol} className="hover:bg-muted/20">
+                    <td className="px-3 py-2 font-semibold">{s.symbol}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">${s.real_value.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{s.real_quantity}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">${s.paper_value.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{s.paper_quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <Disclaimer text={data.disclaimer} />
+    </div>
+  );
+}
+
+// ── Wash Sales Tab ────────────────────────────────────────────────────────────
+
+function WashSalesTab() {
+  const [data, setData] = useState<WashSaleScanResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setData(await getWashSaleScan());
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to run scan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (error) return <div className="flex flex-col items-center gap-3 py-12 text-center"><AlertCircle className="h-8 w-8 text-destructive" /><p className="text-sm text-destructive">{error}</p><Button size="sm" variant="outline" onClick={load}>Retry</Button></div>;
+
+  if (!data) return null;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">
+            Holdings with unrealized losses that could trigger wash-sale rules if sold and repurchased within 30 days.
+          </p>
+        </div>
+        <Button size="sm" variant="ghost" onClick={load} className="gap-1.5 shrink-0">
+          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+        </Button>
+      </div>
+
+      {data.total_flagged > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          <StatCard label="Flagged Holdings" value={String(data.total_flagged)} accent="text-amber-600" />
+          <StatCard
+            label="Total Unrealized Loss"
+            value={`-$${Math.abs(data.total_unrealized_loss).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            accent="text-red-600"
+          />
+        </div>
+      )}
+
+      {data.total_flagged === 0 ? (
+        <EmptyState
+          icon={Leaf}
+          title="No wash-sale risk detected"
+          description="None of your current holdings have unrealized losses that would trigger wash-sale rules."
+        />
+      ) : (
+        <div className="space-y-3">
+          {data.flagged_holdings.map(h => (
+            <div key={`${h.symbol}-${h.broker}`} className="rounded-lg border p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold">{h.symbol}</span>
+                  <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{h.broker}</span>
+                </div>
+                <span className="text-red-600 font-semibold tabular-nums">
+                  -${Math.abs(h.unrealized_loss).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <span className="text-xs ml-1">({h.unrealized_loss_pct.toFixed(1)}%)</span>
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                <div>Qty: <span className="font-medium text-foreground">{h.quantity}</span></div>
+                <div>Cost: <span className="font-medium text-foreground">${h.cost_basis.toLocaleString()}</span></div>
+                <div>Value: <span className="font-medium text-foreground">${h.institution_value.toLocaleString()}</span></div>
+              </div>
+              <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded px-2 py-1.5">
+                ⚠ {h.notes}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Disclaimer text={data.disclaimer} />
+    </div>
+  );
+}
+
+// ── Benchmarks Tab ────────────────────────────────────────────────────────────
+
+function BenchmarksTab() {
+  const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
+  const [comparison, setComparison] = useState<BenchmarkComparisonResult | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [compLoading, setCompLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getBenchmarks()
+      .then(setBenchmarks)
+      .catch((err: any) => setError(err?.response?.data?.detail || 'Failed to load benchmarks'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const runComparison = async (id: string) => {
+    setSelectedId(id);
+    setCompLoading(true);
+    setComparison(null);
+    try {
+      setComparison(await getBenchmarkComparison(id));
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Comparison failed');
+    } finally {
+      setCompLoading(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+
+  return (
+    <div className="space-y-6">
+      {benchmarks.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="No custom benchmarks"
+          description="Create a custom benchmark in the Tools tab using the Portfolio Attribution tool to compare your real holdings against it."
+        />
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground">
+            Select a benchmark to compare your real portfolio allocation against it.
+          </p>
+          <div className="space-y-2">
+            {benchmarks.map(bm => (
+              <div
+                key={bm.id}
+                className={cn(
+                  'flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:bg-muted/30 transition-colors',
+                  selectedId === bm.id && 'border-primary bg-primary/5'
+                )}
+                onClick={() => runComparison(bm.id)}
+              >
+                <div>
+                  <p className="font-medium text-sm">{bm.name}</p>
+                  {bm.description && <p className="text-xs text-muted-foreground">{bm.description}</p>}
+                  <p className="text-xs text-muted-foreground">{bm.components.length} components</p>
+                </div>
+                <Button size="sm" variant={selectedId === bm.id ? 'default' : 'outline'} disabled={compLoading && selectedId === bm.id}>
+                  {compLoading && selectedId === bm.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                  Compare
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {comparison && (
+            <div className="rounded-xl border bg-card p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-sm">vs {comparison.benchmark_name}</p>
+                <span className="text-xs text-muted-foreground">
+                  Portfolio: ${comparison.total_portfolio_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              <div className="rounded-lg border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">Symbol</th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">Your Wt</th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">Benchmark</th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">Diff</th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {comparison.comparisons.map(c => (
+                      <tr key={c.symbol} className="hover:bg-muted/20">
+                        <td className="px-3 py-2 font-semibold">{c.symbol}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">{c.real_weight.toFixed(2)}%</td>
+                        <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{c.benchmark_weight.toFixed(2)}%</td>
+                        <td className={cn('px-3 py-2 text-right tabular-nums font-medium', c.difference > 0 ? 'text-blue-600' : c.difference < 0 ? 'text-red-500' : 'text-muted-foreground')}>
+                          {c.difference > 0 ? '+' : ''}{c.difference.toFixed(2)}%
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <span className={cn('text-xs px-1.5 py-0.5 rounded font-medium',
+                            c.status === 'overweight' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' :
+                            c.status === 'underweight' ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' :
+                            'bg-muted text-muted-foreground'
+                          )}>
+                            {c.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Disclaimer text={comparison.disclaimer} />
+            </div>
+          )}
+        </>
+      )}
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
+    </div>
+  );
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────────
+
+export default function PortfolioPage() {
+  const [activeTab, setActiveTab] = useState<TabId>('tools');
+
+  return (
+    <div className="space-y-6 max-w-5xl">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold">Portfolio Management</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          Advanced analytics for portfolio optimization, attribution, and risk management.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-3 text-xs text-amber-800 dark:text-amber-300">
+        <strong>Disclaimer:</strong> All portfolio analysis is educational and analytical only.
+        No investment advice, trade execution, or profit guarantee. Consult a qualified financial advisor.
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 overflow-x-auto rounded-lg border bg-muted p-1">
+        {TABS.map(tab => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors flex-1 justify-center',
+                activeTab === tab.id
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tab content */}
+      {activeTab === 'tools'      && <ToolsTab />}
+      {activeTab === 'portfolio'  && <MyPortfolioTab />}
+      {activeTab === 'vs-paper'   && <VsPaperTab />}
+      {activeTab === 'wash-sales' && <WashSalesTab />}
+      {activeTab === 'benchmarks' && <BenchmarksTab />}
     </div>
   );
 }
