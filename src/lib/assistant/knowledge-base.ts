@@ -25,7 +25,10 @@ export type PageScope =
   | 'settings'
   | 'billing'
   | 'audit'
-  | 'portfolio';
+  | 'portfolio'
+  | 'options'
+  | 'learn'
+  | 'enterprise';
 
 export interface KBEntry {
   id: string;
@@ -207,6 +210,58 @@ export const QUERY_SYNONYMS: Record<string, string> = {
   'long term insights': 'long-term insights',
   'long-term insights': 'long-term insights',
   'regime insights': 'long-term insights',
+
+  // Options variations
+  'option': 'options',
+  'calls': 'options',
+  'puts': 'options',
+  'call option': 'options',
+  'put option': 'options',
+  'options chain': 'options chain',
+  'option chain': 'options chain',
+  'options trading': 'options paper trading',
+  'options paper trade': 'options paper trading',
+  'options contract': 'options',
+  'strike': 'strike price',
+  'expiry': 'expiration',
+  'expiries': 'expiration',
+  'greeks': 'options greeks',
+  'delta': 'options greeks',
+  'theta': 'options greeks',
+  'gamma': 'options greeks',
+  'vega': 'options greeks',
+  'implied volatility': 'iv',
+  'implied vol': 'iv',
+
+  // Learn variations
+  'learn': 'learn feature',
+  'learning': 'learn feature',
+  'courses': 'learn feature',
+  'course': 'learn feature',
+  'modules': 'learn feature',
+  'module': 'learn feature',
+  'lessons': 'learn feature',
+  'lesson': 'learn feature',
+  'education': 'learn feature',
+  'learning path': 'learn paths',
+  'learning paths': 'learn paths',
+  'guided path': 'learn paths',
+  'curriculum': 'learn paths',
+
+  // API key variations
+  'api key': 'api keys',
+  'api keys': 'api keys',
+  'developer': 'api keys',
+  'api access': 'api keys',
+  'enterprise': 'api keys',
+  'webhook': 'webhooks',
+  'webhooks': 'webhooks',
+  'api docs': 'api documentation',
+  'api documentation': 'api documentation',
+  'scopes': 'api scopes',
+  'api scope': 'api scopes',
+  'rate limit': 'api rate limits',
+  'rate limits': 'api rate limits',
 };
 
 /**
@@ -326,6 +381,9 @@ export const KB_ENTRIES: Record<string, KBEntry> = {
 - **Backtesting**: Test investment hypotheses against historical data
 - **Paper Trading**: Practice with simulated portfolios (no real money)
 - **Stress Testing**: See how portfolios might perform in crisis scenarios
+- **Options Education**: Explore options chains and simulated options paper trading with a Black-Scholes model
+- **Structured Learning**: Guided modules and learning paths covering investing fundamentals through advanced topics
+- **API Access**: Enterprise API keys for programmatic access to platform data (Pro+)
 
 SSB is designed for education and research. It does not execute real trades or provide personalized financial advice.`,
       how_to: `**Getting Started with SSB:**
@@ -899,31 +957,40 @@ The output is a **regime label + confidence score**, not a simple up/down signal
     content: {
       definition: `**SSB Subscription Tiers** determine your feature access, data currency, and limits.
 
-**Free:**
+**Free ($0/mo):**
 - Basic risk analytics
 - Paper trading: 5 positions, 10 orders/day, 30-day history, 1 reset/week
 - SMA 20 chart overlay only
 - Regime data with delay; no Scenario Mode presets
 - 1 Scenario override (no baseline compare)
+- No options access
+- Learning modules 1–4, 7–10, 14 (free tier)
 
-**Starter:**
+**Starter ($9/mo):**
 - Paper trading: 25 positions, 100 orders/day, 365-day history, daily resets
 - SMA 20, SMA 50, Key Levels overlays
 - 3 Scenario overrides, baseline compare, deltas, presets
+- Options Chain Viewer (view-only, simulated data)
+- All free learning modules
 
-**Pro:**
+**Pro ($29/mo):**
 - Paper trading: 200 positions, 1,000 orders/day, unlimited resets
 - All chart overlays
 - Real-time regime insights
 - Stress testing access
 - Portfolio Health widget (sector, concentration, risk score)
 - 3 Scenario overrides with full features
+- Options Chain Viewer + Options Paper Trading (up to 50 contracts) + Options Analytics
+- All learning modules including pro-only (5–6, 11–13)
+- API key access (market data, paper trading, portfolio, analytics scopes)
 
-**Institutional:**
+**Institutional ($199/mo):**
 - All Pro features
 - Portfolio Health correlation matrix and granular breakdown
 - Scenario Mode export and custom labels
 - Real-time data, no delay
+- Unlimited options contracts
+- Webhooks and full API scope access
 
 **Founder:**
 - All Institutional features
@@ -1291,6 +1358,284 @@ The **View Mode Badge** displayed next to page titles indicates which horizon is
     },
     relatedTopics: ['portfolio_health', 'risk_analytics', 'entitlements', 'volatility'],
   },
+
+  // -------------------------------------------------------------------------
+  // Options
+  // -------------------------------------------------------------------------
+  options_overview: {
+    id: 'options_overview',
+    title: 'Options Trading (Educational)',
+    keywords: ['options', 'calls', 'puts', 'option chain', 'options trading', 'derivatives'],
+    aliases: ['call options', 'put options', 'stock options', 'options market'],
+    pageScopes: ['global', 'options', 'dashboard'],
+    content: {
+      definition: `**Options** are contracts that give the buyer the right (but not the obligation) to buy or sell an underlying asset at a specific price before a specific date.
+
+**Key Concepts:**
+- **Call Option**: The right to *buy* the underlying asset at the strike price
+- **Put Option**: The right to *sell* the underlying asset at the strike price
+- **Strike Price**: The agreed price at which the option can be exercised
+- **Expiration Date**: The date after which the option expires worthless if unexercised
+- **Premium**: The price paid to buy the option contract
+
+**Moneyness:**
+- **In-the-Money (ITM)**: The option has intrinsic value (e.g., call strike below current price)
+- **At-the-Money (ATM)**: Strike price ≈ current stock price
+- **Out-of-the-Money (OTM)**: No intrinsic value; only time value remains
+
+**SSB Options Feature:**
+SSB provides an educational options environment powered by a Black-Scholes simulation model. All prices are **simulated** — not real market quotes. The feature is intended to teach options concepts, not to replicate live options trading.
+
+**Disclaimer:** Options trading involves significant risk. Real options can expire worthless and result in total loss of premium. SSB's options data is for educational purposes only.`,
+      how_to: `**Accessing Options in SSB:**
+
+1. Navigate to **Options** from the sidebar
+2. If on Free tier: you'll see an overview of the feature with upgrade prompts
+3. If on Starter+: the **Options Chain Viewer** is available
+4. Select a symbol from the quick-select list or enter a ticker
+5. Choose an expiration date
+6. View calls and puts in the chain table
+
+**Understanding the Chain Table:**
+- Left side: Calls | Right side: Puts
+- Columns: Bid, Ask, Last, IV, Delta, Gamma, Theta, Volume, OI
+- Highlighted rows indicate at-the-money options`,
+      troubleshoot: `**Options Issues:**
+
+**"Options not available" or upgrade prompt:**
+- Free tier has no options access — Starter is minimum for Chain Viewer
+- Check your plan in Settings → Billing
+
+**Prices seem different from what I see elsewhere:**
+- SSB options prices are simulated using Black-Scholes, not real market quotes
+- The SimulatedData badge in the chain viewer confirms this
+
+**Paper options trading not available:**
+- Options paper trading requires Pro tier or above`,
+    },
+    relatedTopics: ['options_chain', 'options_greeks', 'entitlements'],
+  },
+
+  options_chain: {
+    id: 'options_chain',
+    title: 'Options Chain Viewer',
+    keywords: ['options chain', 'chain viewer', 'expiration', 'strike price', 'bid ask', 'open interest'],
+    aliases: ['option chain', 'chain table', 'options table'],
+    pageScopes: ['options'],
+    content: {
+      definition: `**Options Chain Viewer** displays all available call and put contracts for a symbol, organized by strike price and expiration date.
+
+**Chain Viewer Columns:**
+- **Bid/Ask**: The current bid and ask prices for the contract
+- **Last**: The last traded price (simulated in SSB)
+- **IV (Implied Volatility)**: Market's expectation of future volatility, derived from the option price
+- **Delta**: Rate of change in option price relative to the underlying ($0–$1 for calls, -$1–$0 for puts)
+- **Gamma**: Rate of change of delta
+- **Theta**: Time decay — how much value the option loses per day
+- **Volume**: Number of contracts traded today
+- **OI (Open Interest)**: Total open contracts outstanding
+
+**Simulated Data Badge:**
+All data in the chain viewer is generated by SSB's Black-Scholes educational model, not sourced from live market quotes. The "Simulated Data" badge is always visible as a reminder.
+
+**Expiration Selector:**
+Use the expiration selector to choose which expiry date to view. Standard expirations (weekly, monthly) are shown.
+
+**Filters:**
+- Filter by moneyness (ITM, ATM, OTM)
+- Filter by call or put side`,
+      how_to: `**Using the Chain Viewer:**
+
+1. Go to **Options** page (Starter tier or above)
+2. Enter or select a symbol (e.g., AAPL, SPY, TSLA)
+3. Select an **expiration date** from the selector
+4. View calls on the left, puts on the right
+5. Highlighted rows = at-the-money (ATM) contracts
+6. Use **filters** to narrow to ITM or OTM
+7. Hover over a row for full contract details`,
+    },
+    relatedTopics: ['options_overview', 'options_greeks', 'entitlements'],
+  },
+
+  options_greeks: {
+    id: 'options_greeks',
+    title: 'Options Greeks',
+    keywords: ['options greeks', 'delta', 'gamma', 'theta', 'vega', 'greeks'],
+    aliases: ['option greeks', 'delta gamma theta vega'],
+    pageScopes: ['global', 'options'],
+    content: {
+      definition: `**Options Greeks** are sensitivity measures that describe how an option's price responds to various factors.
+
+**Delta (Δ):**
+- Rate of change of option price relative to a $1 move in the underlying
+- Call delta: 0 to +1; Put delta: -1 to 0
+- ATM options have delta ≈ ±0.50
+- High delta = option behaves more like owning the underlying
+
+**Gamma (Γ):**
+- Rate of change of delta per $1 move in the underlying
+- Highest near ATM and near expiration
+- High gamma = delta changes quickly; more risk/reward sensitivity
+
+**Theta (Θ):**
+- Time decay — how much the option loses in value per calendar day
+- Always negative for option buyers; options lose value as expiration approaches
+- Decay accelerates as expiration nears (especially the final 30 days)
+
+**Vega (ν):**
+- Sensitivity of option price to a 1% change in implied volatility (IV)
+- Higher vega = option price changes more when IV shifts
+- Long options benefit from rising IV; short options are hurt by it
+
+**Rho (ρ):**
+- Sensitivity to changes in interest rates
+- Less commonly referenced for short-dated options
+
+**Practical Rule of Thumb:**
+- ITM options have higher delta, lower theta
+- OTM options have lower delta, higher gamma near ATM
+- All long options have negative theta (time decay hurts buyers)`,
+    },
+    relatedTopics: ['options_overview', 'options_chain', 'volatility'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Learn Feature
+  // -------------------------------------------------------------------------
+  learn_feature: {
+    id: 'learn_feature',
+    title: 'Learn — Modules & Learning Paths',
+    keywords: ['learn feature', 'modules', 'learning paths', 'education', 'courses', 'curriculum'],
+    aliases: ['learning modules', 'guided learning', 'investing education', 'lessons'],
+    pageScopes: ['global', 'learn', 'dashboard'],
+    content: {
+      definition: `**Learn** is SSB's structured educational content library — a catalog of modules and guided paths that teach investing and platform skills.
+
+**Modules (14 total):**
+Bite-sized lessons covering specific topics:
+- **Free (all tiers):** Modules 1–4, 7–10, 14
+- **Pro+ only:** Modules 5–6, 11–13
+
+**Topics covered include:**
+- Investing foundations
+- Portfolio construction and diversification
+- Risk management and position sizing
+- Market regime analysis and how to use it
+- Backtesting and strategy validation
+- Options fundamentals
+- Advanced analytics and strategy development
+
+**Learning Paths (4 total):**
+Curated sequences that guide you through related modules in a recommended order:
+- **Beginner paths** (free): Core investing and platform fundamentals
+- **Intermediate / Advanced paths** (pro): Options, regime-based strategies, advanced analytics
+
+**Tier Access:**
+- Free: Free-tier modules + free paths
+- Starter: Same as free (modules unlocked with Pro)
+- Pro / Institutional / Founder: All 14 modules and all 4 paths
+
+**Progress Tracking:**
+Your module completions and path progress are saved between sessions.`,
+      how_to: `**Using the Learn Feature:**
+
+1. Navigate to **Learn** from the sidebar
+2. Browse the **Modules** tab for individual lessons
+3. Browse **Paths** for guided multi-module sequences
+4. Click a module to start reading
+5. Locked modules (🔒) require Pro tier — click for upgrade info
+6. "Explore in SSB" links inside modules take you directly to related features
+7. Your progress is automatically saved`,
+      troubleshoot: `**Learn Issues:**
+
+**Module shows "Pro Required":**
+- Modules 5–6 and 11–13 are Pro tier only
+- Upgrade in Settings → Billing to unlock
+
+**Progress not saving:**
+- Make sure you're logged in
+- Progress requires a full module visit
+
+**"Explore in SSB" link not working:**
+- Some feature links are tier-gated (e.g., options requires Starter+)
+- Check your plan if the feature page shows an upgrade prompt`,
+    },
+    relatedTopics: ['what_is_ssb', 'entitlements', 'options_overview', 'backtesting'],
+  },
+
+  // -------------------------------------------------------------------------
+  // API Keys / Enterprise
+  // -------------------------------------------------------------------------
+  api_keys: {
+    id: 'api_keys',
+    title: 'API Keys & Developer Access',
+    keywords: ['api keys', 'api access', 'developer', 'enterprise', 'webhooks', 'api documentation', 'api scopes', 'api rate limits'],
+    aliases: ['api key', 'programmatic access', 'developer api', 'rest api', 'api credentials'],
+    pageScopes: ['global', 'enterprise', 'settings'],
+    content: {
+      definition: `**API Keys** allow programmatic access to SSB's platform data — useful for building integrations, custom dashboards, or automated analysis workflows.
+
+**Who Can Use API Keys:**
+- Pro tier: market data, paper trading, portfolio, and analytics scopes
+- Institutional: all Pro scopes + webhooks:manage
+
+**Available Scopes (permissions):**
+- **market_data:read** — Access news, market intelligence, and analytics endpoints
+- **paper_trading:read** — Read paper trading positions and orders
+- **paper_trading:write** — Place and manage paper trading orders
+- **portfolio:read** — Read portfolio data and metrics
+- **analytics:read** — Access risk analytics and backtesting data
+- **webhooks:manage** — Create and manage webhook subscriptions (Institutional+)
+
+**Authentication:**
+Include your API key in requests using either:
+\`\`\`
+Authorization: Bearer ssb_live_xxxx
+X-API-Key: ssb_live_xxxx
+\`\`\`
+
+**Rate Limits:**
+- Pro: 100 requests/minute
+- Institutional: 1,000 requests/minute
+- Institutional (with IP allowlist): 5,000 requests/minute
+
+**Usage Stats:**
+View 24h and 7-day request counts per key in the API Keys management page.`,
+      how_to: `**Creating an API Key:**
+
+1. Go to **Enterprise → API Keys** from the sidebar
+2. Click **"New API Key"**
+3. Enter a name and select the scopes you need
+4. Optionally add an IP allowlist (CIDR notation)
+5. Click **Create** — copy the key immediately (shown only once)
+6. Use the key in your API requests
+
+**Viewing API Docs:**
+- Click **"API Docs"** in the API Keys page header
+- Full endpoint reference with curl, Python, and JavaScript examples
+
+**Webhook Setup:**
+- Requires Institutional tier and webhooks:manage scope
+- Configure event subscriptions and your endpoint URL in the API Keys page`,
+      troubleshoot: `**API Key Issues:**
+
+**401 Unauthorized:**
+- Verify the key is correct and hasn't been deleted
+- Check that the key has the required scope for the endpoint
+
+**403 Forbidden:**
+- The key's scope doesn't include this endpoint
+- Create a new key with the needed scope
+
+**429 Too Many Requests:**
+- You've hit your plan's rate limit
+- Wait for the rate limit window to reset or upgrade
+
+**Key not showing after creation:**
+- Keys are only shown once at creation — if lost, delete and create a new one`,
+    },
+    relatedTopics: ['entitlements', 'what_is_ssb', 'audit_log'],
+  },
 };
 
 // =============================================================================
@@ -1299,7 +1644,9 @@ The **View Mode Badge** displayed next to page titles indicates which horizon is
 
 export const GLOSSARY: KBGlossaryTerm[] = [
   { term: 'Alpha', aliases: ['alpha'], definition: 'Returns above a benchmark, often attributed to skill', category: 'analytics' },
+  { term: 'At-the-Money (ATM)', aliases: ['atm', 'at the money'], definition: 'An option whose strike price is approximately equal to the current price of the underlying asset', category: 'trading' },
   { term: 'Beta', aliases: ['beta'], definition: 'Measure of volatility relative to the market; Beta > 1 = more volatile than market', category: 'risk' },
+  { term: 'Black-Scholes', aliases: ['black scholes model', 'bsm'], definition: 'A mathematical model for pricing European-style options; SSB uses it to generate educational simulated options prices', category: 'analytics' },
   { term: 'Breadth Score', aliases: ['breadth', 'market breadth'], definition: 'Proportion of market components participating in the current trend (0–1); higher = broader participation', category: 'analytics' },
   { term: 'Calmar Ratio', definition: 'Annualized return divided by maximum drawdown; higher is better', category: 'analytics' },
   { term: 'Confidence Score', definition: 'In SSB regime analysis, the degree to which all indicators agree on the current regime classification (0–100%)', category: 'analytics' },
@@ -1309,12 +1656,22 @@ export const GLOSSARY: KBGlossaryTerm[] = [
   { term: 'Diversification', definition: 'Spreading investments across uncorrelated assets to reduce concentration risk', category: 'risk' },
   { term: 'Drawdown', aliases: ['dd', 'mdd', 'max drawdown'], definition: 'Peak-to-trough decline in portfolio value; maximum drawdown is the largest such decline historically', category: 'risk' },
   { term: 'Ensemble Model', definition: 'A model that combines multiple independent signals or classifiers to produce a more robust output', category: 'analytics' },
+  { term: 'Call Option', aliases: ['call', 'calls'], definition: 'An options contract giving the buyer the right to purchase the underlying asset at the strike price before expiration', category: 'trading' },
+  { term: 'Delta', aliases: ['option delta'], definition: 'Options greek measuring rate of change in option price per $1 move in the underlying; calls 0 to +1, puts -1 to 0', category: 'analytics' },
   { term: 'ETF', definition: 'Exchange-Traded Fund — a basket of securities trading like a stock', category: 'trading' },
+  { term: 'Expiration Date', aliases: ['expiry', 'expiration'], definition: 'The date on which an options contract expires; after this date the option has no value if unexercised', category: 'trading' },
+  { term: 'Gamma', aliases: ['option gamma'], definition: 'Options greek measuring rate of change of delta per $1 move in the underlying; highest for ATM options near expiration', category: 'analytics' },
   { term: 'Hedging', definition: 'Taking offsetting positions to reduce exposure to a specific risk', category: 'risk' },
+  { term: 'Implied Volatility (IV)', aliases: ['iv', 'implied vol', 'implied volatility'], definition: 'The market\'s forward-looking expectation of volatility derived from an option\'s price; higher IV = more expensive options', category: 'analytics' },
+  { term: 'In-the-Money (ITM)', aliases: ['itm', 'in the money'], definition: 'An option with intrinsic value: a call is ITM when the stock price is above the strike; a put is ITM when stock price is below the strike', category: 'trading' },
   { term: 'Liquidity', definition: 'How easily an asset can be bought or sold without materially affecting its price', category: 'trading' },
+  { term: 'Open Interest (OI)', aliases: ['oi', 'open interest'], definition: 'The total number of outstanding options contracts that have not been settled or closed', category: 'trading' },
+  { term: 'Out-of-the-Money (OTM)', aliases: ['otm', 'out of the money'], definition: 'An option with no intrinsic value: a call is OTM when stock price is below the strike; a put is OTM when above the strike', category: 'trading' },
+  { term: 'Option Premium', aliases: ['premium', 'option price'], definition: 'The price paid to buy an options contract; composed of intrinsic value + time value', category: 'trading' },
   { term: 'Market Cap', definition: 'Total market value of all outstanding shares of a company', category: 'trading' },
   { term: 'P/E Ratio', definition: 'Price-to-Earnings ratio — a common equity valuation metric', category: 'analytics' },
   { term: 'P&L', aliases: ['pnl', 'pl', 'profit and loss'], definition: 'Profit and Loss — the net gain or loss on a position or account', category: 'trading' },
+  { term: 'Put Option', aliases: ['put', 'puts'], definition: 'An options contract giving the buyer the right to sell the underlying asset at the strike price before expiration', category: 'trading' },
   { term: 'Rebalancing', definition: 'Adjusting portfolio weights back to target allocations after price movements shift them', category: 'trading' },
   { term: 'Regime Classification', aliases: ['regime label'], definition: 'The category assigned to the current market environment by SSB\'s ensemble model (e.g., Bull, Bear, Sideways, High Volatility)', category: 'analytics' },
   { term: 'Sharpe Ratio', definition: 'Risk-adjusted return measure: annualized excess return divided by annualized standard deviation; higher is better', category: 'analytics' },
@@ -1322,9 +1679,12 @@ export const GLOSSARY: KBGlossaryTerm[] = [
   { term: 'Sortino Ratio', definition: 'Like Sharpe but only penalizes downside volatility, not upside; higher is better', category: 'analytics' },
   { term: 'Spread', definition: 'Difference between the best bid and ask prices at any moment', category: 'trading' },
   { term: 'SMA', aliases: ['simple moving average', 'moving average'], definition: 'Simple Moving Average — the arithmetic mean of closing prices over N periods', category: 'analytics' },
+  { term: 'Strike Price', aliases: ['strike', 'exercise price'], definition: 'The fixed price at which the holder of an options contract can buy (call) or sell (put) the underlying asset', category: 'trading' },
+  { term: 'Theta', aliases: ['option theta', 'time decay'], definition: 'Options greek measuring time decay — how much value an option loses per calendar day; always negative for option buyers', category: 'analytics' },
   { term: 'Trend Score', aliases: ['trend'], definition: 'In SSB, a composite signal (-1 to +1) measuring price trend direction and momentum across multiple timeframes', category: 'analytics' },
   { term: 'VaR', aliases: ['value at risk'], definition: 'Value at Risk — the potential loss threshold at a given confidence level (e.g., 95%) over a defined time horizon', category: 'risk' },
   { term: 'VIX', aliases: ['vix', 'volatility index', 'fear index'], definition: 'CBOE Volatility Index — measures expected 30-day volatility of the S&P 500; above 30 = high fear, below 20 = calm', category: 'risk' },
+  { term: 'Vega', aliases: ['option vega'], definition: 'Options greek measuring sensitivity of option price to a 1% change in implied volatility; long options benefit from rising IV', category: 'analytics' },
   { term: 'Volatility', aliases: ['vol', 'historical volatility'], definition: 'Measure of how much prices fluctuate over time; annualized standard deviation of returns', category: 'risk' },
   { term: 'Volatility Percentile', definition: 'In SSB, where current realized volatility ranks relative to its historical distribution (0 = lowest ever, 100 = highest ever)', category: 'analytics' },
   { term: 'Yield', definition: 'Income return on an investment, expressed as a percentage of its price', category: 'analytics' },
@@ -1440,6 +1800,24 @@ export const PAGE_PROMPTS: Record<PageScope, string[]> = {
     'What is a correlation matrix?',
     'How is the health score calculated?',
     'What is concentration risk?',
+  ],
+  options: [
+    'What is an options chain?',
+    'Explain delta and theta',
+    'What is implied volatility?',
+    'Call vs put options?',
+  ],
+  learn: [
+    'What modules are available?',
+    'What are learning paths?',
+    'Which modules are free?',
+    'How do I track my progress?',
+  ],
+  enterprise: [
+    'How do I create an API key?',
+    'What scopes are available?',
+    'What are the rate limits?',
+    'How do webhooks work?',
   ],
 };
 

@@ -76,6 +76,9 @@ function detectPageScope(path?: string): PageScope {
   if (pathLower.includes('/billing')) return 'billing';
   if (pathLower.includes('/audit')) return 'audit';
   if (pathLower.includes('/portfolio')) return 'portfolio';
+  if (pathLower.includes('/options')) return 'options';
+  if (pathLower.includes('/learn')) return 'learn';
+  if (pathLower.includes('/enterprise')) return 'enterprise';
   if (pathLower.includes('/dashboard') || pathLower === '/app') return 'dashboard';
 
   return 'global';
@@ -281,6 +284,10 @@ const TIER_RELEVANT_ENTRIES = new Set([
   'correlation_analysis',
   'long_term_insights',
   'view_mode',
+  'options_overview',
+  'options_chain',
+  'learn_feature',
+  'api_keys',
 ]);
 
 /**
@@ -293,13 +300,13 @@ function buildTierNote(tier?: AssistantContext['tier'], entryId?: string): strin
   switch (tier) {
     case 'founder':
     case 'full_access':
-      return '\n\n*Your plan provides full access to all platform features, including real-time data, correlation analysis, portfolio health, and all Scenario Mode capabilities.*';
+      return '\n\n*Your plan provides full access to all platform features, including real-time data, correlation analysis, portfolio health, all Scenario Mode capabilities, all options features, all learning modules, and full API access.*';
     case 'institutional':
-      return '\n\n*Your Institutional plan includes real-time data, correlation analysis, portfolio health, and full Scenario Mode access.*';
+      return '\n\n*Your Institutional plan includes real-time data, correlation analysis, portfolio health, full Scenario Mode, unlimited options contracts, all learning modules, and full API access including webhooks.*';
     case 'pro':
-      return '\n\n*Your Pro plan includes real-time regime insights, stress testing, portfolio health, all chart overlays, and Scenario Mode with baseline comparison.*';
+      return '\n\n*Your Pro plan includes real-time regime insights, stress testing, portfolio health, all chart overlays, Scenario Mode with baseline comparison, options chain viewer + paper trading (up to 50 contracts), all learning modules, and API key access.*';
     case 'starter':
-      return '\n\n*Your Starter plan includes expanded paper trading limits and Scenario Mode with up to 3 overrides and baseline comparison.*';
+      return '\n\n*Your Starter plan includes expanded paper trading limits, Scenario Mode with up to 3 overrides and baseline comparison, and Options Chain Viewer (view-only).*';
     case 'free':
       return '\n\n*Some features shown above require a higher-tier plan. Visit Billing to explore upgrade options.*';
     default:
@@ -332,7 +339,8 @@ function generateGreeting(pageScope: PageScope): AssistantResponse {
 
 - **Market Analysis**: Regime detection, trend analysis
 - **Risk Metrics**: VaR, volatility, drawdown, stress testing
-- **Platform Features**: Backtesting, paper trading, tiers
+- **Platform Features**: Backtesting, paper trading, options, learning paths
+- **API & Enterprise**: API keys, scopes, rate limits, webhooks
 - **Investment Concepts**: Strategies, terminology, best practices
 
 What would you like to know?`,
