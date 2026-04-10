@@ -6,10 +6,10 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Smart Strategies Builder - Financial Intelligence Platform',
-  description: 'AI-powered financial intelligence platform for risk analysis, regime detection, and strategy backtesting',
-  keywords: ['risk analytics', 'regime detection', 'backtesting', 'financial intelligence', 'portfolio analysis'],
-  authors: [{ name: 'Smart Strategies Builder Team' }],
+  title: 'Smart Strategies Builder — Learn Investing with Paper Trading & Portfolio Analytics',
+  description: 'Build real investing skills with paper trading, portfolio analytics, AI market analysis, and backtesting. Free plan available — no credit card required.',
+  keywords: ['paper trading', 'portfolio analytics', 'market regime detection', 'backtesting', 'options education', 'financial education', 'investing tools', 'risk analytics', 'stock analysis'],
+  authors: [{ name: 'Smart Strategies Builder' }],
   icons: {
     icon: [
       { url: '/icon.png', type: 'image/png' },
