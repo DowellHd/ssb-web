@@ -140,6 +140,7 @@ export interface BrokerConnection {
   account_ids: string[];
   last_sync_at: string | null;
   error_message: string | null;
+  connection_metadata: { logo?: string } | null;
   created_at: string;
 }
 
