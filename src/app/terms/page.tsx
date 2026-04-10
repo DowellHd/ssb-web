@@ -35,9 +35,10 @@ export default function TermsPage() {
           <li><a href="#indemnification" className="text-primary hover:underline">17. Indemnification</a></li>
           <li><a href="#dispute" className="text-primary hover:underline">18. Dispute Resolution &amp; Arbitration</a></li>
           <li><a href="#governing-law" className="text-primary hover:underline">19. Governing Law</a></li>
-          <li><a href="#termination" className="text-primary hover:underline">20. Termination</a></li>
-          <li><a href="#changes" className="text-primary hover:underline">21. Changes to Terms</a></li>
-          <li><a href="#contact" className="text-primary hover:underline">22. Contact</a></li>
+          <li><a href="#billing-cancellation" className="text-primary hover:underline">20. Subscription, Billing &amp; Cancellation</a></li>
+          <li><a href="#termination" className="text-primary hover:underline">21. Termination</a></li>
+          <li><a href="#changes" className="text-primary hover:underline">22. Changes to Terms</a></li>
+          <li><a href="#contact" className="text-primary hover:underline">23. Contact</a></li>
         </ul>
       </nav>
 
@@ -125,7 +126,7 @@ export default function TermsPage() {
           <li>Store your brokerage login credentials — credentials are handled exclusively by the third-party data provider</li>
         </ul>
         <p className="mb-4">
-          You may disconnect a broker account at any time through your account settings. Disconnecting removes SSB&apos;s access to future data but does not automatically delete previously cached data. To request deletion of cached financial data, contact us at the address in Section 22.
+          You may disconnect a broker account at any time through your account settings. Disconnecting removes SSB&apos;s access to future data but does not automatically delete previously cached data. To request deletion of cached financial data, contact us at the address in Section 23.
         </p>
         <p>
           Broker connections are subject to the terms of service of the applicable third-party data aggregation provider. SSB is not responsible for the availability, accuracy, or security of data provided by those services.
@@ -380,8 +381,54 @@ export default function TermsPage() {
         </p>
       </section>
 
+      <section id="billing-cancellation" className="mb-8">
+        <h2 className="text-2xl font-semibold mb-4">20. Subscription, Billing &amp; Cancellation</h2>
+
+        <h3 className="text-lg font-medium mb-2">Subscription Plans</h3>
+        <p className="mb-4">
+          SSB offers a Free plan and paid subscription plans (Starter, Pro, Institutional) billed on a monthly or annual basis. Plan features and pricing are described at{' '}
+          <a href="/pricing" className="text-primary hover:underline">/pricing</a>. We reserve the right to change plan pricing or features upon reasonable notice.
+        </p>
+
+        <h3 className="text-lg font-medium mb-2">Billing</h3>
+        <p className="mb-4">
+          By subscribing to a paid plan, you authorize SSB to charge your payment method on a recurring basis at the beginning of each billing period. All charges are in U.S. dollars. Taxes may apply depending on your jurisdiction and will be added to your invoice where required. All payments are processed through Stripe — SSB does not store your full payment card information.
+        </p>
+
+        <h3 className="text-lg font-medium mb-2">Cancellation</h3>
+        <p className="mb-4">
+          You may cancel your subscription at any time through the Billing section of your account settings or by contacting us at support@smartstrategiesbuilder.com. Cancellations take effect at the end of the current billing period. You retain full access to your paid plan features until the end of the period for which you have already paid. No early termination fees apply.
+        </p>
+
+        <h3 className="text-lg font-medium mb-2">Refunds</h3>
+        <p className="mb-4">
+          <strong>Monthly plans:</strong> No prorated refunds are issued for unused days within a billing period. Your access continues until the end of the month you paid for.
+        </p>
+        <p className="mb-4">
+          <strong>Annual plans:</strong> Annual subscriptions are billed upfront. No prorated refunds are issued for the unused portion of an annual term upon cancellation, except where required by applicable law (including California law).
+        </p>
+        <p className="mb-4">
+          <strong>Refund requests:</strong> We evaluate refund requests on a case-by-case basis for extenuating circumstances. To request a refund, contact us within 7 days of the charge at support@smartstrategiesbuilder.com. Approved refunds are processed within 5–10 business days.
+        </p>
+
+        <h3 className="text-lg font-medium mb-2">Downgrades</h3>
+        <p className="mb-4">
+          You may downgrade to a lower plan at any time. The downgrade takes effect at the start of your next billing period. You retain your current plan&apos;s features until then. No refund is issued for the difference in plan price.
+        </p>
+
+        <h3 className="text-lg font-medium mb-2">Failed Payments</h3>
+        <p className="mb-4">
+          If a payment fails, we will notify you and may attempt to reprocess the charge. If payment remains outstanding, your account may be downgraded to the Free plan and access to paid features may be suspended until the balance is resolved.
+        </p>
+
+        <h3 className="text-lg font-medium mb-2">Early Access</h3>
+        <p>
+          During any early access or beta period, all plan features may be available at no cost and no real charges will occur. When paid billing is activated, we will notify you in advance and require your explicit action to begin a paid subscription. No charges will be applied automatically or without your consent.
+        </p>
+      </section>
+
       <section id="termination" className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">20. Termination</h2>
+        <h2 className="text-2xl font-semibold mb-4">21. Termination</h2>
         <p className="mb-4">
           We reserve the right to suspend, restrict, or terminate your access to SSB at any time, with or without cause, and with or without notice, including but not limited to for violations of these Terms, suspected fraudulent activity, or legal obligations.
         </p>
@@ -394,7 +441,7 @@ export default function TermsPage() {
       </section>
 
       <section id="changes" className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">21. Changes to Terms</h2>
+        <h2 className="text-2xl font-semibold mb-4">22. Changes to Terms</h2>
         <p className="mb-4">
           We may modify these Terms of Service at any time at our sole discretion. Changes will be effective when posted on this page with an updated &quot;Last updated&quot; date. For material changes, we will make reasonable efforts to notify you (such as through an in-app notice or email). Your continued use of SSB after changes are posted constitutes your acceptance of the modified Terms.
         </p>
@@ -404,7 +451,7 @@ export default function TermsPage() {
       </section>
 
       <section id="contact" className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">22. Contact</h2>
+        <h2 className="text-2xl font-semibold mb-4">23. Contact</h2>
         <p className="mb-4">
           If you have questions about these Terms of Service, please contact us at:
         </p>

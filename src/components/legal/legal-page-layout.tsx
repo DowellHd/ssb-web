@@ -56,6 +56,9 @@ export function LegalPageLayout({ title, lastUpdated, children }: LegalPageLayou
               © {new Date().getFullYear()} Smart Strategies Builder. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
+              <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                Pricing
+              </Link>
               <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
                 Terms of Service
               </Link>
