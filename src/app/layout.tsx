@@ -6,7 +6,7 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Smart Strategies Builder — Learn Investing with Paper Trading & Portfolio Analytics',
+  title: 'Smart Strategies Builder — Paper Trading, Portfolio Analytics & AI Market Analysis',
   description: 'Build real investing skills with paper trading, portfolio analytics, AI market analysis, and backtesting. Free plan available — no credit card required.',
   keywords: ['paper trading', 'portfolio analytics', 'market regime detection', 'backtesting', 'options education', 'financial education', 'investing tools', 'risk analytics', 'stock analysis'],
   authors: [{ name: 'Smart Strategies Builder' }],
