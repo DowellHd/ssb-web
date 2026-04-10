@@ -85,6 +85,7 @@ function PlaidConnectButton({ onSuccess }: { onSuccess: () => void }) {
           public_token,
           institution_name: metadata.institution?.name ?? 'Unknown',
           institution_id: metadata.institution?.institution_id ?? '',
+          logo: (metadata.institution as any)?.logo ?? null,
         });
         onSuccess();
       } catch {

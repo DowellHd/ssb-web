@@ -448,6 +448,7 @@ export async function exchangePlaidToken(data: {
   public_token: string;
   institution_name: string;
   institution_id: string;
+  logo?: string | null;
 }): Promise<{ id: string; display_name: string; connection_status: string; connected: boolean }> {
   const res = await apiClient.post('/brokers/plaid/exchange', data);
   return res.data;
