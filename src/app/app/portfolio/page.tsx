@@ -65,11 +65,11 @@ const DEMO_POSITIONS = [
 // ── Tab config ────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'tools',      label: 'Tools',        icon: Zap },
   { id: 'portfolio',  label: 'My Portfolio', icon: PieChart },
   { id: 'vs-paper',   label: 'vs Paper',     icon: BarChart3 },
   { id: 'wash-sales', label: 'Wash Sales',   icon: Leaf },
   { id: 'benchmarks', label: 'Benchmarks',   icon: Shield },
+  { id: 'tools',      label: 'Tools',        icon: Zap },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -893,7 +893,7 @@ function BenchmarksTab() {
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function PortfolioPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('tools');
+  const [activeTab, setActiveTab] = useState<TabId>('portfolio');
 
   return (
     <div className="space-y-6 max-w-5xl">
