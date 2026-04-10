@@ -69,6 +69,18 @@ const SCOPES = [
     ],
   },
   {
+    key: 'webhooks:manage',
+    label: 'webhooks:manage',
+    description: 'Create, list, update, and delete webhook subscriptions. View delivery history.',
+    endpoints: [
+      'POST /enterprise/webhooks',
+      'GET /enterprise/webhooks',
+      'PATCH /enterprise/webhooks/{id}',
+      'DELETE /enterprise/webhooks/{id}',
+      'GET /enterprise/webhooks/{id}/deliveries',
+    ],
+  },
+  {
     key: 'full_access',
     label: 'full_access',
     description: 'Grants all scopes above. Equivalent to having every scope on the key.',
