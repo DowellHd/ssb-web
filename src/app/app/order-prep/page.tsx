@@ -18,10 +18,19 @@ import { cn } from '@/lib/utils';
 import {
   createOrderTicket,
   listOrderTickets,
+  getPortfolioSummary,
   type OrderTicket,
+  type PlaidHolding,
 } from '@/lib/api/portfolio';
 
 const ORDER_TYPES = ['market', 'limit', 'stop', 'stop_limit', 'oco', 'bracket'];
+
+// Holdings from broker — used for "From Holdings" pre-fill
+interface HoldingOption {
+  symbol: string;
+  quantity: number;
+  broker: string;
+}
 
 export default function OrderPrepPage() {
   const [tickets, setTickets] = useState<OrderTicket[]>([]);
@@ -30,6 +39,9 @@ export default function OrderPrepPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<OrderTicket | null>(null);
+  const [holdings, setHoldings] = useState<HoldingOption[]>([]);
+  const [holdingsLoading, setHoldingsLoading] = useState(false);
+  const [showHoldingsPicker, setShowHoldingsPicker] = useState(false);
 
   const [form, setForm] = useState({
     symbol: '',
@@ -55,6 +67,57 @@ export default function OrderPrepPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function loadHoldings() {
+    setHoldingsLoading(true);
+    try {
+      const summary = await getPortfolioSummary();
+      // We need per-holding detail — re-fetch from connections via portfolio-summary
+      // The summary only has sector data; we need to call the brokers holdings endpoint.
+      // For simplicity: use the cached_holdings via the summary connections list.
+      // Actually getPortfolioSummary doesn't return individual holdings list.
+      // We'll use the brokers list endpoint and aggregate from connection-level data.
+      // getPortfolioSummary gives connections with holding_count — so let's also just
+      // fetch per-connection holdings. For now, build from portfolio-summary + a second call.
+      // Simpler: add a flat holdings endpoint later. For now, use the summary to show symbols.
+      // We'll make a holdings list by fetching each connection's holdings.
+      const { listBrokerConnections, getBrokerHoldings } = await import('@/lib/api/portfolio');
+      const connections = await listBrokerConnections();
+      const allHoldings: HoldingOption[] = [];
+      for (const conn of connections.filter(c => c.connection_status === 'connected')) {
+        try {
+          const data = await getBrokerHoldings(conn.id);
+          for (const h of data.holdings) {
+            allHoldings.push({
+              symbol: h.symbol,
+              quantity: h.quantity,
+              broker: conn.display_name || conn.broker_name,
+            });
+          }
+        } catch {
+          // Skip failed connections
+        }
+      }
+      setHoldings(allHoldings);
+      setShowHoldingsPicker(true);
+    } catch {
+      // No broker connections or error — just open form empty
+      setShowHoldingsPicker(false);
+    } finally {
+      setHoldingsLoading(false);
+    }
+  }
+
+  function prefillFromHolding(h: HoldingOption) {
+    setForm(f => ({
+      ...f,
+      symbol: h.symbol,
+      quantity: h.quantity.toString(),
+      direction: 'sell',
+    }));
+    setShowHoldingsPicker(false);
+    setShowForm(true);
   }
 
   async function handleCreate() {
@@ -94,10 +157,21 @@ export default function OrderPrepPage() {
             Prepare orders with trade cost analysis and send them to your broker. SSB does not execute trades.
           </p>
         </div>
-        <Button onClick={() => setShowForm(v => !v)} size="sm" className="shrink-0">
-          <Plus className="h-4 w-4 mr-1.5" />
-          New Order Ticket
-        </Button>
+        <div className="flex gap-2 shrink-0">
+          <Button
+            onClick={async () => { setShowForm(false); await loadHoldings(); }}
+            size="sm"
+            variant="outline"
+            disabled={holdingsLoading}
+          >
+            {holdingsLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <TrendingUp className="h-4 w-4 mr-1.5" />}
+            From Holdings
+          </Button>
+          <Button onClick={() => { setShowHoldingsPicker(false); setShowForm(v => !v); }} size="sm" className="shrink-0">
+            <Plus className="h-4 w-4 mr-1.5" />
+            New Order Ticket
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 p-3 text-xs text-blue-800 dark:text-blue-300">
@@ -109,6 +183,37 @@ export default function OrderPrepPage() {
         <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
+        </div>
+      )}
+
+      {/* Holdings picker — pre-fill from real portfolio */}
+      {showHoldingsPicker && (
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-sm">Select a holding to pre-fill</p>
+            <button onClick={() => setShowHoldingsPicker(false)} className="text-xs text-muted-foreground hover:text-foreground">
+              Dismiss
+            </button>
+          </div>
+          {holdings.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No connected broker holdings found. Connect a broker first.</p>
+          ) : (
+            <div className="max-h-64 overflow-y-auto space-y-1.5">
+              {holdings.map((h, i) => (
+                <button
+                  key={`${h.symbol}-${i}`}
+                  onClick={() => prefillFromHolding(h)}
+                  className="flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm hover:bg-muted/40 transition-colors text-left"
+                >
+                  <div>
+                    <span className="font-semibold">{h.symbol}</span>
+                    <span className="text-xs text-muted-foreground ml-2">{h.broker}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground tabular-nums">{h.quantity} shares</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

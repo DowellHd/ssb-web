@@ -323,6 +323,121 @@ export async function getSupportedBrokers(): Promise<{ brokers: { key: string; n
   return res.data;
 }
 
+// ── Portfolio Summary (real holdings aggregated) ───────────────────────────────
+
+export interface SectorAllocation {
+  sector: string;
+  value: number;
+  weight: number;
+}
+
+export interface ConnectionSummary {
+  id: string;
+  display_name: string;
+  logo: string | null;
+  value: number;
+  holding_count: number;
+  last_sync_at: string | null;
+}
+
+export interface PortfolioSummary {
+  total_value: number;
+  total_cost_basis: number;
+  unrealized_pl: number;
+  unrealized_pl_pct: number;
+  sector_allocation: SectorAllocation[];
+  connections: ConnectionSummary[];
+  holding_count: number;
+  disclaimer: string;
+}
+
+export async function getPortfolioSummary(): Promise<PortfolioSummary> {
+  const res = await apiClient.get('/brokers/portfolio-summary');
+  return res.data;
+}
+
+// ── Wash Sale Scan ─────────────────────────────────────────────────────────────
+
+export interface WashSaleFlag {
+  symbol: string;
+  broker: string;
+  quantity: number;
+  institution_value: number;
+  cost_basis: number;
+  unrealized_loss: number;
+  unrealized_loss_pct: number;
+  wash_sale_risk: boolean;
+  notes: string;
+}
+
+export interface WashSaleScanResult {
+  flagged_holdings: WashSaleFlag[];
+  total_flagged: number;
+  total_unrealized_loss: number;
+  disclaimer: string;
+}
+
+export async function getWashSaleScan(): Promise<WashSaleScanResult> {
+  const res = await apiClient.get('/brokers/wash-sale-scan');
+  return res.data;
+}
+
+// ── Benchmark Comparison ───────────────────────────────────────────────────────
+
+export interface BenchmarkComparison {
+  symbol: string;
+  real_weight: number;
+  benchmark_weight: number;
+  difference: number;
+  status: 'overweight' | 'underweight' | 'aligned';
+}
+
+export interface BenchmarkComparisonResult {
+  benchmark_name: string;
+  benchmark_type: string;
+  total_portfolio_value: number;
+  comparisons: BenchmarkComparison[];
+  disclaimer: string;
+}
+
+export async function getBenchmarkComparison(benchmarkId: string): Promise<BenchmarkComparisonResult> {
+  const res = await apiClient.get(`/portfolio/benchmarks/${benchmarkId}/comparison`);
+  return res.data;
+}
+
+// ── Real vs Paper ──────────────────────────────────────────────────────────────
+
+export interface RealVsPaperResult {
+  real_portfolio: {
+    total_value: number;
+    total_cost_basis: number;
+    unrealized_pl: number;
+    unrealized_pl_pct: number;
+    holding_count: number;
+  };
+  paper_portfolio: {
+    total_equity: number;
+    total_cost_basis: number;
+    unrealized_pl: number;
+    unrealized_pl_pct: number;
+    position_count: number;
+    account_count: number;
+  };
+  shared_symbols: {
+    symbol: string;
+    real_value: number;
+    real_quantity: number;
+    paper_value: number;
+    paper_quantity: number;
+  }[];
+  disclaimer: string;
+}
+
+export async function getRealVsPaperComparison(): Promise<RealVsPaperResult> {
+  const res = await apiClient.get('/portfolio/real-vs-paper');
+  return res.data;
+}
+
 // Plaid OAuth
 export async function createPlaidLinkToken(): Promise<{ link_token: string }> {
   const res = await apiClient.post('/brokers/plaid/link-token');

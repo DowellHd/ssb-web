@@ -44,6 +44,7 @@ import { getDashboardSummary, getCapabilities, type DashboardSummary, type Capab
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
 import { getMarketSummary, type MarketSummaryResponse } from '@/lib/api/news';
 import { resendVerification } from '@/lib/api/auth';
+import { getPortfolioSummary, type PortfolioSummary } from '@/lib/api/portfolio';
 import { getPlanDisplayName } from '@/lib/plan-config';
 import { cn } from '@/lib/utils';
 import { useCommandPaletteStore } from '@/stores/command-palette-store';
@@ -244,6 +245,7 @@ export default function AppDashboardPage() {
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null);
   const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
   const [marketSummary, setMarketSummary] = useState<MarketSummaryResponse | null>(null);
+  const [portfolioSummary, setPortfolioSummary] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verificationSending, setVerificationSending] = useState(false);
@@ -271,6 +273,13 @@ export default function AppDashboardPage() {
         setMarketSummary(summaryData);
       } catch {
         // Market summary is optional
+      }
+
+      try {
+        const portfolioData = await getPortfolioSummary();
+        setPortfolioSummary(portfolioData);
+      } catch {
+        // Portfolio summary is optional — shown only if brokers connected
       }
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to load dashboard');
@@ -440,6 +449,11 @@ export default function AppDashboardPage() {
         </div>
       )}
 
+      {/* ── Real Portfolio Panel ──────────────────────────────────────── */}
+      {portfolioSummary && portfolioSummary.holding_count > 0 && (
+        <RealPortfolioPanel summary={portfolioSummary} />
+      )}
+
       {/* ── Capability Map ──────────────────────────────────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -505,6 +519,87 @@ export default function AppDashboardPage() {
         provide buy/sell recommendations, or guarantee profits. All outputs are for educational and
         informational purposes only.
       </div>
+    </div>
+  );
+}
+
+// ── Real Portfolio Panel ──────────────────────────────────────────────────────
+
+function RealPortfolioPanel({ summary }: { summary: PortfolioSummary }) {
+  const isProfit = summary.unrealized_pl >= 0;
+  const plColor = isProfit ? 'text-green-600' : 'text-red-500';
+  const topSectors = summary.sector_allocation.slice(0, 4);
+
+  return (
+    <div className="rounded-xl border bg-card p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <PieChart className="h-4 w-4 text-primary" />
+          <span className="font-semibold text-sm">Live Portfolio</span>
+          <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">
+            {summary.holding_count} holdings
+          </span>
+        </div>
+        <Link href="/app/portfolio" className="text-xs text-primary hover:underline">
+          Full analysis →
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-4">
+        <div>
+          <p className="text-xs text-muted-foreground">Total Value</p>
+          <p className="font-bold text-lg tabular-nums">
+            ${summary.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+        </div>
+        {summary.total_cost_basis > 0 && (
+          <>
+            <div>
+              <p className="text-xs text-muted-foreground">Cost Basis</p>
+              <p className="font-semibold tabular-nums text-sm">
+                ${summary.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Unrealized P&L</p>
+              <p className={cn('font-semibold tabular-nums text-sm', plColor)}>
+                {isProfit ? '+' : ''}${summary.unrealized_pl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Return</p>
+              <p className={cn('font-semibold text-sm', plColor)}>
+                {isProfit ? '+' : ''}{summary.unrealized_pl_pct.toFixed(2)}%
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+
+      {topSectors.length > 0 && (
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Sector Allocation</p>
+          <div className="space-y-1.5">
+            {topSectors.map((s) => (
+              <div key={s.sector} className="flex items-center gap-2">
+                <span className="text-xs w-36 truncate text-muted-foreground">{s.sector}</span>
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full"
+                    style={{ width: `${Math.min(s.weight, 100)}%` }}
+                  />
+                </div>
+                <span className="text-xs tabular-nums w-10 text-right">{s.weight.toFixed(1)}%</span>
+              </div>
+            ))}
+            {summary.sector_allocation.length > 4 && (
+              <p className="text-xs text-muted-foreground">
+                +{summary.sector_allocation.length - 4} more sectors
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
