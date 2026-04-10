@@ -225,3 +225,27 @@ export async function resetAccount(): Promise<ResetAccountResponse> {
   const response = await apiClient.post('/paper/reset');
   return response.data;
 }
+
+// ── Import Real Portfolio ─────────────────────────────────────────────────────
+
+export interface ImportPortfolioResult {
+  imported: { symbol: string; quantity: number }[];
+  skipped: { symbol: string; reason: string }[];
+  failed: { symbol: string; reason: string }[];
+  summary: {
+    imported_count: number;
+    skipped_count: number;
+    failed_count: number;
+  };
+  disclaimer: string;
+}
+
+/**
+ * Copy real broker holdings into the paper trading account.
+ * Places market buy orders for each Plaid holding.
+ */
+export async function importRealPortfolio(): Promise<ImportPortfolioResult> {
+  const response = await apiClient.post('/paper/import-portfolio');
+  return response.data;
+}
+

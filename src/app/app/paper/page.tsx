@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { RefreshCw, Plus, TrendingUp, TrendingDown, DollarSign, BarChart3 } from 'lucide-react';
+import { RefreshCw, Plus, TrendingUp, TrendingDown, DollarSign, BarChart3, Download, CheckCircle, XCircle, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAccount, usePositions, useOrders, useTierLimits } from '@/hooks/use-paper-trading';
 import { usePortfolioHealth } from '@/hooks/use-portfolio-health';
 import { cn, formatCurrency, formatPercent, isUnlimited, safeNumber } from '@/lib/utils';
+import { importRealPortfolio, type ImportPortfolioResult } from '@/lib/api/paper';
 import { AccountSummaryCard } from '@/components/paper/account-summary-card';
 import { PositionsTable } from '@/components/paper/positions-table';
 import { OrdersList } from '@/components/paper/orders-list';
@@ -23,6 +24,9 @@ export default function PaperTradingPage() {
   const [orderSide, setOrderSide] = useState<'buy' | 'sell'>('buy');
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<string | undefined>();
   const [showHealthPanel, setShowHealthPanel] = useState(false);
+  const [showImportConfirm, setShowImportConfirm] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportPortfolioResult | null>(null);
 
   const { data: account, isLoading: accountLoading, refetch: refetchAccount } = useAccount();
   const { data: positions, isLoading: positionsLoading, refetch: refetchPositions } = usePositions();
@@ -67,6 +71,29 @@ export default function PaperTradingPage() {
     setSelectedChartSymbol(symbol);
   };
 
+  const handleImportPortfolio = async () => {
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const result = await importRealPortfolio();
+      setImportResult(result);
+      if (result.summary.imported_count > 0) {
+        handleRefresh();
+      }
+    } catch (err: any) {
+      setImportResult({
+        imported: [],
+        skipped: [],
+        failed: [],
+        summary: { imported_count: 0, skipped_count: 0, failed_count: 0 },
+        disclaimer: err?.response?.data?.detail || 'Import failed',
+      });
+    } finally {
+      setImporting(false);
+      setShowImportConfirm(false);
+    }
+  };
+
   if (isLoading && !account) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -90,6 +117,10 @@ export default function PaperTradingPage() {
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
             <RefreshCw className={cn('h-4 w-4 mr-2', isLoading && 'animate-spin')} />
             Refresh
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => { setImportResult(null); setShowImportConfirm(true); }}>
+            <Download className="h-4 w-4 mr-2" />
+            Copy Real Portfolio
           </Button>
           <Button size="sm" onClick={handleNewOrder}>
             <Plus className="h-4 w-4 mr-2" />
@@ -189,6 +220,110 @@ export default function PaperTradingPage() {
           in live trading.
         </p>
       </div>
+
+      {/* Copy Real Portfolio — Confirm */}
+      {showImportConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl border bg-card p-6 space-y-4 shadow-xl">
+            <div className="flex items-center gap-3">
+              <Download className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold text-lg">Copy Real Portfolio</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              This will place paper market buy orders for each holding in your connected
+              broker accounts, mirroring your real portfolio with virtual funds.
+            </p>
+            <ul className="text-xs text-muted-foreground space-y-1 bg-muted/40 rounded-lg p-3">
+              <li>• Existing positions are skipped (not duplicated)</li>
+              <li>• Uses real holding quantities from your last sync</li>
+              <li>• Only standard equity tickers are imported</li>
+              <li>• Virtual cash must cover the positions</li>
+            </ul>
+            <div className="flex gap-2 pt-1">
+              <Button onClick={handleImportPortfolio} disabled={importing} className="flex-1">
+                {importing ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                {importing ? 'Importing…' : 'Copy Portfolio'}
+              </Button>
+              <Button variant="ghost" onClick={() => setShowImportConfirm(false)} disabled={importing}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Copy Real Portfolio — Result */}
+      {importResult && !showImportConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl border bg-card p-6 space-y-4 shadow-xl">
+            <h2 className="font-semibold text-lg">Import Complete</h2>
+
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 p-3">
+                <p className="text-2xl font-bold text-green-600">{importResult.summary.imported_count}</p>
+                <p className="text-xs text-green-700 dark:text-green-400">Imported</p>
+              </div>
+              <div className="rounded-lg bg-muted p-3">
+                <p className="text-2xl font-bold">{importResult.summary.skipped_count}</p>
+                <p className="text-xs text-muted-foreground">Skipped</p>
+              </div>
+              <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 p-3">
+                <p className="text-2xl font-bold text-red-600">{importResult.summary.failed_count}</p>
+                <p className="text-xs text-red-700 dark:text-red-400">Failed</p>
+              </div>
+            </div>
+
+            {importResult.imported.length > 0 && (
+              <div className="max-h-40 overflow-y-auto space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Imported</p>
+                {importResult.imported.map(h => (
+                  <div key={h.symbol} className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+                      {h.symbol}
+                    </span>
+                    <span className="text-muted-foreground tabular-nums">{h.quantity} shares</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {importResult.failed.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Failed</p>
+                {importResult.failed.map(h => (
+                  <div key={h.symbol} className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5">
+                      <XCircle className="h-3.5 w-3.5 text-red-500" />
+                      {h.symbol}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{h.reason}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {importResult.skipped.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Skipped</p>
+                {importResult.skipped.map(h => (
+                  <div key={h.symbol} className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-1.5">
+                      <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />
+                      {h.symbol}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{h.reason}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground">{importResult.disclaimer}</p>
+
+            <Button className="w-full" onClick={() => setImportResult(null)}>Done</Button>
+          </div>
+        </div>
+      )}
 
       {/* New Order Modal */}
       <NewOrderModal
