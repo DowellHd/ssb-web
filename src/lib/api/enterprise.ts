@@ -120,6 +120,15 @@ export const API_KEY_SCOPES = [
   { key: 'full_access', label: 'Full Access' },
 ] as const;
 
+export interface APIKeyUsageStats {
+  key_id: string;
+  key_prefix: string;
+  requests_last_24h: number;
+  requests_last_7d: number;
+  last_used_at: string | null;
+  top_endpoints_7d: { endpoint: string; count: number }[];
+}
+
 export const apiKeysApi = {
   list: async () =>
     (await apiClient.get<APIKey[]>('/enterprise/api-keys')).data,
@@ -129,6 +138,9 @@ export const apiKeysApi = {
 
   revoke: (id: string) =>
     apiClient.delete(`/enterprise/api-keys/${id}`),
+
+  getUsage: async (id: string) =>
+    (await apiClient.get<APIKeyUsageStats>(`/enterprise/api-keys/${id}/usage`)).data,
 };
 
 // ============================================================================
