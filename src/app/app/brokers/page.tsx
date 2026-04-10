@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import {
   AlertCircle,
-  Building2,
   CheckCircle,
   ChevronDown,
   ChevronUp,
@@ -31,6 +30,25 @@ import {
   type PlaidHolding,
   type PlaidAccount,
 } from '@/lib/api/portfolio';
+
+function BrokerLogo({ name, logo }: { name: string; logo?: string | null }) {
+  if (logo) {
+    const src = logo.startsWith('data:') ? logo : `data:image/png;base64,${logo}`;
+    return (
+      <img
+        src={src}
+        alt={name}
+        className="h-8 w-8 rounded-md object-contain shrink-0 bg-white p-0.5"
+      />
+    );
+  }
+  const initial = (name ?? '?')[0].toUpperCase();
+  return (
+    <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center shrink-0 text-sm font-bold text-muted-foreground">
+      {initial}
+    </div>
+  );
+}
 
 const STATUS_CONFIG: Record<string, { icon: React.ElementType; label: string; color: string }> = {
   connected:    { icon: CheckCircle, label: 'Connected',    color: 'text-green-600' },
@@ -67,6 +85,7 @@ function PlaidConnectButton({ onSuccess }: { onSuccess: () => void }) {
           public_token,
           institution_name: metadata.institution?.name ?? 'Unknown',
           institution_id: metadata.institution?.institution_id ?? '',
+          logo: (metadata.institution as any)?.logo ?? null,
         });
         onSuccess();
       } catch {
@@ -336,7 +355,10 @@ export default function BrokersPage() {
                 {/* Header row */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <Building2 className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <BrokerLogo
+                      name={conn.display_name || conn.broker_name}
+                      logo={conn.connection_metadata?.logo}
+                    />
                     <div>
                       <p className="font-semibold leading-tight">{conn.display_name || conn.broker_name}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
