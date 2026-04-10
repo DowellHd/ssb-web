@@ -373,10 +373,10 @@ export default function TermsPage() {
       <section id="governing-law" className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">19. Governing Law</h2>
         <p className="mb-4">
-          These Terms and any dispute arising out of or relating to them or the use of SSB shall be governed by and construed in accordance with the laws of the United States and the laws of the State of Texas, without regard to conflict-of-law principles.
+          These Terms and any dispute arising out of or relating to them or the use of SSB shall be governed by and construed in accordance with the laws of the United States and the laws of the State of California, without regard to conflict-of-law principles.
         </p>
         <p>
-          Subject to the arbitration agreement in Section 18, you and SSB consent to the exclusive jurisdiction of the state and federal courts located in Texas for the resolution of any disputes not subject to arbitration.
+          Subject to the arbitration agreement in Section 18, you and SSB consent to the exclusive jurisdiction of the state and federal courts located in California for the resolution of any disputes not subject to arbitration.
         </p>
       </section>
 
