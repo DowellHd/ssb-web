@@ -474,7 +474,16 @@ export const apiClient = new APIClient().getInstance();
 // Helper function to extract error message
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.message || error.response?.data?.detail || error.message;
+    const data = error.response?.data;
+    const message = data?.message || data?.detail || error.message;
+    if (typeof message === 'string') return message;
+    if (Array.isArray(message)) {
+      return message.map((e: any) => e.msg || String(e)).join(', ');
+    }
+    if (message && typeof message === 'object') {
+      return JSON.stringify(message);
+    }
+    return error.message || 'An unknown error occurred';
   }
   if (error instanceof Error) {
     return error.message;
