@@ -434,11 +434,6 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             SSB
           </Link>
         )}
-        {collapsed && (
-          <Link href="/app" className="font-bold text-lg" onClick={onClose} title="Dashboard">
-            S
-          </Link>
-        )}
         {/* Mobile close */}
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label="Close menu">
           <X className="h-5 w-5" />
