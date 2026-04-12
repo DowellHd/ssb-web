@@ -10,6 +10,12 @@ const subsystemLabels: Record<SubsystemKey, string> = {
   stress: 'Stress Testing',
   chart: 'Charting',
   viewMode: 'View Mode',
+  learn: 'Learn',
+  options: 'Options',
+  tradeIdeas: 'Trade Ideas',
+  globalMarkets: 'Global Markets',
+  fixedIncome: 'Fixed Income',
+  alternatives: 'Alternatives',
 };
 
 function formatDate(iso: string): string {
