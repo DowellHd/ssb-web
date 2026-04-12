@@ -190,18 +190,18 @@ interface NavGroupProps {
   onNavClick: () => void;
   count?: number;
   collapsed?: boolean;
-  onExpand?: () => void;
+  onCollapsedClick?: () => void;
 }
 
 function NavGroup({
   label, icon: Icon, items, isOpen, hasActiveChild,
-  onToggle, isActive, onNavClick, count, collapsed, onExpand,
+  onToggle, isActive, onNavClick, count, collapsed, onCollapsedClick,
 }: NavGroupProps) {
   if (collapsed) {
     return (
       <li>
         <button
-          onClick={() => { onExpand?.(); onToggle(); }}
+          onClick={() => onCollapsedClick?.()}
           title={label}
           aria-label={label}
           className={cn(
@@ -422,6 +422,20 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
     if (enterpriseActive) setEnterpriseOpen(true);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // When clicking a group icon while collapsed: expand sidebar, close all
+  // other groups, and open only the clicked one.
+  const expandGroup = (openSetter: React.Dispatch<React.SetStateAction<boolean>>) => {
+    onExpand?.();
+    setAnalysisOpen(false);
+    setTradingOpen(false);
+    setLearnOpen(false);
+    setCommunityOpen(false);
+    setMarketsOpen(false);
+    setMoreOpen(false);
+    setEnterpriseOpen(false);
+    openSetter(true);
+  };
+
   return (
     <div className="flex h-full flex-col">
       {/* Logo + collapse toggle */}
@@ -511,7 +525,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             isActive={isActive}
             onNavClick={onClose}
             collapsed={collapsed}
-            onExpand={onExpand}
+            onCollapsedClick={() => expandGroup(setAnalysisOpen)}
           />
 
           {/* Trading */}
@@ -525,7 +539,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             isActive={isActive}
             onNavClick={onClose}
             collapsed={collapsed}
-            onExpand={onExpand}
+            onCollapsedClick={() => expandGroup(setTradingOpen)}
           />
 
           {/* Learn & Tools */}
@@ -539,7 +553,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             isActive={isActive}
             onNavClick={onClose}
             collapsed={collapsed}
-            onExpand={onExpand}
+            onCollapsedClick={() => expandGroup(setLearnOpen)}
           />
 
           {/* Global Markets */}
@@ -553,7 +567,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             isActive={isActive}
             onNavClick={onClose}
             collapsed={collapsed}
-            onExpand={onExpand}
+            onCollapsedClick={() => expandGroup(setMarketsOpen)}
           />
 
           {/* Community */}
@@ -567,7 +581,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             isActive={isActive}
             onNavClick={onClose}
             collapsed={collapsed}
-            onExpand={onExpand}
+            onCollapsedClick={() => expandGroup(setCommunityOpen)}
           />
 
           {/* Enterprise — founders and admins only */}
@@ -582,7 +596,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
               isActive={isActive}
               onNavClick={onClose}
               collapsed={collapsed}
-              onExpand={onExpand}
+              onCollapsedClick={() => expandGroup(setEnterpriseOpen)}
             />
           )}
 
@@ -597,7 +611,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             isActive={isActive}
             onNavClick={onClose}
             collapsed={collapsed}
-            onExpand={onExpand}
+            onCollapsedClick={() => expandGroup(setMoreOpen)}
           />
         </ul>
       </nav>
