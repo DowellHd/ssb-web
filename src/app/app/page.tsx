@@ -16,6 +16,8 @@ import {
   CheckCircle,
   ClipboardList,
   CreditCard,
+  Globe,
+  History,
   Layers,
   Leaf,
   Lightbulb,
@@ -41,6 +43,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getDashboardSummary, getCapabilities, type DashboardSummary, type Capabilities } from '@/lib/api/meta';
+import { CHANGELOG } from '@/lib/changelog';
 import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
 import { getMarketSummary, type MarketSummaryResponse } from '@/lib/api/news';
 import { resendVerification } from '@/lib/api/auth';
@@ -79,7 +82,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
       { label: 'Risk Analytics',       description: 'VaR, drawdown, correlation',            href: '/app/risk',      icon: Shield },
       { label: 'Portfolio Optimizer',  description: 'Efficient frontier & Sharpe',           href: '/app/analytics', icon: BarChart3,   tier: 'starter' as const },
       { label: 'Technical Analysis',   description: '30+ indicators',                         href: '/app/analytics', icon: Activity },
-      { label: 'Portfolio Management', description: 'Attribution, rebalancing, stress tests', href: '/app/portfolio', icon: PieChart,    isNew: true },
+      { label: 'Portfolio Management', description: 'Attribution, rebalancing, stress tests', href: '/app/portfolio', icon: PieChart },
       { label: 'Correlation Analysis', description: 'Diversification & concentration risk',  href: '/app/portfolio', icon: Sparkles,    tier: 'starter' as const },
     ],
   },
@@ -88,12 +91,25 @@ const CAPABILITY_MAP: FeatureSection[] = [
     icon: Sparkles,
     color: 'text-violet-500',
     features: [
-      { label: 'GARCH Volatility',     description: 'Volatility forecast & VaR',           href: '/app/analytics', icon: Zap,         tier: 'pro',     isNew: true },
-      { label: 'Anomaly Detection',    description: 'Statistical market anomalies',         href: '/app/analytics', icon: ShieldAlert, tier: 'starter', isNew: true },
-      { label: 'Sentiment Analysis',   description: 'NLP on news headlines',                href: '/app/analytics', icon: Newspaper,   tier: 'pro',     isNew: true },
-      { label: 'ESG Scoring',          description: 'E/S/G ratings & controversy flags',   href: '/app/analytics', icon: Leaf,        tier: 'starter', isNew: true },
-      { label: 'Earnings Surprise',    description: 'Beat/miss probability model',          href: '/app/analytics', icon: Calendar,    tier: 'pro',     isNew: true },
-      { label: 'Factor Analysis',      description: 'Fama-French multi-factor model',       href: '/app/analytics', icon: BarChart3,   tier: 'pro' },
+      { label: 'GARCH Volatility',     description: 'Volatility forecast & VaR',           href: '/app/analytics', icon: Zap,         tier: 'pro' as const },
+      { label: 'Anomaly Detection',    description: 'Statistical market anomalies',         href: '/app/analytics', icon: ShieldAlert, tier: 'starter' as const },
+      { label: 'Sentiment Analysis',   description: 'NLP on news headlines',                href: '/app/analytics', icon: Newspaper,   tier: 'pro' as const },
+      { label: 'ESG Scoring',          description: 'E/S/G ratings & controversy flags',   href: '/app/analytics', icon: Leaf,        tier: 'starter' as const },
+      { label: 'Earnings Surprise',    description: 'Beat/miss probability model',          href: '/app/analytics', icon: Calendar,    tier: 'pro' as const },
+      { label: 'Factor Analysis',      description: 'Fama-French multi-factor model',       href: '/app/analytics', icon: BarChart3,   tier: 'pro' as const },
+    ],
+  },
+  {
+    title: 'Markets & Assets',
+    icon: Globe,
+    color: 'text-cyan-500',
+    features: [
+      { label: 'Global Markets',       description: 'Sovereign debt, FX & hedging, ADRs',         href: '/app/global-markets', icon: Globe,            isNew: true },
+      { label: 'Fixed Income',         description: 'Bond screener, YTM/YTC, tax tools',           href: '/app/fixed-income',   icon: LineChart,        isNew: true },
+      { label: 'Alternatives',         description: 'REITs, PE/VC, commodities, hedge funds',      href: '/app/alternatives',   icon: Layers,           isNew: true },
+      { label: 'Crypto',               description: 'Digital asset analytics',                     href: '/app/crypto',         icon: Bitcoin },
+      { label: 'Options Chain',        description: 'Greeks, IV, expiration viewer',               href: '/app/options',        icon: CandlestickChart, tier: 'starter' as const },
+      { label: 'Trade Ideas',          description: 'Signal-based idea generation',                href: '/app/trade-ideas',    icon: Lightbulb,        isNew: true },
     ],
   },
   {
@@ -102,11 +118,11 @@ const CAPABILITY_MAP: FeatureSection[] = [
     color: 'text-emerald-500',
     features: [
       { label: 'Paper Trading',        description: 'Simulated order management',           href: '/app/paper',      icon: CandlestickChart },
-      { label: 'Options Chain',        description: 'Greeks, IV, expiration viewer',        href: '/app/options',    icon: Layers,      tier: 'starter' as const },
-      { label: 'Backtests',            description: 'Historical strategy testing',          href: '/app/backtests',  icon: LineChart,   tier: 'starter' as const },
-      { label: 'Trade Ideas',          description: 'Signal-based idea generation',         href: '/app/trade-ideas', icon: Lightbulb,  isNew: true },
-      { label: 'Order Preparation',    description: 'TCA, order tickets & broker links',    href: '/app/order-prep', icon: ClipboardList, isNew: true },
-      { label: 'Broker Connections',   description: 'Read-only multi-broker dashboard',     href: '/app/brokers',    icon: Wifi,        isNew: true },
+      { label: 'Backtests',            description: 'Historical strategy testing',          href: '/app/backtests',  icon: LineChart,      tier: 'starter' as const },
+      { label: 'Order Preparation',    description: 'TCA, order tickets & broker links',    href: '/app/order-prep', icon: ClipboardList },
+      { label: 'Broker Connections',   description: 'Read-only multi-broker dashboard',     href: '/app/brokers',    icon: Wifi,           isNew: true },
+      { label: 'Signals',              description: 'AI-generated trading signals',         href: '/app/signals',    icon: Zap,            tier: 'starter' as const },
+      { label: 'Screening',            description: 'Filter stocks & ETFs by criteria',     href: '/app/screening',  icon: Search,         tier: 'starter' as const },
     ],
   },
   {
@@ -118,7 +134,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
       { label: 'Market News',          description: 'Latest financial intelligence',         href: '/app/news',        icon: Newspaper },
       { label: 'Calculators',          description: 'Compound interest, CAGR & more',       href: '/app/calculators', icon: Calculator },
       { label: 'Style Quiz',           description: 'Discover your risk profile',           href: '/app/onboarding',  icon: UserCheck },
-      { label: 'DCF Valuation',        description: 'Intrinsic value models',               href: '/app/analytics',   icon: Calculator, tier: 'pro' },
+      { label: 'DCF Valuation',        description: 'Intrinsic value models',               href: '/app/analytics',   icon: Calculator,     tier: 'pro' as const },
       { label: 'Roadmap',              description: "What's coming next",                    href: '/app/roadmap',     icon: Map },
     ],
   },
@@ -127,9 +143,9 @@ const CAPABILITY_MAP: FeatureSection[] = [
     icon: Users,
     color: 'text-pink-500',
     features: [
-      { label: 'Social Feed',          description: 'Ideas and market discussion',          href: '/app/community',                  icon: MessageSquare },
-      { label: 'Share Idea',           description: 'Post your market thesis',              href: '/app/community/ideas/new',        icon: TrendingUp },
-      { label: 'Compliance Tools',     description: 'Wash sale, journal & 13F prep',        href: '/app/investment-compliance',      icon: ShieldCheck, isNew: true },
+      { label: 'Social Feed',          description: 'Ideas and market discussion',          href: '/app/community',             icon: MessageSquare },
+      { label: 'Share Idea',           description: 'Post your market thesis',              href: '/app/community/ideas/new',   icon: TrendingUp },
+      { label: 'Compliance Tools',     description: 'Wash sale, journal & 13F prep',        href: '/app/investment-compliance', icon: ShieldCheck },
     ],
   },
   {
@@ -137,12 +153,12 @@ const CAPABILITY_MAP: FeatureSection[] = [
     icon: Building2,
     color: 'text-amber-500',
     features: [
-      { label: 'Advisor CRM',          description: 'Client relationship management',       href: '/app/enterprise/advisor',     icon: Users,      tier: 'institutional' },
-      { label: 'Algo Strategies',      description: 'Systematic trading strategies',        href: '/app/enterprise/strategies',  icon: TrendingUp, tier: 'institutional' },
-      { label: 'Compliance Center',    description: 'Regulatory monitoring & reporting',    href: '/app/enterprise/compliance',  icon: ShieldCheck, tier: 'institutional' },
-      { label: 'Webhooks',             description: 'Real-time event integration',          href: '/app/enterprise/webhooks',    icon: Zap,        tier: 'institutional' },
-      { label: 'API Keys',             description: 'Programmatic access management',       href: '/app/enterprise/api-keys',    icon: Shield,     tier: 'institutional' },
-      { label: 'Alternatives',         description: 'Private equity & hedge fund data',     href: '/app/enterprise/alternatives', icon: Layers,    tier: 'institutional' },
+      { label: 'Advisor CRM',          description: 'Client relationship management',       href: '/app/enterprise/advisor',    icon: Users,      tier: 'institutional' as const },
+      { label: 'Algo Strategies',      description: 'Systematic trading strategies',        href: '/app/enterprise/strategies', icon: TrendingUp, tier: 'institutional' as const },
+      { label: 'Compliance Center',    description: 'Regulatory monitoring & reporting',    href: '/app/enterprise/compliance', icon: ShieldCheck, tier: 'institutional' as const },
+      { label: 'Webhooks',             description: 'Real-time event integration',          href: '/app/enterprise/webhooks',   icon: Zap,        tier: 'institutional' as const },
+      { label: 'API Keys',             description: 'Programmatic access management',       href: '/app/enterprise/api-keys',   icon: Shield,     tier: 'institutional' as const },
+      { label: 'Audit Log',            description: 'Full platform activity history',       href: '/app/audit',                 icon: ShieldAlert, tier: 'institutional' as const },
     ],
   },
 ];
@@ -453,6 +469,39 @@ export default function AppDashboardPage() {
       {portfolioSummary && portfolioSummary.holding_count > 0 && (
         <RealPortfolioPanel summary={portfolioSummary} />
       )}
+
+      {/* ── What's New strip ──────────────────────────────────────────── */}
+      {(() => {
+        const recent = CHANGELOG.slice(0, 3);
+        return (
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-sm">Recently Shipped</span>
+              </div>
+              <Link href="/app/changelog" className="text-xs text-primary hover:underline">
+                Full changelog →
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {recent.map((entry, i) => (
+                <Link
+                  key={i}
+                  href="/app/changelog"
+                  className="flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1 text-xs hover:bg-muted transition-colors"
+                >
+                  <span className="font-medium">{entry.subsystem}</span>
+                  <span className="text-muted-foreground">v{entry.version}</span>
+                  <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary">
+                    {new Date(entry.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Capability Map ──────────────────────────────────────────────── */}
       <div>
