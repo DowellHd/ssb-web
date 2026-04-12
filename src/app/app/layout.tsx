@@ -13,6 +13,8 @@ import {
   Calculator,
   CandlestickChart,
   ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
   ClipboardList,
   CreditCard,
   Crown,
@@ -123,11 +125,32 @@ interface NavLinkProps {
   icon: React.ElementType;
   active: boolean;
   indent?: boolean;
-  badge?: string;    // e.g. "NEW"
+  badge?: string;
   onClick?: () => void;
+  collapsed?: boolean;
 }
 
-function NavLink({ href, label, icon: Icon, active, indent = false, badge, onClick }: NavLinkProps) {
+function NavLink({ href, label, icon: Icon, active, indent = false, badge, onClick, collapsed }: NavLinkProps) {
+  if (collapsed) {
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        title={label}
+        className={cn(
+          'flex items-center justify-center rounded-lg p-2.5 transition-colors',
+          active
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+        )}
+        aria-current={active ? 'page' : undefined}
+        aria-label={label}
+      >
+        <Icon className="h-5 w-5 shrink-0" />
+      </Link>
+    );
+  }
+
   return (
     <Link
       href={href}
@@ -166,12 +189,34 @@ interface NavGroupProps {
   isActive: (href: string) => boolean;
   onNavClick: () => void;
   count?: number;
+  collapsed?: boolean;
+  onExpand?: () => void;
 }
 
 function NavGroup({
   label, icon: Icon, items, isOpen, hasActiveChild,
-  onToggle, isActive, onNavClick, count,
+  onToggle, isActive, onNavClick, count, collapsed, onExpand,
 }: NavGroupProps) {
+  if (collapsed) {
+    return (
+      <li>
+        <button
+          onClick={() => { onExpand?.(); onToggle(); }}
+          title={label}
+          aria-label={label}
+          className={cn(
+            'flex w-full items-center justify-center rounded-lg p-2.5 transition-colors',
+            hasActiveChild
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          )}
+        >
+          <Icon className="h-5 w-5 shrink-0" />
+        </button>
+      </li>
+    );
+  }
+
   return (
     <li>
       <button
@@ -235,9 +280,10 @@ interface UserMenuProps {
   onLogout: () => void;
   isActive: (href: string) => boolean;
   onNavClick: () => void;
+  collapsed?: boolean;
 }
 
-function UserMenu({ user, onLogout, isActive, onNavClick }: UserMenuProps) {
+function UserMenu({ user, onLogout, isActive, onNavClick, collapsed }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -298,24 +344,31 @@ function UserMenu({ user, onLogout, isActive, onNavClick }: UserMenuProps) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label="Account menu"
-        className="flex w-full items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted transition-colors"
+        className={cn(
+          'flex w-full items-center rounded-lg px-2 py-2 hover:bg-muted transition-colors',
+          collapsed ? 'justify-center' : 'gap-3',
+        )}
       >
         <UserAvatar avatarUrl={user.avatar_url} name={user.full_name || user.email} size={32} />
-        <div className="flex-1 min-w-0 text-left">
-          <div className="flex items-center gap-1.5">
-            <p className="text-sm font-medium truncate leading-tight">
-              {user.full_name || user.email}
-            </p>
-            {user.is_founder && (
-              <span className={cn('shrink-0 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', PLAN_CONFIG.founder.badgeClassName)}>
-                <Crown className="h-2.5 w-2.5" />
-                {PLAN_CONFIG.founder.badgeLabel}
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground truncate leading-tight">{user.email}</p>
-        </div>
-        <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200', open && 'rotate-180')} />
+        {!collapsed && (
+          <>
+            <div className="flex-1 min-w-0 text-left">
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium truncate leading-tight">
+                  {user.full_name || user.email}
+                </p>
+                {user.is_founder && (
+                  <span className={cn('shrink-0 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold', PLAN_CONFIG.founder.badgeClassName)}>
+                    <Crown className="h-2.5 w-2.5" />
+                    {PLAN_CONFIG.founder.badgeLabel}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground truncate leading-tight">{user.email}</p>
+            </div>
+            <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200', open && 'rotate-180')} />
+          </>
+        )}
       </button>
     </div>
   );
@@ -330,9 +383,12 @@ interface SidebarProps {
   pathname: string;
   onClose: () => void;
   onLogout: () => void;
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
+  onExpand?: () => void;
 }
 
-function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
+function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollapsed, onExpand }: SidebarProps) {
   const openPalette = useCommandPaletteStore((s) => s.openPalette);
 
   const isActive = (href: string) => {
@@ -368,36 +424,85 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b px-4">
-        <Link href="/app" className="font-bold text-lg" onClick={onClose}>
-          SSB
-        </Link>
+      {/* Logo + collapse toggle */}
+      <div className={cn(
+        'flex h-16 items-center border-b',
+        collapsed ? 'justify-center px-2' : 'justify-between px-4',
+      )}>
+        {!collapsed && (
+          <Link href="/app" className="font-bold text-lg" onClick={onClose}>
+            SSB
+          </Link>
+        )}
+        {collapsed && (
+          <Link href="/app" className="font-bold text-lg" onClick={onClose} title="Dashboard">
+            S
+          </Link>
+        )}
+        {/* Mobile close */}
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label="Close menu">
           <X className="h-5 w-5" />
         </Button>
+        {/* Desktop collapse toggle */}
+        {onToggleCollapsed && (
+          <button
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="hidden lg:flex items-center justify-center rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            {collapsed
+              ? <ChevronsRight className="h-4 w-4" />
+              : <ChevronsLeft className="h-4 w-4" />
+            }
+          </button>
+        )}
       </div>
 
       {/* Search / Command palette trigger */}
-      <div className="px-3 pt-3 pb-1">
-        <button
-          onClick={() => { openPalette(); onClose(); }}
-          className="flex w-full items-center gap-2.5 rounded-lg border bg-muted/50 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-        >
-          <Search className="h-3.5 w-3.5 shrink-0" />
-          <span className="flex-1 text-left text-xs">Quick access…</span>
-          <kbd className="hidden sm:inline-flex h-4 items-center rounded border bg-background px-1.5 text-[10px] font-medium">
-            ⌘K
-          </kbd>
-        </button>
-      </div>
+      {!collapsed && (
+        <div className="px-3 pt-3 pb-1">
+          <button
+            onClick={() => { openPalette(); onClose(); }}
+            className="flex w-full items-center gap-2.5 rounded-lg border bg-muted/50 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <Search className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1 text-left text-xs">Quick access…</span>
+            <kbd className="hidden sm:inline-flex h-4 items-center rounded border bg-background px-1.5 text-[10px] font-medium">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+      )}
+      {collapsed && (
+        <div className="px-2 pt-3 pb-1">
+          <button
+            onClick={() => { openPalette(); onClose(); }}
+            title="Quick access (⌘K)"
+            aria-label="Quick access"
+            className="flex w-full items-center justify-center rounded-lg border bg-muted/50 p-2.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <Search className="h-4 w-4 shrink-0" />
+          </button>
+        </div>
+      )}
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3" aria-label="Main navigation">
+      <nav
+        className={cn('flex-1 overflow-y-auto p-3', collapsed && 'px-2')}
+        aria-label="Main navigation"
+      >
         <ul className="space-y-1">
           {/* Dashboard */}
           <li>
-            <NavLink href="/app" label="Dashboard" icon={LayoutDashboard} active={isActive('/app')} onClick={onClose} />
+            <NavLink
+              href="/app"
+              label="Dashboard"
+              icon={LayoutDashboard}
+              active={isActive('/app')}
+              onClick={onClose}
+              collapsed={collapsed}
+            />
           </li>
 
           {/* Analysis */}
@@ -410,9 +515,11 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setAnalysisOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
+            collapsed={collapsed}
+            onExpand={onExpand}
           />
 
-          {/* Trading — now includes Backtests */}
+          {/* Trading */}
           <NavGroup
             label="Trading"
             icon={CandlestickChart}
@@ -422,6 +529,8 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setTradingOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
+            collapsed={collapsed}
+            onExpand={onExpand}
           />
 
           {/* Learn & Tools */}
@@ -434,9 +543,11 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setLearnOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
+            collapsed={collapsed}
+            onExpand={onExpand}
           />
 
-          {/* Global Markets & Alternatives (Phase 9) */}
+          {/* Global Markets */}
           <NavGroup
             label="Global Markets"
             icon={Globe}
@@ -446,6 +557,8 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setMarketsOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
+            collapsed={collapsed}
+            onExpand={onExpand}
           />
 
           {/* Community */}
@@ -458,6 +571,8 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setCommunityOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
+            collapsed={collapsed}
+            onExpand={onExpand}
           />
 
           {/* Enterprise — founders and admins only */}
@@ -471,10 +586,12 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
               onToggle={() => setEnterpriseOpen((v) => !v)}
               isActive={isActive}
               onNavClick={onClose}
+              collapsed={collapsed}
+              onExpand={onExpand}
             />
           )}
 
-          {/* More — secondary utility links */}
+          {/* More */}
           <NavGroup
             label="More"
             icon={LayoutDashboard}
@@ -484,27 +601,37 @@ function Sidebar({ user, pathname, onClose, onLogout }: SidebarProps) {
             onToggle={() => setMoreOpen((v) => !v)}
             isActive={isActive}
             onNavClick={onClose}
+            collapsed={collapsed}
+            onExpand={onExpand}
           />
         </ul>
       </nav>
 
-      {/* Legal footer */}
-      <div className="border-t px-4 py-3">
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          <a href="/terms"      target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
-            <FileText className="h-3 w-3" /> Terms
-          </a>
-          <a href="/privacy"    target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
-            <ShieldCheck className="h-3 w-3" /> Privacy
-          </a>
-          <a href="/disclaimer" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
-            <AlertTriangle className="h-3 w-3" /> Disclaimer
-          </a>
+      {/* Legal footer — hidden when collapsed */}
+      {!collapsed && (
+        <div className="border-t px-4 py-3">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <a href="/terms"      target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
+              <FileText className="h-3 w-3" /> Terms
+            </a>
+            <a href="/privacy"    target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
+              <ShieldCheck className="h-3 w-3" /> Privacy
+            </a>
+            <a href="/disclaimer" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
+              <AlertTriangle className="h-3 w-3" /> Disclaimer
+            </a>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* User menu — Settings, Billing, Admin, Sign out */}
-      <UserMenu user={user} onLogout={onLogout} isActive={isActive} onNavClick={onClose} />
+      {/* User menu */}
+      <UserMenu
+        user={user}
+        onLogout={onLogout}
+        isActive={(href) => pathname.startsWith(href)}
+        onNavClick={onClose}
+        collapsed={collapsed}
+      />
     </div>
   );
 }
@@ -519,6 +646,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('sidebar-collapsed') === 'true';
+  });
 
   const setCurrentPage    = useAssistantStore((s) => s.setCurrentPage);
   const setUserTier       = useAssistantStore((s) => s.setUserTier);
@@ -544,6 +675,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [togglePalette]);
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((v) => {
+      const next = !v;
+      localStorage.setItem('sidebar-collapsed', String(next));
+      return next;
+    });
+  };
+
+  const expandSidebar = () => {
+    setSidebarCollapsed(false);
+    localStorage.setItem('sidebar-collapsed', 'false');
+  };
 
   const loadUser = async () => {
     try {
@@ -597,16 +741,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 h-full w-64 bg-card border-r transform transition-transform duration-200 lg:translate-x-0',
+          'fixed left-0 top-0 z-50 h-full bg-card border-r transform transition-all duration-200 lg:translate-x-0',
+          sidebarCollapsed ? 'w-16' : 'w-64',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
         aria-label="Sidebar"
       >
-        <Sidebar user={user} pathname={pathname} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
+        <Sidebar
+          user={user}
+          pathname={pathname}
+          onClose={() => setSidebarOpen(false)}
+          onLogout={handleLogout}
+          collapsed={sidebarCollapsed}
+          onToggleCollapsed={toggleSidebarCollapsed}
+          onExpand={expandSidebar}
+        />
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className={cn('transition-all duration-200', sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64')}>
         {/* Mobile top bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur px-4 lg:hidden">
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
