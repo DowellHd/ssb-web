@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Privacy Policy for Smart Strategies Builder (SSB) platform.',
 };
 
-const LAST_UPDATED = 'April 10, 2026';
+const LAST_UPDATED = 'April 13, 2026';
 
 export default function PrivacyPage() {
   return (
@@ -75,6 +75,23 @@ export default function PrivacyPage() {
         <h3 className="text-lg font-medium mb-2">Log &amp; Security Data</h3>
         <p>
           We maintain logs for security, debugging, and audit purposes. These logs may include access times, pages viewed, error messages, API calls, authentication events, and referring URLs. Audit logs are retained to fulfill compliance and security obligations.
+        </p>
+
+        <h3 className="text-lg font-medium mb-2 mt-6">Advisor CRM Data (Enterprise Plan)</h3>
+        <p className="mb-4">
+          Users on the Enterprise (institutional) plan who use the Advisor CRM feature may enter and store information about their own clients within the platform. This data is entered by the advisor and is not collected directly from the advisor&apos;s clients by SSB. This may include:
+        </p>
+        <ul className="list-disc list-inside mb-4 space-y-2">
+          <li>Client contact details (name, email, phone number)</li>
+          <li>Client financial profile (assets under management, risk tolerance, investment horizon)</li>
+          <li>KYC / suitability data (date of birth, occupation, employer, annual income, net worth)</li>
+          <li>Fee structure and segmentation classification</li>
+          <li>Advisor-entered notes, meeting summaries, and call logs</li>
+          <li>Task and follow-up records</li>
+          <li>Model portfolio assignments</li>
+        </ul>
+        <p className="mb-4">
+          This data is stored on behalf of the advisor user and is used solely to provide the Advisor CRM functionality. SSB does not independently use, analyze, or share this data beyond what is necessary to render the service. Advisors are solely responsible for ensuring they have appropriate authorization and consent from their own clients to enter and store such data on the SSB platform, and for compliance with applicable financial regulations (including KYC/AML obligations).
         </p>
       </section>
 

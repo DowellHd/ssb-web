@@ -149,6 +149,12 @@ export const apiKeysApi = {
 
 export type AdvisorClientStatus = 'prospect' | 'active' | 'inactive' | 'terminated';
 export type RiskTolerance = 'low' | 'medium' | 'high';
+export type KYCStatus = 'pending' | 'approved' | 'rejected';
+export type ClientSegment = 'mass_market' | 'affluent' | 'hnw' | 'uhnw';
+export type FeeType = 'flat' | 'aum_pct' | 'hourly';
+export type NoteType = 'general' | 'meeting' | 'call' | 'email' | 'follow_up' | 'review';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskStatus = 'pending' | 'in_progress' | 'done' | 'cancelled';
 
 export interface AdvisorClient {
   id: string;
@@ -162,6 +168,20 @@ export interface AdvisorClient {
   tags: string[];
   status: AdvisorClientStatus;
   notes: string | null;
+  // KYC / suitability
+  date_of_birth: string | null;
+  occupation: string | null;
+  employer: string | null;
+  annual_income_usd: string | null;
+  net_worth_usd: string | null;
+  kyc_status: KYCStatus;
+  onboarding_completed_at: string | null;
+  next_review_date: string | null;
+  // Fee structure
+  fee_type: FeeType | null;
+  fee_value: string | null;
+  // Segmentation
+  segment: ClientSegment | null;
   created_at: string;
   updated_at: string;
 }
@@ -176,6 +196,85 @@ export interface CreateAdvisorClientRequest {
   aum_usd?: string;
   tags?: string[];
   notes?: string;
+  // KYC / suitability
+  date_of_birth?: string;
+  occupation?: string;
+  employer?: string;
+  annual_income_usd?: string;
+  net_worth_usd?: string;
+  // Fee structure
+  fee_type?: FeeType;
+  fee_value?: string;
+  // Segmentation
+  segment?: ClientSegment;
+}
+
+export interface ClientNote {
+  id: string;
+  advisor_client_id: string;
+  note_type: NoteType;
+  content: string;
+  created_at: string;
+}
+
+export interface CreateClientNoteRequest {
+  note_type?: NoteType;
+  content: string;
+}
+
+export interface ClientTask {
+  id: string;
+  advisor_client_id: string;
+  title: string;
+  description: string | null;
+  priority: TaskPriority;
+  status: TaskStatus;
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateClientTaskRequest {
+  title: string;
+  description?: string;
+  priority?: TaskPriority;
+  due_date?: string;
+}
+
+export interface UpdateClientTaskRequest {
+  title?: string;
+  description?: string;
+  priority?: TaskPriority;
+  status?: TaskStatus;
+  due_date?: string;
+}
+
+export interface ClientPortfolioLink {
+  id: string;
+  advisor_client_id: string;
+  model_portfolio_id: string;
+  allocation_override_pct: string | null;
+  notes: string | null;
+  linked_at: string;
+}
+
+export interface CreatePortfolioLinkRequest {
+  model_portfolio_id: string;
+  allocation_override_pct?: string;
+  notes?: string;
+}
+
+export interface CRMDashboard {
+  total_clients: number;
+  by_status: Record<string, number>;
+  by_segment: Record<string, number>;
+  by_kyc_status: Record<string, number>;
+  total_aum_usd: string;
+  avg_aum_usd: string;
+  open_tasks: number;
+  overdue_tasks: number;
+  clients_due_review: number;
 }
 
 export interface ModelPortfolio {
@@ -204,6 +303,11 @@ export interface CreateModelPortfolioRequest {
 }
 
 export const advisorApi = {
+  // Dashboard
+  getDashboard: async () =>
+    (await apiClient.get<CRMDashboard>('/enterprise/advisor/dashboard')).data,
+
+  // Clients
   listClients: async (status?: AdvisorClientStatus) =>
     (await apiClient.get<AdvisorClient[]>(`/enterprise/advisor/clients${status ? `?status_filter=${status}` : ''}`)).data,
 
@@ -213,17 +317,54 @@ export const advisorApi = {
   getClient: async (id: string) =>
     (await apiClient.get<AdvisorClient>(`/enterprise/advisor/clients/${id}`)).data,
 
-  updateClient: async (id: string, data: Partial<CreateAdvisorClientRequest> & { status?: AdvisorClientStatus }) =>
+  updateClient: async (id: string, data: Partial<CreateAdvisorClientRequest> & { status?: AdvisorClientStatus; kyc_status?: KYCStatus; next_review_date?: string; onboarding_completed_at?: string }) =>
     (await apiClient.patch<AdvisorClient>(`/enterprise/advisor/clients/${id}`, data)).data,
 
   deleteClient: (id: string) =>
     apiClient.delete(`/enterprise/advisor/clients/${id}`),
 
+  bulkUpdateStatus: async (client_ids: string[], status: AdvisorClientStatus) =>
+    (await apiClient.post<{ updated_count: number }>('/enterprise/advisor/clients/bulk-status', { client_ids, status })).data,
+
+  // Model Portfolios
   listPortfolios: async () =>
     (await apiClient.get<ModelPortfolio[]>('/enterprise/advisor/portfolios')).data,
 
   createPortfolio: async (data: CreateModelPortfolioRequest) =>
     (await apiClient.post<ModelPortfolio>('/enterprise/advisor/portfolios', data)).data,
+
+  // Notes
+  listNotes: async (clientId: string, limit = 50) =>
+    (await apiClient.get<ClientNote[]>(`/enterprise/advisor/clients/${clientId}/notes?limit=${limit}`)).data,
+
+  createNote: async (clientId: string, data: CreateClientNoteRequest) =>
+    (await apiClient.post<ClientNote>(`/enterprise/advisor/clients/${clientId}/notes`, data)).data,
+
+  deleteNote: (clientId: string, noteId: string) =>
+    apiClient.delete(`/enterprise/advisor/clients/${clientId}/notes/${noteId}`),
+
+  // Tasks
+  listTasks: async (clientId: string) =>
+    (await apiClient.get<ClientTask[]>(`/enterprise/advisor/clients/${clientId}/tasks`)).data,
+
+  createTask: async (clientId: string, data: CreateClientTaskRequest) =>
+    (await apiClient.post<ClientTask>(`/enterprise/advisor/clients/${clientId}/tasks`, data)).data,
+
+  updateTask: async (clientId: string, taskId: string, data: UpdateClientTaskRequest) =>
+    (await apiClient.patch<ClientTask>(`/enterprise/advisor/clients/${clientId}/tasks/${taskId}`, data)).data,
+
+  deleteTask: (clientId: string, taskId: string) =>
+    apiClient.delete(`/enterprise/advisor/clients/${clientId}/tasks/${taskId}`),
+
+  // Portfolio Links
+  getPortfolioLink: async (clientId: string) =>
+    (await apiClient.get<ClientPortfolioLink>(`/enterprise/advisor/clients/${clientId}/portfolio-link`)).data,
+
+  createPortfolioLink: async (clientId: string, data: CreatePortfolioLinkRequest) =>
+    (await apiClient.post<ClientPortfolioLink>(`/enterprise/advisor/clients/${clientId}/portfolio-link`, data)).data,
+
+  deletePortfolioLink: (clientId: string) =>
+    apiClient.delete(`/enterprise/advisor/clients/${clientId}/portfolio-link`),
 };
 
 // ============================================================================

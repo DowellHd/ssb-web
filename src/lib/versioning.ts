@@ -75,6 +75,11 @@ export const SUBSYSTEM_VERSIONS = {
     lastUpdated: '2026-04-12',
     description: 'REITs, commodities, PE/VC, hedge funds, and hard assets',
   },
+  advisorCrm: {
+    version: '2.0.0',
+    lastUpdated: '2026-04-13',
+    description: 'Full CRM with client profiles, KYC tracking, notes, tasks, and portfolio linking',
+  },
 } as const satisfies Record<string, SubsystemVersion>;
 
 export type SubsystemKey = keyof typeof SUBSYSTEM_VERSIONS;
