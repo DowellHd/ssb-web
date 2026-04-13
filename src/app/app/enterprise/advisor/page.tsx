@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Users, Plus, Pencil, Trash2, RefreshCw, TrendingUp, DollarSign,
   UserPlus, Search, CheckSquare, AlertTriangle, Calendar, ChevronRight,
-  BarChart3, ClipboardList,
+  BarChart3, ClipboardList, Building2, Lock,
 } from 'lucide-react';
 import {
   advisorApi,
@@ -14,6 +14,7 @@ import {
   type CRMDashboard,
   type CreateAdvisorClientRequest,
 } from '@/lib/api/enterprise';
+import { usePlanStore } from '@/stores/plan-store';
 
 const STATUS_STYLES: Record<AdvisorClientStatus, string> = {
   prospect:   'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
@@ -53,7 +54,53 @@ function fmtDate(d: string | null): string {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function InstitutionalUpgradeGate() {
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6">
+      <div className="flex justify-center">
+        <div className="p-4 rounded-2xl bg-purple-500/10">
+          <Building2 className="h-10 w-10 text-purple-400" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">Advisor CRM</h1>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Full client relationship management, KYC tracking, task management, and
+          portfolio linking are available on the Institutional plan.
+        </p>
+      </div>
+      <div className="rounded-xl border border-border bg-card p-6 text-left space-y-3 max-w-sm mx-auto">
+        <p className="text-sm font-medium">Institutional plan includes:</p>
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          {[
+            'Unlimited client profiles with KYC fields',
+            'Activity notes: meetings, calls, emails',
+            'Task & follow-up management with due dates',
+            'Model portfolio assignment per client',
+            'CRM dashboard with AUM & pipeline metrics',
+            'Compliance audit reports',
+            'Institutional API keys & webhooks',
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-2">
+              <span className="text-purple-400 mt-0.5">✓</span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <Link
+        href="/app/billing"
+        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+      >
+        <Lock className="h-4 w-4" />
+        Upgrade to Institutional
+      </Link>
+    </div>
+  );
+}
+
 export default function AdvisorPage() {
+  const { normalized, isLoaded } = usePlanStore();
   const [clients, setClients] = useState<AdvisorClient[]>([]);
   const [dashboard, setDashboard] = useState<CRMDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -107,7 +154,13 @@ export default function AdvisorPage() {
     );
   });
 
-  if (loading) {
+  // Wait for plan store to hydrate before deciding access
+  const isInstitutional = normalized.isAllAccess || normalized.plan === 'institutional';
+  if (isLoaded && !isInstitutional) {
+    return <InstitutionalUpgradeGate />;
+  }
+
+  if (loading || !isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />

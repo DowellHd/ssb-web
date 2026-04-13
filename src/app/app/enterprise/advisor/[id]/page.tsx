@@ -6,7 +6,7 @@ import {
   ArrowLeft, RefreshCw, Pencil, Save, X, Plus, Trash2,
   CheckSquare, Square, MessageSquare, Link2, Link2Off,
   Calendar, DollarSign, User, Shield, Briefcase, Clock,
-  AlertTriangle, CheckCircle2, XCircle,
+  AlertTriangle, CheckCircle2, XCircle, Building2, Lock,
 } from 'lucide-react';
 import {
   advisorApi,
@@ -21,6 +21,7 @@ import {
   type TaskPriority,
   type TaskStatus,
 } from '@/lib/api/enterprise';
+import { usePlanStore } from '@/stores/plan-store';
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -86,6 +87,8 @@ type Tab = 'overview' | 'notes' | 'tasks' | 'portfolio';
 
 export default function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { normalized, isLoaded } = usePlanStore();
+  const isInstitutional = normalized.isAllAccess || normalized.plan === 'institutional';
 
   const [client, setClient] = useState<AdvisorClient | null>(null);
   const [notes, setNotes] = useState<ClientNote[]>([]);
@@ -224,7 +227,32 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
     setPortfolioLink(null);
   }
 
-  if (loading) {
+  if (isLoaded && !isInstitutional) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6">
+        <div className="flex justify-center">
+          <div className="p-4 rounded-2xl bg-purple-500/10">
+            <Building2 className="h-10 w-10 text-purple-400" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold">Advisor CRM</h1>
+          <p className="text-muted-foreground">
+            Client profiles require an Institutional plan.
+          </p>
+        </div>
+        <Link
+          href="/app/billing"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+        >
+          <Lock className="h-4 w-4" />
+          Upgrade to Institutional
+        </Link>
+      </div>
+    );
+  }
+
+  if (loading || !isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
