@@ -32,36 +32,43 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    --radius: 0.375rem;
   }
 
   .dark {
+    /* Deep navy base — unchanged hue family */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    /* Cards now 8.5% lightness vs 4.9% background — clearly visible layering */
+    --card: 220 56% 8.5%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    /* Popovers sit on top of cards, slightly more elevated */
+    --popover: 220 52% 11%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 218 34% 16%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
+    /* Muted slightly distinct from secondary */
+    --muted: 218 30% 13%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    /* Accent for hover/focus states */
+    --accent: 218 40% 18%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    /* Borders more visible (22% vs 17.5% lightness) */
+    --border: 218 32% 22%;
+    /* Input slightly above bg */
+    --input: 220 48% 7.5%;
     --ring: 212.7 26.8% 83.9%;
   }
 }
@@ -70,19 +77,249 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Tabular numbers for all financial data */
+  .font-mono,
+  [class*='tabular'] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Smooth global transitions for theme-aware properties only */
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 120ms;
+  }
+
+  /* Disable transitions on page load (prevents flash) */
+  .no-transition,
+  .no-transition * {
+    transition: none !important;
   }
 }
 
-/*
- * Comparison Table Utility
- *
- * Purpose-built for plan/feature comparison tables (pricing pages, etc).
- * Optimized for readability, balanced columns, and clear visual hierarchy.
- *
- * Usage: <table className="table-compare">
- */
+/* ============================================================================
+   Scrollbar Styling — thin, professional
+   ============================================================================ */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* ============================================================================
+   Elevation System — layered depth for dark theme
+   ============================================================================ */
+@layer utilities {
+  .elevation-0 {
+    box-shadow: none;
+  }
+  .elevation-1 {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  }
+  .elevation-2 {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  }
+  .elevation-3 {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  }
+  .elevation-4 {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  }
+}
+
+/* ============================================================================
+   Card Variants — surface depth
+   ============================================================================ */
+@layer components {
+  /* Standard card panel */
+  .card {
+    @apply rounded-lg border bg-card text-card-foreground elevation-1;
+  }
+
+  /* Elevated card (sitting on top of a card) */
+  .card-elevated {
+    @apply rounded-lg border bg-popover text-card-foreground elevation-2;
+  }
+
+  /* Stat/KPI card with subtle gradient */
+  .card-stat {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card)) 0%,
+      hsl(var(--card) / 0.7) 100%
+    );
+    @apply rounded-lg border elevation-1;
+  }
+
+  /* Featured card with accent border glow */
+  .card-featured {
+    @apply rounded-lg border elevation-2;
+    border-color: hsl(var(--primary) / 0.25);
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.4),
+      0 0 0 1px hsl(var(--primary) / 0.1),
+      inset 0 1px 0 hsl(var(--primary) / 0.05);
+  }
+
+  /* Data table row hover */
+  .data-table tbody tr {
+    @apply border-b border-border/50 transition-colors;
+  }
+  .data-table tbody tr:hover {
+    @apply bg-accent/40;
+  }
+  .data-table tbody tr:last-child {
+    @apply border-b-0;
+  }
+}
+
+/* ============================================================================
+   Financial Data Utilities
+   ============================================================================ */
+@layer utilities {
+  /* Positive / Negative / Neutral delta values */
+  .data-positive {
+    @apply text-emerald-400;
+  }
+  .data-negative {
+    @apply text-red-400;
+  }
+  .data-neutral {
+    @apply text-muted-foreground;
+  }
+
+  /* Tabular numbers — critical for financial data alignment */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  /* Monospaced number spans */
+  .num-mono {
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+    letter-spacing: -0.01em;
+  }
+
+  /* Gradient text for featured labels */
+  .text-gradient-blue {
+    background: linear-gradient(135deg, hsl(210 80% 70%), hsl(213 100% 60%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Surface gradient — subtle depth on flat panels */
+  .surface-gradient {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card)) 0%,
+      hsl(220 56% 7%) 100%
+    );
+  }
+}
+
+/* ============================================================================
+   Animations — financial UI micro-interactions
+   ============================================================================ */
+@layer utilities {
+  /* Live data pulse dot */
+  @keyframes live-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(0.85);
+    }
+  }
+
+  .animate-live-pulse {
+    animation: live-pulse 1.8s ease-in-out infinite;
+  }
+
+  /* Shimmer loading skeleton */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Fade in for dashboard sections */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.3s ease-out both;
+  }
+
+  /* Stagger delays */
+  .delay-75  { animation-delay: 75ms; }
+  .delay-150 { animation-delay: 150ms; }
+  .delay-225 { animation-delay: 225ms; }
+  .delay-300 { animation-delay: 300ms; }
+
+  /* Number counter tick */
+  @keyframes count-up {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-count-up {
+    animation: count-up 0.25s ease-out;
+  }
+}
+
+/* ============================================================================
+   Comparison Table Utility
+   ============================================================================ */
 @layer components {
   .table-compare {
     @apply w-full text-sm leading-tight;
@@ -123,51 +360,38 @@
   }
 }
 
-/*
- * SSB Assistant Settings
- *
- * CSS variables and data-attribute mappings for assistant customization.
- * Applied to elements with .assistant-root class.
- */
+/* ============================================================================
+   Focus Ring — accessible & polished
+   ============================================================================ */
+@layer base {
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: calc(var(--radius) - 1px);
+  }
+}
+
+/* ============================================================================
+   SSB Assistant Settings
+   ============================================================================ */
 @layer components {
-  /* Base assistant CSS variables */
   .assistant-root {
     --assistant-text-scale: 1;
     --assistant-spacing-scale: 1;
     --assistant-radius: 0.5rem;
   }
 
-  /* Text scale mappings */
-  .assistant-root[data-text-scale="sm"] {
-    --assistant-text-scale: 0.875;
-  }
-  .assistant-root[data-text-scale="default"] {
-    --assistant-text-scale: 1;
-  }
-  .assistant-root[data-text-scale="lg"] {
-    --assistant-text-scale: 1.125;
-  }
-  .assistant-root[data-text-scale="xl"] {
-    --assistant-text-scale: 1.25;
-  }
+  .assistant-root[data-text-scale="sm"] { --assistant-text-scale: 0.875; }
+  .assistant-root[data-text-scale="default"] { --assistant-text-scale: 1; }
+  .assistant-root[data-text-scale="lg"] { --assistant-text-scale: 1.125; }
+  .assistant-root[data-text-scale="xl"] { --assistant-text-scale: 1.25; }
 
-  /* Density mappings */
-  .assistant-root[data-density="compact"] {
-    --assistant-spacing-scale: 0.75;
-  }
-  .assistant-root[data-density="comfortable"] {
-    --assistant-spacing-scale: 1;
-  }
+  .assistant-root[data-density="compact"] { --assistant-spacing-scale: 0.75; }
+  .assistant-root[data-density="comfortable"] { --assistant-spacing-scale: 1; }
 
-  /* Corner style mappings */
-  .assistant-root[data-corner-style="rounded"] {
-    --assistant-radius: 0.5rem;
-  }
-  .assistant-root[data-corner-style="extra-rounded"] {
-    --assistant-radius: 1rem;
-  }
+  .assistant-root[data-corner-style="rounded"] { --assistant-radius: 0.5rem; }
+  .assistant-root[data-corner-style="extra-rounded"] { --assistant-radius: 1rem; }
 
-  /* Reduced motion */
   .assistant-root[data-reduced-motion="true"],
   .assistant-root[data-reduced-motion="true"] * {
     animation-duration: 0.01ms !important;
@@ -175,42 +399,111 @@
     transition-duration: 0.01ms !important;
   }
 
-  /* Text elements that should scale */
-  .assistant-text {
-    font-size: calc(0.875rem * var(--assistant-text-scale));
+  .assistant-text    { font-size: calc(0.875rem * var(--assistant-text-scale)); }
+  .assistant-text-sm { font-size: calc(0.75rem * var(--assistant-text-scale)); }
+  .assistant-text-xs { font-size: calc(0.625rem * var(--assistant-text-scale)); }
+  .assistant-text-lg { font-size: calc(1rem * var(--assistant-text-scale)); }
+
+  .assistant-spacing    { padding: calc(1rem * var(--assistant-spacing-scale)); }
+  .assistant-spacing-sm { padding: calc(0.5rem * var(--assistant-spacing-scale)); }
+  .assistant-gap    { gap: calc(0.5rem * var(--assistant-spacing-scale)); }
+  .assistant-gap-sm { gap: calc(0.25rem * var(--assistant-spacing-scale)); }
+
+  .assistant-rounded    { border-radius: var(--assistant-radius); }
+  .assistant-rounded-lg { border-radius: calc(var(--assistant-radius) * 1.5); }
+  .assistant-rounded-full { border-radius: 9999px; }
+}
+
+/* ============================================================================
+   Sidebar — elevated surface treatment
+   ============================================================================ */
+@layer components {
+  .sidebar-surface {
+    background: hsl(220 60% 6.5%);
+    border-right: 1px solid hsl(var(--border) / 0.6);
   }
-  .assistant-text-sm {
-    font-size: calc(0.75rem * var(--assistant-text-scale));
-  }
-  .assistant-text-xs {
-    font-size: calc(0.625rem * var(--assistant-text-scale));
-  }
-  .assistant-text-lg {
-    font-size: calc(1rem * var(--assistant-text-scale));
+}
+
+/* ============================================================================
+   Badge / Chip Variants
+   ============================================================================ */
+@layer components {
+  .badge-new {
+    @apply inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none;
+    background: hsl(213 100% 55% / 0.15);
+    color: hsl(213 100% 70%);
+    border: 1px solid hsl(213 100% 55% / 0.25);
   }
 
-  /* Spacing elements */
-  .assistant-spacing {
-    padding: calc(1rem * var(--assistant-spacing-scale));
-  }
-  .assistant-spacing-sm {
-    padding: calc(0.5rem * var(--assistant-spacing-scale));
-  }
-  .assistant-gap {
-    gap: calc(0.5rem * var(--assistant-spacing-scale));
-  }
-  .assistant-gap-sm {
-    gap: calc(0.25rem * var(--assistant-spacing-scale));
+  .badge-hot {
+    @apply inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none;
+    background: hsl(0 72% 51% / 0.15);
+    color: hsl(0 72% 70%);
+    border: 1px solid hsl(0 72% 51% / 0.25);
   }
 
-  /* Rounded corners */
-  .assistant-rounded {
-    border-radius: var(--assistant-radius);
+  .badge-warm {
+    @apply inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none;
+    background: hsl(25 95% 53% / 0.15);
+    color: hsl(25 95% 68%);
+    border: 1px solid hsl(25 95% 53% / 0.25);
   }
-  .assistant-rounded-lg {
-    border-radius: calc(var(--assistant-radius) * 1.5);
+
+  .badge-tier {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase leading-none;
+    background: hsl(var(--secondary));
+    color: hsl(var(--muted-foreground));
+    border: 1px solid hsl(var(--border));
   }
-  .assistant-rounded-full {
-    border-radius: 9999px;
+}
+
+/* ============================================================================
+   Input / Form Enhancement
+   ============================================================================ */
+@layer components {
+  .input-financial {
+    @apply rounded-md border bg-input px-3 py-2 text-sm text-foreground ring-offset-background;
+    @apply placeholder:text-muted-foreground/60;
+    @apply focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ============================================================================
+   Stat / KPI display
+   ============================================================================ */
+@layer components {
+  .stat-value {
+    @apply text-2xl font-bold tracking-tight num;
+  }
+
+  .stat-label {
+    @apply text-xs font-medium text-muted-foreground uppercase tracking-wider;
+  }
+
+  .stat-delta-positive {
+    @apply text-xs font-medium text-emerald-400 num;
+  }
+
+  .stat-delta-negative {
+    @apply text-xs font-medium text-red-400 num;
+  }
+}
+
+/* ============================================================================
+   Section Header — consistent section titles
+   ============================================================================ */
+@layer components {
+  .section-header {
+    @apply flex items-center gap-2 pb-3 mb-4 border-b border-border/60;
+  }
+
+  .section-title {
+    @apply text-sm font-semibold text-foreground tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-xs text-muted-foreground;
   }
 }
