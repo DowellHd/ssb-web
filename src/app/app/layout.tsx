@@ -140,10 +140,10 @@ function NavLink({ href, label, icon: Icon, active, indent = false, badge, onCli
         onClick={onClick}
         title={label}
         className={cn(
-          'flex items-center justify-center rounded-lg p-2.5 transition-colors',
+          'flex items-center justify-center rounded-lg p-2.5 transition-colors duration-150',
           active
-            ? 'bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            ? 'bg-accent text-foreground'
+            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
         )}
         aria-current={active ? 'page' : undefined}
         aria-label={label}
@@ -158,20 +158,18 @@ function NavLink({ href, label, icon: Icon, active, indent = false, badge, onCli
       href={href}
       onClick={onClick}
       className={cn(
-        'flex items-center gap-3 rounded-lg px-3 text-sm transition-colors',
-        indent ? 'py-2 ml-3 pl-3 border-l border-border' : 'py-2.5',
+        'flex items-center gap-3 rounded-lg px-3 text-sm transition-colors duration-150',
+        indent ? 'py-1.5 ml-3 pl-3 border-l border-border/60' : 'py-2',
         active
-          ? 'bg-primary text-primary-foreground'
-          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          ? 'bg-accent text-foreground font-medium'
+          : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
       )}
       aria-current={active ? 'page' : undefined}
     >
-      <Icon className="h-4 w-4 shrink-0" />
+      <Icon className={cn('h-4 w-4 shrink-0', active && 'text-foreground')} />
       <span className="flex-1">{label}</span>
       {badge && (
-        <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
-          {badge}
-        </span>
+        <span className="badge-new">{badge}</span>
       )}
     </Link>
   );
@@ -207,10 +205,10 @@ function NavGroup({
           title={label}
           aria-label={label}
           className={cn(
-            'flex w-full items-center justify-center rounded-lg p-2.5 transition-colors',
+            'flex w-full items-center justify-center rounded-lg p-2.5 transition-colors duration-150',
             hasActiveChild
-              ? 'bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              ? 'bg-accent/80 text-foreground'
+              : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
           )}
         >
           <Icon className="h-5 w-5 shrink-0" />
@@ -225,10 +223,10 @@ function NavGroup({
         onClick={onToggle}
         aria-expanded={isOpen}
         className={cn(
-          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
+          'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-150',
           hasActiveChild && !isOpen
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            ? 'bg-accent/60 text-foreground'
+            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
         )}
       >
         <Icon className="h-4 w-4 shrink-0" />
@@ -475,11 +473,11 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         <div className="px-3 pt-3 pb-1">
           <button
             onClick={() => { openPalette(); onClose(); }}
-            className="flex w-full items-center gap-2.5 rounded-lg border bg-muted/50 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="flex w-full items-center gap-2.5 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-sm text-muted-foreground hover:bg-background/60 hover:border-border hover:text-foreground transition-colors duration-150"
           >
             <Search className="h-3.5 w-3.5 shrink-0" />
             <span className="flex-1 text-left text-xs">Quick access…</span>
-            <kbd className="hidden sm:inline-flex h-4 items-center rounded border bg-background px-1.5 text-[10px] font-medium">
+            <kbd className="hidden sm:inline-flex h-4 items-center rounded border border-border/60 bg-muted/50 px-1.5 text-[10px] font-medium text-muted-foreground">
               ⌘K
             </kbd>
           </button>
@@ -752,7 +750,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 h-full bg-card border-r transform transition-all duration-200 lg:translate-x-0',
+          'fixed left-0 top-0 z-50 h-full sidebar-surface transform transition-all duration-200 lg:translate-x-0',
           sidebarCollapsed ? 'w-16' : 'w-64',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
@@ -772,7 +770,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className={cn('transition-all duration-200', sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64')}>
         {/* Mobile top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur px-4 lg:hidden">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/90 backdrop-blur-md elevation-1 px-4 lg:hidden">
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
             <Menu className="h-5 w-5" />
           </Button>

@@ -42,13 +42,13 @@ function KpiCard({ icon: Icon, label, value, sub, subColor }: {
   sub?: string; subColor?: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 flex items-start gap-3">
-      <div className="p-2 rounded-lg bg-muted mt-0.5">
+    <div className="rounded-xl border border-border/70 bg-card p-4 flex items-start gap-3 elevation-1">
+      <div className="p-2 rounded-lg bg-muted/60 mt-0.5 shrink-0">
         <Icon className="h-4 w-4 text-foreground/70" />
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-xl font-bold truncate">{value}</p>
+        <p className="stat-label">{label}</p>
+        <p className="text-xl font-bold truncate num">{value}</p>
         {sub && <p className={`text-xs mt-0.5 ${subColor ?? 'text-muted-foreground'}`}>{sub}</p>}
       </div>
     </div>

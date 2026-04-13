@@ -195,26 +195,24 @@ function FeatureTileCard({ feature, planName }: { feature: FeatureTile; planName
     <Link
       href={feature.href}
       className={cn(
-        'group flex items-center gap-3 rounded-lg border p-3 transition-all',
+        'group flex items-center gap-3 rounded-lg border p-3 transition-all duration-150',
         locked
-          ? 'bg-muted/20 hover:bg-muted/30 hover:border-border/80'
-          : 'bg-card/50 hover:border-primary/40 hover:bg-card',
+          ? 'border-border/40 bg-muted/10 hover:bg-muted/20 hover:border-border/60'
+          : 'border-border/60 bg-card hover:border-border hover:bg-accent/30 elevation-1',
       )}
     >
       <Icon className={cn(
-        'h-4 w-4 shrink-0 transition-colors',
-        locked ? 'text-muted-foreground/40' : 'text-muted-foreground group-hover:text-primary',
+        'h-4 w-4 shrink-0 transition-colors duration-150',
+        locked ? 'text-muted-foreground/30' : 'text-muted-foreground/70 group-hover:text-foreground',
       )} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <span className={cn('text-sm font-medium leading-tight truncate', locked && 'text-muted-foreground/60')}>
+          <span className={cn('text-sm font-medium leading-tight truncate', locked && 'text-muted-foreground/50')}>
             {feature.label}
           </span>
           <div className="flex items-center gap-1 shrink-0">
             {feature.isNew && !locked && (
-              <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
-                NEW
-              </span>
+              <span className="badge-new">NEW</span>
             )}
             {locked && feature.tier && (
               <span className={cn('flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase', TIER_BADGE[feature.tier])}>
@@ -224,7 +222,7 @@ function FeatureTileCard({ feature, planName }: { feature: FeatureTile; planName
             )}
           </div>
         </div>
-        <p className={cn('mt-0.5 text-xs leading-tight', locked ? 'text-muted-foreground/40' : 'text-muted-foreground')}>
+        <p className={cn('mt-0.5 text-xs leading-tight', locked ? 'text-muted-foreground/30' : 'text-muted-foreground/70')}>
           {feature.description}
         </p>
       </div>
@@ -235,11 +233,13 @@ function FeatureTileCard({ feature, planName }: { feature: FeatureTile; planName
 function CapabilitySection({ section, planName }: { section: FeatureSection; planName: string | undefined }) {
   const Icon = section.icon;
   return (
-    <div className="rounded-xl border bg-card">
-      <div className="flex items-center gap-2.5 border-b px-4 py-3">
-        <Icon className={cn('h-4 w-4', section.color)} />
+    <div className="rounded-xl border border-border/70 bg-card elevation-1">
+      <div className="flex items-center gap-2.5 border-b border-border/60 px-4 py-3">
+        <div className={cn('flex h-6 w-6 items-center justify-center rounded-md bg-muted/60')}>
+          <Icon className={cn('h-3.5 w-3.5', section.color)} />
+        </div>
         <h3 className="font-semibold text-sm">{section.title}</h3>
-        <span className="ml-auto text-xs text-muted-foreground">
+        <span className="ml-auto text-xs text-muted-foreground/60 num">
           {section.features.length} tools
         </span>
       </div>
@@ -422,41 +422,41 @@ export default function AppDashboardPage() {
 
       {/* Market summary — compact */}
       {marketSummary && (
-        <div className="rounded-xl border bg-card p-4">
+        <div className="rounded-xl border border-border/70 bg-card p-4 elevation-1">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Newspaper className="h-4 w-4 text-muted-foreground" />
               <span className="font-semibold text-sm">Daily Market Summary</span>
               {marketSummary.is_delayed && (
-                <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded">
-                  {marketSummary.delay_minutes}min delay
+                <span className="text-xs bg-muted/60 text-muted-foreground px-2 py-0.5 rounded-full border border-border/50">
+                  {marketSummary.delay_minutes}m delay
                 </span>
               )}
             </div>
-            <Link href="/app/news" className="text-xs text-primary hover:underline">
+            <Link href="/app/news" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
               All news →
             </Link>
           </div>
-          <p className="text-sm font-medium mb-3">{marketSummary.summary.headline}</p>
+          <p className="text-sm font-medium mb-4 text-foreground/90">{marketSummary.summary.headline}</p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs font-medium text-green-600 mb-1.5">Top Gainers</p>
-              <div className="space-y-1">
+              <p className="stat-label mb-2">Top Gainers</p>
+              <div className="space-y-1.5">
                 {marketSummary.summary.top_gainers.slice(0, 3).map((m) => (
                   <div key={m.symbol} className="flex justify-between text-xs">
-                    <span className="font-medium">{m.symbol}</span>
-                    <span className="text-green-600">+{m.change_percent.toFixed(2)}%</span>
+                    <span className="font-semibold num">{m.symbol}</span>
+                    <span className="data-positive num">+{m.change_percent.toFixed(2)}%</span>
                   </div>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-red-600 mb-1.5">Top Losers</p>
-              <div className="space-y-1">
+              <p className="stat-label mb-2">Top Losers</p>
+              <div className="space-y-1.5">
                 {marketSummary.summary.top_losers.slice(0, 3).map((m) => (
                   <div key={m.symbol} className="flex justify-between text-xs">
-                    <span className="font-medium">{m.symbol}</span>
-                    <span className="text-red-600">{m.change_percent.toFixed(2)}%</span>
+                    <span className="font-semibold num">{m.symbol}</span>
+                    <span className="data-negative num">{m.change_percent.toFixed(2)}%</span>
                   </div>
                 ))}
               </div>
@@ -474,13 +474,13 @@ export default function AppDashboardPage() {
       {(() => {
         const recent = CHANGELOG.slice(0, 3);
         return (
-          <div className="rounded-xl border bg-card p-4">
+          <div className="rounded-xl border border-border/70 bg-card p-4 elevation-1">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <History className="h-4 w-4 text-primary" />
+                <Sparkles className="h-4 w-4 text-muted-foreground" />
                 <span className="font-semibold text-sm">Recently Shipped</span>
               </div>
-              <Link href="/app/changelog" className="text-xs text-primary hover:underline">
+              <Link href="/app/changelog" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                 Full changelog →
               </Link>
             </div>
@@ -489,11 +489,11 @@ export default function AppDashboardPage() {
                 <Link
                   key={i}
                   href="/app/changelog"
-                  className="flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1 text-xs hover:bg-muted transition-colors"
+                  className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1 text-xs hover:bg-muted/60 hover:border-border transition-colors"
                 >
-                  <span className="font-medium">{entry.subsystem}</span>
+                  <span className="font-semibold">{entry.subsystem}</span>
                   <span className="text-muted-foreground">v{entry.version}</span>
-                  <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary">
+                  <span className="badge-new">
                     {new Date(entry.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
                 </Link>
@@ -527,8 +527,8 @@ export default function AppDashboardPage() {
       </div>
 
       {/* Account status — collapsed to a single row */}
-      <div className="rounded-xl border bg-card p-4">
-        <h3 className="text-sm font-semibold mb-3">Account Status</h3>
+      <div className="rounded-xl border border-border/70 bg-card p-4 elevation-1">
+        <h3 className="text-sm font-semibold mb-3 text-foreground/90">Account Status</h3>
         <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
           <AccountStat label="Plan" value={getPlanDisplayName(entitlements?.plan_name)} />
           <AccountStat
@@ -669,11 +669,13 @@ function QuickStat({
   capitalize?: boolean;
 }) {
   return (
-    <div className="rounded-lg border bg-card p-4 flex items-center gap-3">
-      <Icon className={cn('h-5 w-5 shrink-0', accent)} />
+    <div className="rounded-lg border border-border/70 bg-card p-4 flex items-center gap-3 elevation-1">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/60 shrink-0">
+        <Icon className={cn('h-4 w-4', accent)} />
+      </div>
       <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className={cn('font-bold text-lg tabular-nums leading-tight', capitalize && 'capitalize')}>
+        <p className="stat-label">{label}</p>
+        <p className={cn('stat-value text-lg', capitalize && 'capitalize')}>
           {value}
         </p>
       </div>

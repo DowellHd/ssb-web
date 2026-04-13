@@ -14,22 +14,30 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         className={cn(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'inline-flex items-center justify-center rounded-md text-sm font-medium',
+          'transition-all duration-150 ease-out',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background',
           'disabled:opacity-50 disabled:pointer-events-none',
+          'select-none',
           {
-            'bg-primary text-primary-foreground hover:bg-primary/90': variant === 'default',
-            'bg-destructive text-destructive-foreground hover:bg-destructive/90':
+            // Default — white on dark with subtle shadow and hover lift
+            'bg-primary text-primary-foreground shadow-sm hover:brightness-110 active:brightness-95 active:scale-[0.98]':
+              variant === 'default',
+            // Destructive
+            'bg-destructive text-destructive-foreground shadow-sm hover:brightness-110 active:brightness-90':
               variant === 'destructive',
-            'border border-input bg-background hover:bg-accent hover:text-accent-foreground':
+            // Outline — visible border, subtle hover fill
+            'border border-border bg-transparent text-foreground hover:bg-accent hover:border-border/80 active:bg-accent/80':
               variant === 'outline',
-            'hover:bg-accent hover:text-accent-foreground': variant === 'ghost',
+            // Ghost — invisible until hover
+            'hover:bg-accent hover:text-accent-foreground active:bg-accent/70':
+              variant === 'ghost',
           },
           {
-            'h-10 px-4 py-2': size === 'default',
-            'h-9 px-3': size === 'sm',
-            'h-11 px-8': size === 'lg',
-            'h-10 w-10': size === 'icon',
+            'h-10 px-4 py-2 gap-2':        size === 'default',
+            'h-8 px-3 py-1.5 text-xs gap-1.5': size === 'sm',
+            'h-11 px-6 text-base gap-2':   size === 'lg',
+            'h-9 w-9':                     size === 'icon',
           },
           className
         )}
