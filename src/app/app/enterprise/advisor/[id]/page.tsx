@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, RefreshCw, Pencil, Save, X, Plus, Trash2,
@@ -85,8 +86,9 @@ type Tab = 'overview' | 'notes' | 'tasks' | 'portfolio';
 
 // ── Main Component ─────────────────────────────────────────────────────────
 
-export default function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ClientDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const { normalized, isLoaded } = usePlanStore();
   const isInstitutional = normalized.isAllAccess || normalized.plan === 'institutional';
 
