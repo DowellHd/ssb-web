@@ -19,6 +19,23 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     subsystem: 'Advisor CRM',
+    version: '2.1.0',
+    date: '2026-04-13',
+    changes: [
+      'Added Practice Analytics page with full business intelligence dashboard (revenue forecasting, pipeline funnel, segment AUM breakdown, KYC compliance metrics)',
+      'Added lead scoring — automatic 0–100 score per client based on AUM, segment, KYC status, and account status',
+      'Added revenue forecasting from fee schedules (AUM %, flat, hourly) with monthly/quarterly/annual projections',
+      'Added top-clients-by-AUM and hot-leads rankings on the analytics page',
+      'Added Schedule tab on client detail: communication timeline (filtered meeting/call/email/follow-up notes) + upcoming appointment list',
+      'Added Reports tab: full client review summary with profile snapshot, lead score meter, activity summary, portfolio assignment, and advisory notes',
+      'Added lead score badge on every client row in the CRM list',
+      'Added estimated annual revenue display on client detail quick stats',
+      'Added Analytics shortcut button in the Advisor CRM header',
+      'Added Practice Analytics nav link under Enterprise sidebar section',
+    ],
+  },
+  {
+    subsystem: 'Advisor CRM',
     version: '2.0.0',
     date: '2026-04-13',
     changes: [

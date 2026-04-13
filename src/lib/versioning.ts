@@ -76,9 +76,9 @@ export const SUBSYSTEM_VERSIONS = {
     description: 'REITs, commodities, PE/VC, hedge funds, and hard assets',
   },
   advisorCrm: {
-    version: '2.0.0',
+    version: '2.1.0',
     lastUpdated: '2026-04-13',
-    description: 'Full CRM with client profiles, KYC tracking, notes, tasks, and portfolio linking',
+    description: 'CRM + Practice Analytics: lead scoring, revenue forecasting, pipeline BI, schedule & reports tabs',
   },
 } as const satisfies Record<string, SubsystemVersion>;
 

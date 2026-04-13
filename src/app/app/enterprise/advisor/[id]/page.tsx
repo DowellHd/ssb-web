@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -8,7 +8,9 @@ import {
   CheckSquare, Square, MessageSquare, Link2, Link2Off,
   Calendar, DollarSign, User, Shield, Briefcase, Clock,
   AlertTriangle, CheckCircle2, XCircle, Building2, Lock,
+  Phone, Mail, FileText, BarChart3,
 } from 'lucide-react';
+import { calcLeadScore, scoreLabel } from '@/lib/advisor/scoring';
 import {
   advisorApi,
   type AdvisorClient,
@@ -82,7 +84,17 @@ function fmtDateTime(d: string | null): string {
   return new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-type Tab = 'overview' | 'notes' | 'tasks' | 'portfolio';
+type Tab = 'overview' | 'notes' | 'tasks' | 'portfolio' | 'schedule' | 'reports';
+
+function estimateAnnualRevenue(c: { fee_type?: string | null; fee_value?: string | null; aum_usd?: string | null }): number {
+  const aum = c.aum_usd ? parseFloat(c.aum_usd as string) : 0;
+  const val = c.fee_value ? parseFloat(c.fee_value as string) : 0;
+  if (!val) return 0;
+  if (c.fee_type === 'aum_pct') return (aum * val) / 100;
+  if (c.fee_type === 'flat')    return val;
+  if (c.fee_type === 'hourly')  return val * 10;
+  return 0;
+}
 
 // ── Main Component ─────────────────────────────────────────────────────────
 
@@ -279,6 +291,11 @@ export default function ClientDetailPage() {
 
   const openTasks = tasks.filter((t) => t.status !== 'done' && t.status !== 'cancelled');
   const overdueTasks = openTasks.filter((t) => t.due_date && new Date(t.due_date) < new Date());
+  const commNotes = notes.filter((n) => ['meeting', 'call', 'email', 'follow_up', 'review'].includes(n.note_type));
+  const leadScore = calcLeadScore(client);
+  const { label: scoreTag, color: scoreColor } = scoreLabel(leadScore);
+  const estRevenue = estimateAnnualRevenue(client);
+  const upcomingTasks = [...openTasks].filter(t => t.due_date).sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime());
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -339,16 +356,18 @@ export default function ClientDetailPage() {
       </div>
 
       {/* Quick stats bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
           { label: 'Open Tasks', value: openTasks.length, warn: overdueTasks.length > 0 },
           { label: 'Overdue', value: overdueTasks.length, warn: overdueTasks.length > 0 },
           { label: 'Notes', value: notes.length, warn: false },
           { label: 'Next Review', value: fmtDate(client.next_review_date), warn: false },
+          { label: 'Lead Score', value: `${leadScore}/100`, warn: false, color: scoreColor, sub: scoreTag },
+          { label: 'Est. Revenue', value: estRevenue > 0 ? `$${(estRevenue >= 1000 ? (estRevenue/1000).toFixed(0)+'K' : estRevenue.toFixed(0))}/yr` : '—', warn: false },
         ].map((stat) => (
           <div key={stat.label} className="rounded-lg border border-border bg-card p-3">
             <p className="text-xs text-muted-foreground">{stat.label}</p>
-            <p className={`text-base font-semibold ${stat.warn ? 'text-red-400' : ''}`}>
+            <p className={`text-base font-semibold ${'color' in stat && stat.color ? stat.color : stat.warn ? 'text-red-400' : ''}`}>
               {stat.value}
             </p>
           </div>
@@ -356,13 +375,15 @@ export default function ClientDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-border">
-        <div className="flex gap-0">
+      <div className="border-b border-border overflow-x-auto">
+        <div className="flex gap-0 min-w-max">
           {([
-            { key: 'overview', label: 'Overview', icon: User },
-            { key: 'notes', label: `Notes (${notes.length})`, icon: MessageSquare },
-            { key: 'tasks', label: `Tasks (${openTasks.length})`, icon: CheckSquare },
-            { key: 'portfolio', label: 'Portfolio Link', icon: Link2 },
+            { key: 'overview',  label: 'Overview',                icon: User },
+            { key: 'notes',     label: `Notes (${notes.length})`, icon: MessageSquare },
+            { key: 'tasks',     label: `Tasks (${openTasks.length})`, icon: CheckSquare },
+            { key: 'schedule',  label: 'Schedule',                icon: Calendar },
+            { key: 'portfolio', label: 'Portfolio Link',          icon: Link2 },
+            { key: 'reports',   label: 'Reports',                 icon: FileText },
           ] as const).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -915,6 +936,187 @@ export default function ClientDetailPage() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Tab: Schedule */}
+      {tab === 'schedule' && (
+        <div className="space-y-4">
+          {/* Upcoming scheduled tasks */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-blue-400" /> Upcoming Appointments
+            </h3>
+            {upcomingTasks.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">No scheduled meetings or follow-ups. Add tasks with due dates from the Tasks tab.</p>
+            ) : (
+              <div className="space-y-2">
+                {upcomingTasks.map((t) => {
+                  const isOverdue = t.due_date && new Date(t.due_date) < new Date();
+                  return (
+                    <div key={t.id} className={`flex items-start gap-3 p-3 rounded-lg border ${isOverdue ? 'border-red-500/30 bg-red-500/5' : 'border-border bg-muted/30'}`}>
+                      <Calendar className={`h-4 w-4 mt-0.5 shrink-0 ${isOverdue ? 'text-red-400' : 'text-blue-400'}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{t.title}</p>
+                        {t.description && <p className="text-xs text-muted-foreground">{t.description}</p>}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`text-xs font-medium ${isOverdue ? 'text-red-400' : 'text-muted-foreground'}`}>
+                          {fmtDate(t.due_date!)}
+                        </p>
+                        <p className={`text-xs capitalize ${PRIORITY_STYLES[t.priority]}`}>{t.priority}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Communication history (meeting/call/email notes) */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Phone className="h-4 w-4 text-green-400" /> Communication History
+            </h3>
+            {commNotes.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">
+                No communication logs yet. Add Meeting, Call, Email, or Follow-up notes from the Notes tab to build the communication timeline.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {commNotes.map((n) => {
+                  const icons: Record<string, React.ReactNode> = {
+                    meeting: <Calendar className="h-3.5 w-3.5 text-blue-400" />,
+                    call: <Phone className="h-3.5 w-3.5 text-green-400" />,
+                    email: <Mail className="h-3.5 w-3.5 text-purple-400" />,
+                    follow_up: <Clock className="h-3.5 w-3.5 text-yellow-400" />,
+                    review: <CheckCircle2 className="h-3.5 w-3.5 text-primary" />,
+                  };
+                  return (
+                    <div key={n.id} className="flex items-start gap-3 p-3 rounded-lg border border-border">
+                      <div className="mt-0.5">{icons[n.note_type] ?? <MessageSquare className="h-3.5 w-3.5" />}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-muted-foreground capitalize mb-0.5">{NOTE_TYPE_LABELS[n.note_type as NoteType] ?? n.note_type}</p>
+                        <p className="text-sm">{n.content}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground shrink-0">{fmtDateTime(n.created_at)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Reports */}
+      {tab === 'reports' && (
+        <div className="space-y-4">
+          {/* Client Review Summary */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" /> Client Review Summary
+              </h3>
+              <span className="text-xs text-muted-foreground">Generated {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+
+            {/* Client snapshot */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Client Profile</p>
+                {[
+                  ['Name', client.name],
+                  ['Status', client.status],
+                  ['Segment', client.segment ? ({ mass_market: 'Mass Market', affluent: 'Affluent', hnw: 'HNW', uhnw: 'UHNW' }[client.segment] ?? client.segment) : '—'],
+                  ['KYC Status', client.kyc_status],
+                  ['Email', client.email ?? '—'],
+                  ['Phone', client.phone ?? '—'],
+                ].map(([label, val]) => (
+                  <div key={label} className="flex justify-between text-sm border-b border-border/50 pb-1">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="font-medium capitalize">{val}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Investment Profile</p>
+                {[
+                  ['AUM', client.aum_usd ? `$${parseFloat(client.aum_usd as string).toLocaleString()}` : '—'],
+                  ['Risk Tolerance', client.risk_tolerance ? { low: 'Conservative', medium: 'Moderate', high: 'Aggressive' }[client.risk_tolerance] ?? client.risk_tolerance : '—'],
+                  ['Fee Type', client.fee_type ?? '—'],
+                  ['Fee Value', client.fee_value ? (client.fee_type === 'aum_pct' ? `${client.fee_value}%` : `$${client.fee_value}`) : '—'],
+                  ['Est. Annual Revenue', estRevenue > 0 ? `$${estRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'],
+                  ['Next Review', fmtDate(client.next_review_date)],
+                ].map(([label, val]) => (
+                  <div key={label} className="flex justify-between text-sm border-b border-border/50 pb-1">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="font-medium">{val}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lead Score */}
+            <div className="rounded-lg bg-muted/40 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium">Lead / Engagement Score</p>
+                <span className={`text-sm font-bold ${scoreColor}`}>{scoreTag} ({leadScore}/100)</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${leadScore}%` }} />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Score is based on AUM, client segment, KYC status, and account status.
+              </p>
+            </div>
+
+            {/* Activity summary */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Activity Summary</p>
+              <div className="grid gap-2 sm:grid-cols-4">
+                {[
+                  { label: 'Total Notes', value: notes.length },
+                  { label: 'Comm. Logs', value: commNotes.length },
+                  { label: 'Open Tasks', value: openTasks.length },
+                  { label: 'Overdue', value: overdueTasks.length },
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-lg bg-muted/30 p-3 text-center">
+                    <p className="text-lg font-bold">{value}</p>
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Portfolio */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Portfolio Assignment</p>
+              {linkedPortfolio ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <CheckCircle2 className="h-4 w-4 text-green-400 shrink-0" />
+                  <span className="text-sm">{linkedPortfolio.name} <span className="text-muted-foreground capitalize">({linkedPortfolio.risk_level})</span></span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 border border-border">
+                  <AlertTriangle className="h-4 w-4 text-yellow-400 shrink-0" />
+                  <span className="text-sm text-muted-foreground">No model portfolio assigned</span>
+                </div>
+              )}
+            </div>
+
+            {/* Advisor notes */}
+            {client.notes && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Advisor Notes</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-3">{client.notes}</p>
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground text-center pt-2 border-t border-border">
+              This report is generated from CRM data and is for internal advisory use only. It does not constitute investment advice.
+            </p>
+          </div>
         </div>
       )}
     </div>
