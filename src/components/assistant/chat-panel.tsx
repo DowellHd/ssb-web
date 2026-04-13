@@ -49,13 +49,36 @@ export function ChatPanel() {
 
   // Determine page name for context display
   const pageName = useMemo(() => {
+    if (currentPage.includes('/regime')) return 'Market Regime';
+    if (currentPage.includes('/risk')) return 'Risk Analytics';
+    if (currentPage.includes('/analytics')) return 'Analytics';
+    if (currentPage.includes('/screening')) return 'Screener';
+    if (currentPage.includes('/portfolio')) return 'Portfolio';
+    if (currentPage.includes('/trade-ideas')) return 'Trade Ideas';
     if (currentPage.includes('/paper')) return 'Paper Trading';
     if (currentPage.includes('/backtest')) return 'Backtesting';
-    if (currentPage.includes('/risk')) return 'Risk Analytics';
-    if (currentPage.includes('/regime')) return 'Market Regime';
+    if (currentPage.includes('/options')) return 'Options';
+    if (currentPage.includes('/crypto')) return 'Crypto';
+    if (currentPage.includes('/order-prep')) return 'Order Prep';
+    if (currentPage.includes('/brokers')) return 'Broker Connections';
+    if (currentPage.includes('/learn')) return 'Learning Hub';
+    if (currentPage.includes('/onboarding')) return 'Investment Quiz';
+    if (currentPage.includes('/calculators')) return 'Calculators';
+    if (currentPage.includes('/global-markets')) return 'Global Markets';
+    if (currentPage.includes('/fixed-income')) return 'Fixed Income';
+    if (currentPage.includes('/alternatives')) return 'Alternatives';
+    if (currentPage.includes('/enterprise/advisor')) return 'Advisor CRM';
+    if (currentPage.includes('/enterprise')) return 'Enterprise';
+    if (currentPage.includes('/community')) return 'Community';
     if (currentPage.includes('/stress')) return 'Stress Testing';
-    if (currentPage.includes('/settings')) return 'Settings';
+    if (currentPage.includes('/investment-compliance')) return 'Compliance Tools';
+    if (currentPage.includes('/audit')) return 'Audit Log';
+    if (currentPage.includes('/changelog')) return 'Changelog';
+    if (currentPage.includes('/roadmap')) return 'Roadmap';
     if (currentPage.includes('/billing')) return 'Billing';
+    if (currentPage.includes('/settings')) return 'Settings';
+    if (currentPage.includes('/news')) return 'News';
+    if (currentPage.includes('/admin')) return 'Admin';
     return 'Dashboard';
   }, [currentPage]);
 

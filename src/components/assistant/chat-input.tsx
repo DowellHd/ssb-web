@@ -23,12 +23,14 @@ const INPUT_TEXT_SIZE_MAP = {
 export function ChatInput({ suggestions }: ChatInputProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { sendMessage, isLoading, messages, getQuickPrompts } = useAssistantStore();
+  // currentPage subscription ensures this component re-renders on navigation
+  const { sendMessage, isLoading, messages, getQuickPrompts, currentPage } = useAssistantStore();
   const { textScale, density, cornerStyle } = useAssistantSettingsStore();
 
   const textSizes = INPUT_TEXT_SIZE_MAP[textScale];
 
-  // Get page-smart prompts from store
+  // Re-derive prompts on every render (currentPage subscription above triggers re-render on nav)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const quickPrompts = getQuickPrompts();
 
   // Use suggestions if provided, otherwise use page-smart quick prompts
