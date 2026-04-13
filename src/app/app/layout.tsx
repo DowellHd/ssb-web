@@ -93,12 +93,13 @@ const MARKETS_CHILDREN = [
 ];
 
 const ENTERPRISE_CHILDREN = [
-  { href: '/app/enterprise/advisor',     label: 'Advisor CRM',    icon: Users },
-  { href: '/app/enterprise/alternatives',label: 'Alternatives',   icon: BarChart3 },
-  { href: '/app/enterprise/strategies',  label: 'Algo Strategies',icon: TrendingUp },
-  { href: '/app/enterprise/webhooks',    label: 'Webhooks',       icon: FileText },
-  { href: '/app/enterprise/api-keys',    label: 'API Keys',       icon: Shield },
-  { href: '/app/enterprise/compliance',  label: 'Compliance',     icon: ShieldCheck },
+  { href: '/app/enterprise/advisor',           label: 'Advisor CRM',        icon: Users },
+  { href: '/app/enterprise/advisor/analytics', label: 'Practice Analytics', icon: BarChart3, badge: 'NEW' },
+  { href: '/app/enterprise/alternatives',      label: 'Alternatives',       icon: TrendingUp },
+  { href: '/app/enterprise/strategies',        label: 'Algo Strategies',    icon: TrendingUp },
+  { href: '/app/enterprise/webhooks',          label: 'Webhooks',           icon: FileText },
+  { href: '/app/enterprise/api-keys',          label: 'API Keys',           icon: Shield },
+  { href: '/app/enterprise/compliance',        label: 'Compliance',         icon: ShieldCheck },
 ];
 
 // Items shown only in the UserMenu dropdown
