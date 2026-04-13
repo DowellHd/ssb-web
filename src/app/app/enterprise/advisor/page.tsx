@@ -115,7 +115,7 @@ export default function AdvisorPage() {
     try {
       const [c, d] = await Promise.all([
         advisorApi.listClients(statusFilter || undefined),
-        advisorApi.getDashboard(),
+        advisorApi.getDashboard().catch(() => null),
       ]);
       setClients(c);
       setDashboard(d);
