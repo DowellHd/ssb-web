@@ -109,6 +109,7 @@ const USER_MENU_ITEMS = [
 
 // Secondary / utility links — collapsed under "More"
 const MORE_CHILDREN = [
+  { href: '/app/billing',               label: 'Billing & Plans',  icon: CreditCard },
   { href: '/app/investment-compliance', label: 'Compliance Tools', icon: ShieldCheck, badge: 'NEW' },
   { href: '/app/audit',                 label: 'Audit Log',        icon: ClipboardList },
   { href: '/app/changelog',             label: 'Changelog',        icon: History },

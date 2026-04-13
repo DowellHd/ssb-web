@@ -18,6 +18,24 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    subsystem: 'Advisor CRM',
+    version: '2.0.0',
+    date: '2026-04-13',
+    changes: [
+      'Rebuilt Advisor CRM dashboard with pipeline view, AUM breakdown by segment, and KYC status indicators',
+      'Added client detail pages with tabbed interface (Overview, Notes, Tasks, Portfolio Link)',
+      'Added client activity notes with note types (meeting, call, email, follow-up, review)',
+      'Added client task management with priority levels, due dates, and overdue detection',
+      'Added model portfolio linking — assign a portfolio template to each client',
+      'Expanded client profiles with KYC fields: date of birth, occupation, employer, income, net worth',
+      'Added fee structure tracking (flat, AUM %, hourly) per client',
+      'Added client segmentation (Mass Market / Affluent / HNW / UHNW)',
+      'Added CRM dashboard API with aggregated metrics: AUM totals, open tasks, overdue tasks, clients due for review',
+      'Added bulk status update endpoint for batch client lifecycle management',
+      'Added client search by name, email, or tag on the main CRM list',
+    ],
+  },
+  {
     subsystem: 'Platform',
     version: '1.5.0',
     date: '2026-04-12',

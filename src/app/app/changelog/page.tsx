@@ -16,6 +16,7 @@ const subsystemLabels: Record<SubsystemKey, string> = {
   globalMarkets: 'Global Markets',
   fixedIncome: 'Fixed Income',
   alternatives: 'Alternatives',
+  advisorCrm: 'Advisor CRM',
 };
 
 function formatDate(iso: string): string {

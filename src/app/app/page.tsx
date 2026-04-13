@@ -153,7 +153,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
     icon: Building2,
     color: 'text-amber-500',
     features: [
-      { label: 'Advisor CRM',          description: 'Client relationship management',       href: '/app/enterprise/advisor',    icon: Users,      tier: 'institutional' as const },
+      { label: 'Advisor CRM',          description: 'Client relationship management',       href: '/app/enterprise/advisor',    icon: Users,      tier: 'institutional' as const, isNew: true },
       { label: 'Algo Strategies',      description: 'Systematic trading strategies',        href: '/app/enterprise/strategies', icon: TrendingUp, tier: 'institutional' as const },
       { label: 'Compliance Center',    description: 'Regulatory monitoring & reporting',    href: '/app/enterprise/compliance', icon: ShieldCheck, tier: 'institutional' as const },
       { label: 'Webhooks',             description: 'Real-time event integration',          href: '/app/enterprise/webhooks',   icon: Zap,        tier: 'institutional' as const },
