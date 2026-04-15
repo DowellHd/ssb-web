@@ -469,13 +469,13 @@ export const ALL_FEATURES: PaletteItem[] = [
   },
   {
     id: 'privacy',
-    label: 'Privacy',
-    description: 'Privacy settings and data management',
-    href: '/app/privacy',
+    label: 'Privacy & Data Management',
+    description: 'Data transparency, export, preferences, and account deletion',
+    href: '/app/settings/privacy',
     icon: FileText,
     category: 'Account',
     tier: 'free',
-    keywords: ['privacy', 'data', 'gdpr', 'delete'],
+    keywords: ['privacy', 'data', 'gdpr', 'ccpa', 'delete', 'export', 'download', 'consent', 'plaid'],
   },
 ];
 

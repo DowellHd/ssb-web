@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import Link from 'next/link';
 import {
   Settings,
   Shield,
@@ -22,6 +23,8 @@ import {
   Mail,
   MonitorSmartphone,
   SlidersHorizontal,
+  Database,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -333,11 +336,21 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold">Account Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your account security and preferences
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Account Settings</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage your account security and preferences
+          </p>
+        </div>
+        <Link
+          href="/app/settings/privacy"
+          className="flex items-center gap-2 rounded-lg border border-border/70 bg-card px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors shrink-0 elevation-1"
+        >
+          <Database className="h-4 w-4" />
+          Privacy & Data
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
 
       {/* Profile Picture section */}
