@@ -393,7 +393,7 @@ export default function PrivacyDataPage() {
     try {
       await deleteAccount();
       toast.success('Account deletion initiated. You have been logged out.');
-      localStorage.removeItem('access_token');
+      sessionStorage.removeItem('access_token');
       router.push('/');
     } catch (err) {
       toast.error(getErrorMessage(err));
