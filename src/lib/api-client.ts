@@ -62,8 +62,8 @@ class APIClient {
           }
         }
 
-        // Production mode: add access token from localStorage
-        const accessToken = localStorage.getItem('access_token');
+        // Production mode: add access token from sessionStorage
+        const accessToken = sessionStorage.getItem('access_token');
         if (accessToken) {
           config.headers.Authorization = `Bearer ${accessToken}`;
         }
@@ -97,14 +97,14 @@ class APIClient {
             );
 
             const { access_token } = response.data;
-            localStorage.setItem('access_token', access_token);
+            sessionStorage.setItem('access_token', access_token);
 
             // Retry original request with new token
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
             return this.client(originalRequest);
           } catch (refreshError) {
             // Refresh failed - redirect to login
-            localStorage.removeItem('access_token');
+            sessionStorage.removeItem('access_token');
             if (typeof window !== 'undefined') {
               window.location.href = '/auth/login';
             }

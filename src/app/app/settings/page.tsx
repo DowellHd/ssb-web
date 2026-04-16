@@ -146,7 +146,7 @@ export default function SettingsPage() {
       await changePassword(currentPassword, newPassword);
       toast.success('Password changed. Please log in again.');
       // Clear tokens and redirect to login
-      localStorage.removeItem('access_token');
+      sessionStorage.removeItem('access_token');
       router.push('/login');
     } catch (error) {
       toast.error(getErrorMessage(error));

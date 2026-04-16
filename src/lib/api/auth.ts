@@ -89,9 +89,9 @@ export async function signup(data: SignupData): Promise<SignupResponse> {
 export async function login(data: LoginData): Promise<LoginResponse> {
   const response = await apiClient.post('/auth/login', data);
 
-  // Store access token in localStorage
+  // Store access token in sessionStorage
   if (response.data.access_token) {
-    localStorage.setItem('access_token', response.data.access_token);
+    sessionStorage.setItem('access_token', response.data.access_token);
   }
 
   return response.data;
@@ -103,7 +103,7 @@ export async function verifyMFA(email: string, mfa_code: string): Promise<LoginR
   });
 
   if (response.data.access_token) {
-    localStorage.setItem('access_token', response.data.access_token);
+    sessionStorage.setItem('access_token', response.data.access_token);
   }
 
   return response.data;
@@ -111,14 +111,14 @@ export async function verifyMFA(email: string, mfa_code: string): Promise<LoginR
 
 export async function logout(): Promise<MessageResponse> {
   const response = await apiClient.post('/auth/logout');
-  localStorage.removeItem('access_token');
+  sessionStorage.removeItem('access_token');
   return response.data;
 }
 
 export async function refreshToken(): Promise<{ access_token: string; expires_in: number }> {
   const response = await apiClient.post('/auth/refresh');
   if (response.data.access_token) {
-    localStorage.setItem('access_token', response.data.access_token);
+    sessionStorage.setItem('access_token', response.data.access_token);
   }
   return response.data;
 }
