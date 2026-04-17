@@ -114,6 +114,8 @@ class APIClient {
           } catch {
             sessionStorage.removeItem('access_token');
             if (typeof window !== 'undefined') {
+              // Clear the UX session cookie so middleware redirects to login.
+              document.cookie = 'ssb_logged_in=; path=/; SameSite=Lax; Max-Age=0';
               window.location.href = '/auth/login';
             }
             return Promise.reject(error);

@@ -92,6 +92,9 @@ export async function login(data: LoginData): Promise<LoginResponse> {
   // Store access token in sessionStorage
   if (response.data.access_token) {
     sessionStorage.setItem('access_token', response.data.access_token);
+    // Set a non-httpOnly cookie so Next.js Edge Middleware can gate /app/* routes.
+    // This is a UX signal only — actual auth is enforced by the backend on every request.
+    document.cookie = 'ssb_logged_in=1; path=/; SameSite=Lax; Max-Age=604800';
   }
 
   return response.data;
@@ -104,6 +107,7 @@ export async function verifyMFA(email: string, mfa_code: string): Promise<LoginR
 
   if (response.data.access_token) {
     sessionStorage.setItem('access_token', response.data.access_token);
+    document.cookie = 'ssb_logged_in=1; path=/; SameSite=Lax; Max-Age=604800';
   }
 
   return response.data;
@@ -112,6 +116,8 @@ export async function verifyMFA(email: string, mfa_code: string): Promise<LoginR
 export async function logout(): Promise<MessageResponse> {
   const response = await apiClient.post('/auth/logout');
   sessionStorage.removeItem('access_token');
+  // Clear the UX session cookie used by Next.js middleware.
+  document.cookie = 'ssb_logged_in=; path=/; SameSite=Lax; Max-Age=0';
   return response.data;
 }
 
