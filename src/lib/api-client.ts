@@ -20,6 +20,10 @@ const IS_DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 class APIClient {
   private client: AxiosInstance;
   private isDemoMode: boolean;
+  // Shared refresh promise — prevents multiple simultaneous 401 responses from
+  // each spawning their own refresh call, which would cause all but the first
+  // to fail with an invalid refresh token.
+  private refreshPromise: Promise<string> | null = null;
 
   constructor() {
     this.isDemoMode = IS_DEMO_MODE;
@@ -84,31 +88,35 @@ class APIClient {
         // Production mode: handle 401 and token refresh
         const originalRequest: any = error.config;
 
-        // If 401 and not already retried, try to refresh token
+        // If 401 and not already retried, try to refresh token.
+        // Use a shared promise so concurrent 401s all await the same single
+        // refresh call instead of each racing to invalidate the refresh token.
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
+          if (!this.refreshPromise) {
+            this.refreshPromise = axios
+              .post(`${API_URL}${API_PREFIX}/auth/refresh`, {}, { withCredentials: true })
+              .then((r) => {
+                const token: string = r.data.access_token;
+                sessionStorage.setItem('access_token', token);
+                return token;
+              })
+              .finally(() => {
+                this.refreshPromise = null;
+              });
+          }
+
           try {
-            // Attempt token refresh
-            const response = await axios.post(
-              `${API_URL}${API_PREFIX}/auth/refresh`,
-              {},
-              { withCredentials: true }
-            );
-
-            const { access_token } = response.data;
-            sessionStorage.setItem('access_token', access_token);
-
-            // Retry original request with new token
+            const access_token = await this.refreshPromise;
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
             return this.client(originalRequest);
-          } catch (refreshError) {
-            // Refresh failed - redirect to login
+          } catch {
             sessionStorage.removeItem('access_token');
             if (typeof window !== 'undefined') {
               window.location.href = '/auth/login';
             }
-            return Promise.reject(refreshError);
+            return Promise.reject(error);
           }
         }
 
