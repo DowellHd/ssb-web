@@ -147,6 +147,7 @@ export default function SettingsPage() {
       toast.success('Password changed. Please log in again.');
       // Clear tokens and redirect to login
       sessionStorage.removeItem('access_token');
+      document.cookie = 'ssb_logged_in=; path=/; SameSite=Lax; Max-Age=0';
       router.push('/login');
     } catch (error) {
       toast.error(getErrorMessage(error));
