@@ -42,18 +42,17 @@ import {
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
 import { CommandPalette } from '@/components/command-palette';
-import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { getCurrentUser, logout, type User } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { PLAN_CONFIG } from '@/lib/plan-config';
-
-const IS_DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 import { useAssistantStore } from '@/stores/assistant-store';
 import { usePlanStore } from '@/stores/plan-store';
 import { useCommandPaletteStore } from '@/stores/command-palette-store';
+
+const IS_DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
 // ============================================================================
 // Nav data
@@ -447,25 +446,14 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         collapsed ? 'justify-center px-2' : 'justify-between px-4',
       )}>
         {!collapsed && (
-          <Link href="/app" className="flex items-center gap-2" onClick={onClose}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md" />
-            <span className="font-bold text-base leading-tight tracking-tight">
-              SSB
-            </span>
+          <Link href="/app" className="font-bold text-lg" onClick={onClose}>
+            SSB
           </Link>
         )}
         {/* Mobile close */}
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label="Close menu">
           <X className="h-5 w-5" />
         </Button>
-        {/* Collapsed: show logo icon instead of text */}
-        {collapsed && (
-          <Link href="/app" onClick={onClose} title="Dashboard">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md" />
-          </Link>
-        )}
         {/* Desktop collapse toggle */}
         {onToggleCollapsed && (
           <button
