@@ -175,8 +175,8 @@ function ToolsTab() {
               <StatCard label="Active Return" value={`${(attribution.active_return * 100).toFixed(2)}%`} accent={attribution.active_return >= 0 ? 'text-green-600' : 'text-red-600'} />
               <StatCard label="Selection Effect" value={`${(attribution.selection_effect * 100).toFixed(2)}%`} />
             </div>
-            <div className="rounded-lg border overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="rounded-lg border overflow-hidden overflow-x-auto">
+              <table className="w-full min-w-[560px] text-sm">
                 <thead className="bg-muted/50">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium text-muted-foreground">Sector</th>
@@ -357,8 +357,8 @@ function ToolsTab() {
               <StatCard label="Total Turnover" value={`${rebalance.total_turnover_pct.toFixed(1)}%`} />
               <StatCard label="Estimated Cost" value={`$${rebalance.estimated_cost.toFixed(2)}`} />
             </div>
-            <div className="rounded-lg border overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="rounded-lg border overflow-hidden overflow-x-auto">
+              <table className="w-full min-w-[560px] text-sm">
                 <thead className="bg-muted/50">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium text-muted-foreground">Symbol</th>
@@ -649,8 +649,8 @@ function VsPaperTab() {
       {data.shared_symbols.length > 0 && (
         <div className="rounded-xl border bg-card p-4 space-y-3">
           <p className="font-semibold text-sm">Shared Positions ({data.shared_symbols.length})</p>
-          <div className="rounded-lg border overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="rounded-lg border overflow-hidden overflow-x-auto">
+            <table className="w-full min-w-[560px] text-sm">
               <thead className="bg-muted/50">
                 <tr>
                   <th className="px-3 py-2 text-left font-medium text-muted-foreground">Symbol</th>

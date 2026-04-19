@@ -148,7 +148,7 @@ export default function SettingsPage() {
       // Clear tokens and redirect to login
       sessionStorage.removeItem('access_token');
       document.cookie = 'ssb_logged_in=; path=/; SameSite=Lax; Max-Age=0';
-      router.push('/login');
+      router.push('/auth/login');
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {

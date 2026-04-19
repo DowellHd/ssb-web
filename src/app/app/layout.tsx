@@ -49,6 +49,8 @@ import { getCurrentUser, logout, type User } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { PLAN_CONFIG } from '@/lib/plan-config';
+
+const IS_DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 import { useAssistantStore } from '@/stores/assistant-store';
 import { usePlanStore } from '@/stores/plan-store';
 import { useCommandPaletteStore } from '@/stores/command-palette-store';
@@ -445,14 +447,25 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         collapsed ? 'justify-center px-2' : 'justify-between px-4',
       )}>
         {!collapsed && (
-          <Link href="/app" className="font-bold text-lg" onClick={onClose}>
-            SSB
+          <Link href="/app" className="flex items-center gap-2" onClick={onClose}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md" />
+            <span className="font-bold text-base leading-tight tracking-tight">
+              SSB
+            </span>
           </Link>
         )}
         {/* Mobile close */}
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label="Close menu">
           <X className="h-5 w-5" />
         </Button>
+        {/* Collapsed: show logo icon instead of text */}
+        {collapsed && (
+          <Link href="/app" onClick={onClose} title="Dashboard">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md" />
+          </Link>
+        )}
         {/* Desktop collapse toggle */}
         {onToggleCollapsed && (
           <button
@@ -781,6 +794,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Button>
         </header>
 
+        {IS_DEMO_MODE && (
+          <div className="sticky top-16 lg:top-0 z-20 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-xs font-semibold text-amber-950">
+            <span>DEMO MODE — all data is simulated. No real trades or accounts.</span>
+          </div>
+        )}
         <main className="p-6">{children}</main>
       </div>
 

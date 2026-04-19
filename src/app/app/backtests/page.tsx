@@ -147,7 +147,8 @@ export default function BacktestsPage() {
       {/* Backtests list */}
       {backtests.length > 0 ? (
         <div className="rounded-lg border bg-card overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px]">
             <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Name</th>
@@ -198,6 +199,7 @@ export default function BacktestsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       ) : (
         <div className="rounded-lg border border-dashed bg-muted/50 p-12 text-center">
