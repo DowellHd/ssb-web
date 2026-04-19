@@ -1,4 +1,14 @@
 /** @type {import('next').NextConfig} */
+
+// Guard: NEXT_PUBLIC_DEMO_MODE must never be set to 'true' in a production build.
+// Deploying with demo mode on would serve mock data to all real users.
+if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+  throw new Error(
+    'NEXT_PUBLIC_DEMO_MODE=true is set in a production build. ' +
+    'This would serve mock data to all users. Remove or set to false before deploying.'
+  );
+}
+
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
