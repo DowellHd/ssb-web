@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import {
   createChart,
   ColorType,
@@ -64,7 +64,9 @@ export function PriceChart({
   className,
 }: PriceChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
+  // Store the chart in STATE so the data/overlay effect re-runs whenever the
+  // chart is recreated (refs don't trigger effect dep changes).
+  const [chart, setChart] = useState<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const overlaySeriesRef = useRef<Map<string, ISeriesApi<'Line'>>>(new Map());
   const priceLinesRef = useRef<IPriceLine[]>([]);
@@ -82,11 +84,10 @@ export function PriceChart({
     }));
   }, [data, barSize]);
 
-  // Calculate overlay data
+  // Calculate overlay line data
   const overlayData = useMemo(() => {
     const result: Record<string, LineData[]> = {};
 
-    // Only calculate overlays if we have enough data
     if (enabledOverlays.includes('sma20') && data.length >= 20) {
       result.sma20 = calculateSMA(data, 20).map((p) => ({
         time: toChartTime(p.time, barSize),
@@ -124,11 +125,12 @@ export function PriceChart({
     return calculateKeyLevels(data);
   }, [data, enabledOverlays]);
 
-  // Initialize chart
+  // Initialize chart — runs when height/barSize change.
+  // Stores result in state so dependent effects re-run on chart recreation.
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
-    const chart = createChart(chartContainerRef.current, {
+    const newChart = createChart(chartContainerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: 'transparent' },
         textColor: '#9ca3af',
@@ -158,16 +160,8 @@ export function PriceChart({
         },
       },
       crosshair: {
-        vertLine: {
-          color: 'rgba(156, 163, 175, 0.4)',
-          width: 1,
-          style: 2,
-        },
-        horzLine: {
-          color: 'rgba(156, 163, 175, 0.4)',
-          width: 1,
-          style: 2,
-        },
+        vertLine: { color: 'rgba(156, 163, 175, 0.4)', width: 1, style: 2 },
+        horzLine: { color: 'rgba(156, 163, 175, 0.4)', width: 1, style: 2 },
       },
       localization: {
         timeFormatter: (time: Time) => {
@@ -181,10 +175,7 @@ export function PriceChart({
       },
     });
 
-    chartRef.current = chart;
-
-    // Create candlestick series
-    const candleSeries = chart.addCandlestickSeries({
+    const candleSeries = newChart.addCandlestickSeries({
       upColor: '#22c55e',
       downColor: '#ef4444',
       borderUpColor: '#22c55e',
@@ -194,52 +185,46 @@ export function PriceChart({
     });
     candleSeriesRef.current = candleSeries;
 
-    // Handle resize
     const handleResize = () => {
       if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+        newChart.applyOptions({ width: chartContainerRef.current.clientWidth });
       }
     };
     window.addEventListener('resize', handleResize);
 
+    // Putting chart in state makes overlay/candle effects re-run when chart changes
+    setChart(newChart);
+
     return () => {
       window.removeEventListener('resize', handleResize);
-      chart.remove();
-      chartRef.current = null;
+      newChart.remove();
       candleSeriesRef.current = null;
       overlaySeriesRef.current.clear();
       priceLinesRef.current = [];
+      setChart(null);
     };
   }, [height, isIntraday, barSize]);
 
-  // Update candle data
+  // Update candle data + overlays in one combined effect.
+  // Combined so they're guaranteed to run in the correct order and both
+  // react to the chart being recreated (chart is now in state, not a ref).
   useEffect(() => {
-    if (!candleSeriesRef.current || candleData.length === 0) return;
+    if (!chart || !candleSeriesRef.current || candleData.length === 0) return;
+
+    // Set candle data
     candleSeriesRef.current.setData(candleData);
-    chartRef.current?.timeScale().fitContent();
-  }, [candleData]);
 
-  // Update overlay series
-  useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart) return;
-
-    const currentSeries = overlaySeriesRef.current;
-
-    // Remove ALL existing line series (clean-slate prevents stale-series errors
-    // that would silently abort the add loop when the chart is recreated)
-    for (const series of currentSeries.values()) {
-      try { chart.removeSeries(series); } catch { /* already gone on chart recreate */ }
+    // Clean-slate overlay series: remove all existing then re-add
+    for (const series of overlaySeriesRef.current.values()) {
+      try { chart.removeSeries(series); } catch { /* series already gone */ }
     }
-    currentSeries.clear();
+    overlaySeriesRef.current.clear();
 
-    // Add a line series for each enabled overlay
     for (const overlay of enabledOverlays) {
       if (overlay === 'levels') continue;
 
       const config = OVERLAY_CONFIGS[overlay];
       const lineData = overlayData[overlay];
-
       if (!lineData || lineData.length === 0) continue;
 
       try {
@@ -251,51 +236,53 @@ export function PriceChart({
           crosshairMarkerVisible: false,
         });
         series.setData(lineData);
-        currentSeries.set(overlay, series);
+        overlaySeriesRef.current.set(overlay, series);
       } catch (err) {
-        console.error(`[PriceChart] overlay "${overlay}" failed to render:`, err);
+        console.error(`[PriceChart] overlay "${overlay}" failed:`, err);
       }
     }
-  }, [enabledOverlays, overlayData]);
 
-  // Update key levels (horizontal lines)
+    chart.timeScale().fitContent();
+  }, [chart, candleData, enabledOverlays, overlayData]);
+
+  // Update key levels (horizontal price lines on the candlestick series)
   useEffect(() => {
     if (!candleSeriesRef.current) return;
 
     const series = candleSeriesRef.current;
 
-    // Clear existing price lines first
     for (const priceLine of priceLinesRef.current) {
       series.removePriceLine(priceLine);
     }
     priceLinesRef.current = [];
 
-    // Create new price lines if levels are enabled
     if (keyLevels && enabledOverlays.includes('levels')) {
       const levelColor = OVERLAY_CONFIGS.levels.color;
 
       if (keyLevels.prevDayHigh !== null) {
-        const line = series.createPriceLine({
-          price: keyLevels.prevDayHigh,
-          color: levelColor,
-          lineWidth: 1,
-          lineStyle: 2, // Dashed
-          axisLabelVisible: true,
-          title: 'Prev High',
-        });
-        priceLinesRef.current.push(line);
+        priceLinesRef.current.push(
+          series.createPriceLine({
+            price: keyLevels.prevDayHigh,
+            color: levelColor,
+            lineWidth: 1,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: 'Prev High',
+          })
+        );
       }
 
       if (keyLevels.prevDayLow !== null) {
-        const line = series.createPriceLine({
-          price: keyLevels.prevDayLow,
-          color: levelColor,
-          lineWidth: 1,
-          lineStyle: 2,
-          axisLabelVisible: true,
-          title: 'Prev Low',
-        });
-        priceLinesRef.current.push(line);
+        priceLinesRef.current.push(
+          series.createPriceLine({
+            price: keyLevels.prevDayLow,
+            color: levelColor,
+            lineWidth: 1,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: 'Prev Low',
+          })
+        );
       }
     }
   }, [keyLevels, enabledOverlays]);
