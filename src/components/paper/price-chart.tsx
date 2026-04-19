@@ -48,11 +48,19 @@ function toChartTime(timestamp: number, barSize: BarSize): Time {
   } else {
     const date = new Date(timestamp * 1000);
     return {
-      year: date.getFullYear(),
-      month: (date.getMonth() + 1) as BusinessDay['month'],
-      day: date.getDate() as BusinessDay['day'],
+      year: date.getUTCFullYear(),
+      month: (date.getUTCMonth() + 1) as BusinessDay['month'],
+      day: date.getUTCDate() as BusinessDay['day'],
     } as Time;
   }
+}
+
+// Pre-created line series store — one series per overlay type
+interface LineSeriesStore {
+  sma20: ISeriesApi<'Line'>;
+  sma50: ISeriesApi<'Line'>;
+  sma200: ISeriesApi<'Line'>;
+  regression: ISeriesApi<'Line'>;
 }
 
 export function PriceChart({
@@ -64,12 +72,13 @@ export function PriceChart({
   className,
 }: PriceChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  // Store the chart in STATE so the data/overlay effect re-runs whenever the
-  // chart is recreated (refs don't trigger effect dep changes).
   const [chart, setChart] = useState<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const overlaySeriesRef = useRef<Map<string, ISeriesApi<'Line'>>>(new Map());
+  const lineSeriesRef = useRef<LineSeriesStore | null>(null);
   const priceLinesRef = useRef<IPriceLine[]>([]);
+
+  // Debug state — captures what the overlay effect computed (shown below chart)
+  const [debugInfo, setDebugInfo] = useState<string>('');
 
   const isIntraday = isIntradayBarSize(barSize);
 
@@ -88,36 +97,33 @@ export function PriceChart({
   const overlayData = useMemo(() => {
     const result: Record<string, LineData[]> = {};
 
-    if (enabledOverlays.includes('sma20') && data.length >= 20) {
+    if (data.length >= 20) {
       result.sma20 = calculateSMA(data, 20).map((p) => ({
         time: toChartTime(p.time, barSize),
         value: p.value,
       }));
     }
 
-    if (enabledOverlays.includes('sma50') && data.length >= 50) {
+    if (data.length >= 50) {
       result.sma50 = calculateSMA(data, 50).map((p) => ({
         time: toChartTime(p.time, barSize),
         value: p.value,
       }));
-    }
-
-    if (enabledOverlays.includes('sma200') && data.length >= 200) {
-      result.sma200 = calculateSMA(data, 200).map((p) => ({
-        time: toChartTime(p.time, barSize),
-        value: p.value,
-      }));
-    }
-
-    if (enabledOverlays.includes('regression') && data.length >= 50) {
       result.regression = calculateLinearRegression(data, 50).map((p) => ({
         time: toChartTime(p.time, barSize),
         value: p.value,
       }));
     }
 
+    if (data.length >= 200) {
+      result.sma200 = calculateSMA(data, 200).map((p) => ({
+        time: toChartTime(p.time, barSize),
+        value: p.value,
+      }));
+    }
+
     return result;
-  }, [data, barSize, enabledOverlays]);
+  }, [data, barSize]);
 
   // Calculate key levels
   const keyLevels = useMemo(() => {
@@ -125,8 +131,8 @@ export function PriceChart({
     return calculateKeyLevels(data);
   }, [data, enabledOverlays]);
 
-  // Initialize chart — runs when height/barSize change.
-  // Stores result in state so dependent effects re-run on chart recreation.
+  // Initialize chart — pre-creates ALL line series to avoid repeated add/remove.
+  // Stores chart in STATE so the update effect re-runs on chart recreation.
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
@@ -175,6 +181,7 @@ export function PriceChart({
       },
     });
 
+    // Candlestick series
     const candleSeries = newChart.addCandlestickSeries({
       upColor: '#22c55e',
       downColor: '#ef4444',
@@ -185,6 +192,23 @@ export function PriceChart({
     });
     candleSeriesRef.current = candleSeries;
 
+    // Pre-create ALL line series — avoids add/remove cycle on every toggle
+    const makeLineSeries = (color: string) =>
+      newChart.addLineSeries({
+        color,
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+        crosshairMarkerVisible: false,
+      });
+
+    lineSeriesRef.current = {
+      sma20: makeLineSeries(OVERLAY_CONFIGS.sma20.color),
+      sma50: makeLineSeries(OVERLAY_CONFIGS.sma50.color),
+      sma200: makeLineSeries(OVERLAY_CONFIGS.sma200.color),
+      regression: makeLineSeries(OVERLAY_CONFIGS.regression.color),
+    };
+
     const handleResize = () => {
       if (chartContainerRef.current) {
         newChart.applyOptions({ width: chartContainerRef.current.clientWidth });
@@ -192,97 +216,75 @@ export function PriceChart({
     };
     window.addEventListener('resize', handleResize);
 
-    // Putting chart in state makes overlay/candle effects re-run when chart changes
     setChart(newChart);
 
     return () => {
       window.removeEventListener('resize', handleResize);
       newChart.remove();
       candleSeriesRef.current = null;
-      overlaySeriesRef.current.clear();
+      lineSeriesRef.current = null;
       priceLinesRef.current = [];
       setChart(null);
     };
   }, [height, isIntraday, barSize]);
 
-  // Update candle data + overlays in one combined effect.
-  // Combined so they're guaranteed to run in the correct order and both
-  // react to the chart being recreated (chart is now in state, not a ref).
+  // Update candle data + overlay data whenever chart, data, or overlay selection changes.
+  // All line series exist already — just update their data or clear them.
   useEffect(() => {
-    if (!chart || !candleSeriesRef.current || candleData.length === 0) return;
+    if (!chart || !candleSeriesRef.current || !lineSeriesRef.current || candleData.length === 0) return;
 
     // Set candle data
     candleSeriesRef.current.setData(candleData);
 
-    // Clean-slate overlay series: remove all existing then re-add
-    for (const series of overlaySeriesRef.current.values()) {
-      try { chart.removeSeries(series); } catch { /* series already gone */ }
-    }
-    overlaySeriesRef.current.clear();
+    const store = lineSeriesRef.current;
+    const debugLines: string[] = [
+      `data=${data.length} bars, intraday=${isIntraday}`,
+      `enabled=[${enabledOverlays.filter(o => o !== 'levels').join(',')}]`,
+    ];
 
-    for (const overlay of enabledOverlays) {
-      if (overlay === 'levels') continue;
+    // Update each line series — setData(points) if enabled+data available, else setData([])
+    const overlayKeys: Array<keyof typeof store> = ['sma20', 'sma50', 'sma200', 'regression'];
+    for (const key of overlayKeys) {
+      const series = store[key];
+      const overlayName = key === 'regression' ? 'regression' : key;
+      const lineData = overlayData[overlayName] ?? [];
+      const isEnabled = enabledOverlays.includes(overlayName as OverlayType);
 
-      const config = OVERLAY_CONFIGS[overlay];
-      const lineData = overlayData[overlay];
-      if (!lineData || lineData.length === 0) continue;
-
-      try {
-        const series = chart.addLineSeries({
-          color: config.color,
-          lineWidth: 2,
-          priceLineVisible: false,
-          lastValueVisible: false,
-          crosshairMarkerVisible: false,
-        });
-        series.setData(lineData);
-        overlaySeriesRef.current.set(overlay, series);
-      } catch (err) {
-        console.error(`[PriceChart] overlay "${overlay}" failed:`, err);
+      if (isEnabled && lineData.length > 0) {
+        try {
+          series.setData(lineData);
+          debugLines.push(`${key}: SET ${lineData.length} pts ✓`);
+        } catch (err) {
+          debugLines.push(`${key}: FAILED – ${String(err)}`);
+        }
+      } else {
+        try {
+          series.setData([]);
+          debugLines.push(`${key}: cleared (enabled=${isEnabled}, pts=${lineData.length})`);
+        } catch (err) {
+          debugLines.push(`${key}: clear FAILED – ${String(err)}`);
+        }
       }
     }
 
     chart.timeScale().fitContent();
-  }, [chart, candleData, enabledOverlays, overlayData]);
+    setDebugInfo(debugLines.join(' | '));
+  }, [chart, candleData, enabledOverlays, overlayData, data.length, isIntraday]);
 
-  // Update key levels (horizontal price lines on the candlestick series)
+  // Update key levels (horizontal price lines)
   useEffect(() => {
     if (!candleSeriesRef.current) return;
-
     const series = candleSeriesRef.current;
-
-    for (const priceLine of priceLinesRef.current) {
-      series.removePriceLine(priceLine);
-    }
+    for (const pl of priceLinesRef.current) series.removePriceLine(pl);
     priceLinesRef.current = [];
 
     if (keyLevels && enabledOverlays.includes('levels')) {
-      const levelColor = OVERLAY_CONFIGS.levels.color;
-
+      const color = OVERLAY_CONFIGS.levels.color;
       if (keyLevels.prevDayHigh !== null) {
-        priceLinesRef.current.push(
-          series.createPriceLine({
-            price: keyLevels.prevDayHigh,
-            color: levelColor,
-            lineWidth: 1,
-            lineStyle: 2,
-            axisLabelVisible: true,
-            title: 'Prev High',
-          })
-        );
+        priceLinesRef.current.push(series.createPriceLine({ price: keyLevels.prevDayHigh, color, lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'Prev High' }));
       }
-
       if (keyLevels.prevDayLow !== null) {
-        priceLinesRef.current.push(
-          series.createPriceLine({
-            price: keyLevels.prevDayLow,
-            color: levelColor,
-            lineWidth: 1,
-            lineStyle: 2,
-            axisLabelVisible: true,
-            title: 'Prev Low',
-          })
-        );
+        priceLinesRef.current.push(series.createPriceLine({ price: keyLevels.prevDayLow, color, lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'Prev Low' }));
       }
     }
   }, [keyLevels, enabledOverlays]);
@@ -309,6 +311,12 @@ export function PriceChart({
         )}
       </div>
       <div ref={chartContainerRef} />
+      {/* Temporary debug panel — remove once overlay rendering is confirmed working */}
+      {debugInfo && (
+        <div className="mt-1 px-2 py-1 rounded text-[10px] font-mono bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 break-all">
+          {debugInfo}
+        </div>
+      )}
     </div>
   );
 }
