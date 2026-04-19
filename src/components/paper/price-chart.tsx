@@ -192,11 +192,14 @@ export function PriceChart({
     });
     candleSeriesRef.current = candleSeries;
 
-    // Pre-create ALL line series — avoids add/remove cycle on every toggle
+    // Pre-create ALL line series — avoids add/remove cycle on every toggle.
+    // DEBUG: using extreme lineWidth + vivid colors to make rendering failures obvious.
     const makeLineSeries = (color: string) =>
       newChart.addLineSeries({
         color,
-        lineWidth: 2,
+        lineWidth: 4,
+        lineVisible: true,
+        priceScaleId: 'right',
         priceLineVisible: false,
         lastValueVisible: false,
         crosshairMarkerVisible: false,
@@ -253,7 +256,13 @@ export function PriceChart({
       if (isEnabled && lineData.length > 0) {
         try {
           series.setData(lineData);
-          debugLines.push(`${key}: SET ${lineData.length} pts ✓`);
+          const opts = series.options() as Record<string, unknown>;
+          const storedLen = series.data().length;
+          const firstVal = lineData[0]?.value?.toFixed(2) ?? '?';
+          const lastVal = lineData[lineData.length - 1]?.value?.toFixed(2) ?? '?';
+          debugLines.push(
+            `${key}: SET ${lineData.length}→stored:${storedLen} val:${firstVal}..${lastVal} vis:${opts.visible} lw:${opts.lineWidth} lv:${opts.lineVisible}`
+          );
         } catch (err) {
           debugLines.push(`${key}: FAILED – ${String(err)}`);
         }
@@ -268,7 +277,7 @@ export function PriceChart({
     }
 
     chart.timeScale().fitContent();
-    setDebugInfo(debugLines.join(' | '));
+    setDebugInfo(debugLines.join('\n'));
   }, [chart, candleData, enabledOverlays, overlayData, data.length, isIntraday]);
 
   // Update key levels (horizontal price lines)
@@ -313,9 +322,9 @@ export function PriceChart({
       <div ref={chartContainerRef} />
       {/* Temporary debug panel — remove once overlay rendering is confirmed working */}
       {debugInfo && (
-        <div className="mt-1 px-2 py-1 rounded text-[10px] font-mono bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 break-all">
+        <pre className="mt-1 px-2 py-1 rounded text-[10px] font-mono bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 whitespace-pre-wrap break-all">
           {debugInfo}
-        </div>
+        </pre>
       )}
     </div>
   );
