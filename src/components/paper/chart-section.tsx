@@ -155,11 +155,13 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
 
     return barsData.bars.map((bar) => ({
       time: Math.floor(new Date(bar.timestamp).getTime() / 1000),
-      open: bar.open,
-      high: bar.high,
-      low: bar.low,
-      close: bar.close,
-      volume: bar.volume,
+      // API may return numeric fields as strings despite the TypeScript type — coerce
+      // explicitly so that calculateSMA arithmetic doesn't produce NaN.
+      open: Number(bar.open),
+      high: Number(bar.high),
+      low: Number(bar.low),
+      close: Number(bar.close),
+      volume: Number(bar.volume),
     }));
   }, [barsData]);
 
