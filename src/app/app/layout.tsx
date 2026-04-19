@@ -446,33 +446,29 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         'flex h-16 items-center border-b',
         collapsed ? 'justify-center px-2' : 'justify-between px-4',
       )}>
+        {/* Expanded: logo + text */}
         {!collapsed && (
-          <Link href="/app" className="flex items-center gap-2" onClick={onClose}>
+          <Link href="/app" className="flex items-center gap-2 min-w-0" onClick={onClose}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md" />
-            <span className="font-bold text-base leading-tight tracking-tight">
+            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 shrink-0 rounded-md object-contain" />
+            <span className="font-bold text-base leading-tight tracking-tight truncate">
               SSB
             </span>
           </Link>
         )}
-        {/* Mobile close */}
+
+        {/* Mobile close (hidden on desktop) */}
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label="Close menu">
           <X className="h-5 w-5" />
         </Button>
-        {/* Collapsed: show logo icon instead of text */}
-        {collapsed && (
-          <Link href="/app" onClick={onClose} title="Dashboard">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md" />
-          </Link>
-        )}
-        {/* Desktop collapse toggle */}
+
+        {/* Desktop collapse toggle — when collapsed, clicking this expands the sidebar */}
         {onToggleCollapsed && (
           <button
             onClick={onToggleCollapsed}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="hidden lg:flex items-center justify-center rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="hidden lg:flex items-center justify-center rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
           >
             {collapsed
               ? <ChevronsRight className="h-4 w-4" />
