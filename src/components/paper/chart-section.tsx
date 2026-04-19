@@ -285,6 +285,7 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
           ) : chartData.length > 0 ? (
             <RegimeChartWrapper regime={regimeContext?.regime || null}>
               <PriceChart
+                key={`${symbol}-${barSize}`}
                 symbol={symbol}
                 data={chartData}
                 barSize={barSize}
