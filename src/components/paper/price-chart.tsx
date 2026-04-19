@@ -40,7 +40,7 @@ interface PriceChartProps {
 /**
  * Convert OHLCV time to lightweight-charts Time format.
  * - Intraday: UTCTimestamp (number)
- * - Daily+: BusinessDay { year, month, day }
+ * - Daily+: BusinessDay { year, month, day } using UTC to avoid timezone day-off-by-one
  */
 function toChartTime(timestamp: number, barSize: BarSize): Time {
   if (isIntradayBarSize(barSize)) {
@@ -55,7 +55,7 @@ function toChartTime(timestamp: number, barSize: BarSize): Time {
   }
 }
 
-// Pre-created line series store — one series per overlay type
+// One pre-created line series per overlay type (avoids add/remove cycle on toggle)
 interface LineSeriesStore {
   sma20: ISeriesApi<'Line'>;
   sma50: ISeriesApi<'Line'>;
@@ -72,13 +72,11 @@ export function PriceChart({
   className,
 }: PriceChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
+  // Chart stored in STATE so the update effect re-runs when chart is recreated
   const [chart, setChart] = useState<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const lineSeriesRef = useRef<LineSeriesStore | null>(null);
   const priceLinesRef = useRef<IPriceLine[]>([]);
-
-  // Debug state — captures what the overlay effect computed (shown below chart)
-  const [debugInfo, setDebugInfo] = useState<string>('');
 
   const isIntraday = isIntradayBarSize(barSize);
 
@@ -93,7 +91,7 @@ export function PriceChart({
     }));
   }, [data, barSize]);
 
-  // Calculate overlay line data
+  // Calculate overlay line data (always compute; enable/disable decides what gets set)
   const overlayData = useMemo(() => {
     const result: Record<string, LineData[]> = {};
 
@@ -132,7 +130,7 @@ export function PriceChart({
   }, [data, enabledOverlays]);
 
   // Initialize chart — pre-creates ALL line series to avoid repeated add/remove.
-  // Stores chart in STATE so the update effect re-runs on chart recreation.
+  // Stores result in STATE so dependent effects re-run on chart recreation.
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
@@ -192,13 +190,12 @@ export function PriceChart({
     });
     candleSeriesRef.current = candleSeries;
 
-    // Pre-create ALL line series — avoids add/remove cycle on every toggle.
-    // DEBUG: using extreme lineWidth + vivid colors to make rendering failures obvious.
+    // Pre-create all four line series — they persist for the lifetime of this chart
+    // instance. Toggling an overlay just calls setData(points) or setData([]).
     const makeLineSeries = (color: string) =>
       newChart.addLineSeries({
         color,
-        lineWidth: 4,
-        lineVisible: true,
+        lineWidth: 2,
         priceScaleId: 'right',
         priceLineVisible: false,
         lastValueVisible: false,
@@ -231,56 +228,32 @@ export function PriceChart({
     };
   }, [height, isIntraday, barSize]);
 
-  // Update candle data + overlay data whenever chart, data, or overlay selection changes.
-  // All line series exist already — just update their data or clear them.
+  // Update candle data + overlay lines.
+  // Depends on `chart` (state) so this re-runs whenever the chart is recreated.
   useEffect(() => {
     if (!chart || !candleSeriesRef.current || !lineSeriesRef.current || candleData.length === 0) return;
 
-    // Set candle data
     candleSeriesRef.current.setData(candleData);
 
     const store = lineSeriesRef.current;
-    const debugLines: string[] = [
-      `data=${data.length} bars, intraday=${isIntraday}`,
-      `enabled=[${enabledOverlays.filter(o => o !== 'levels').join(',')}]`,
-    ];
-
-    // Update each line series — setData(points) if enabled+data available, else setData([])
     const overlayKeys: Array<keyof typeof store> = ['sma20', 'sma50', 'sma200', 'regression'];
+
     for (const key of overlayKeys) {
       const series = store[key];
-      const overlayName = key === 'regression' ? 'regression' : key;
-      const lineData = overlayData[overlayName] ?? [];
-      const isEnabled = enabledOverlays.includes(overlayName as OverlayType);
+      const lineData = overlayData[key] ?? [];
+      const isEnabled = enabledOverlays.includes(key as OverlayType);
 
-      if (isEnabled && lineData.length > 0) {
-        try {
-          series.setData(lineData);
-          const opts = series.options() as Record<string, unknown>;
-          const storedLen = series.data().length;
-          const firstVal = lineData[0]?.value?.toFixed(2) ?? '?';
-          const lastVal = lineData[lineData.length - 1]?.value?.toFixed(2) ?? '?';
-          debugLines.push(
-            `${key}: SET ${lineData.length}→stored:${storedLen} val:${firstVal}..${lastVal} vis:${opts.visible} lw:${opts.lineWidth} lv:${opts.lineVisible}`
-          );
-        } catch (err) {
-          debugLines.push(`${key}: FAILED – ${String(err)}`);
-        }
-      } else {
-        try {
-          series.setData([]);
-          debugLines.push(`${key}: cleared (enabled=${isEnabled}, pts=${lineData.length})`);
-        } catch (err) {
-          debugLines.push(`${key}: clear FAILED – ${String(err)}`);
-        }
+      try {
+        series.setData(isEnabled && lineData.length > 0 ? lineData : []);
+      } catch {
+        // Silently skip if the series is in an invalid state (e.g. during cleanup)
       }
     }
 
     chart.timeScale().fitContent();
-    setDebugInfo(debugLines.join('\n'));
-  }, [chart, candleData, enabledOverlays, overlayData, data.length, isIntraday]);
+  }, [chart, candleData, enabledOverlays, overlayData]);
 
-  // Update key levels (horizontal price lines)
+  // Update key levels (horizontal price lines on the candlestick series)
   useEffect(() => {
     if (!candleSeriesRef.current) return;
     const series = candleSeriesRef.current;
@@ -320,12 +293,6 @@ export function PriceChart({
         )}
       </div>
       <div ref={chartContainerRef} />
-      {/* Temporary debug panel — remove once overlay rendering is confirmed working */}
-      {debugInfo && (
-        <pre className="mt-1 px-2 py-1 rounded text-[10px] font-mono bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 whitespace-pre-wrap break-all">
-          {debugInfo}
-        </pre>
-      )}
     </div>
   );
 }
