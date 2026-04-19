@@ -21,6 +21,7 @@ import {
   type ChartRange,
   type BarSize,
 } from '@/lib/chart/timeframes';
+import { getAllOverlayTypes } from '@/lib/chart/overlays';
 import { useIsLongTerm } from '@/stores/view-mode-store';
 import { PriceChart } from './price-chart';
 import { OverlayToggles } from './overlay-toggles';
@@ -44,7 +45,8 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
 
   const isLongTerm = useIsLongTerm();
   const rangeOptions = getRangeOptions(isLongTerm);
-  const allowedOverlays = limits?.allowed_overlays ?? ['sma20'];
+  // While limits are loading, allow all overlays so buttons are never spuriously disabled
+  const allowedOverlays = limits?.allowed_overlays ?? getAllOverlayTypes();
 
   // Hydrate range from localStorage after mount (avoids SSR mismatch)
   useEffect(() => {
@@ -54,6 +56,21 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     }
     setIsHydrated(true);
   }, [symbol]);
+
+  // Load overlay preferences from localStorage once on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('paper-chart-overlays');
+      if (saved) {
+        setEnabledOverlays(JSON.parse(saved));
+      } else {
+        setEnabledOverlays(['sma20']); // Default for first visit
+      }
+    } catch {
+      setEnabledOverlays(['sma20']);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Normalize range when view mode changes (e.g., switch from 1D to 1Y in long-term mode)
   useEffect(() => {
@@ -142,13 +159,19 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     }));
   }, [barsData]);
 
-  // Toggle overlay
+  // Toggle overlay and persist to localStorage
   const handleToggleOverlay = useCallback((overlay: OverlayType) => {
-    setEnabledOverlays((prev) =>
-      prev.includes(overlay)
+    setEnabledOverlays((prev) => {
+      const next = prev.includes(overlay)
         ? prev.filter((o) => o !== overlay)
-        : [...prev, overlay]
-    );
+        : [...prev, overlay];
+      try {
+        localStorage.setItem('paper-chart-overlays', JSON.stringify(next));
+      } catch {
+        // localStorage unavailable — best effort
+      }
+      return next;
+    });
   }, []);
 
   // Filter out disabled overlays when limits change
@@ -237,6 +260,7 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
             enabledOverlays={enabledOverlays}
             allowedOverlays={allowedOverlays}
             onToggle={handleToggleOverlay}
+            dataLength={chartData.length}
           />
 
           {/* Chart */}
