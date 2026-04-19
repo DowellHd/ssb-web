@@ -221,20 +221,19 @@ export function PriceChart({
 
   // Update overlay series
   useEffect(() => {
-    if (!chartRef.current) return;
-
     const chart = chartRef.current;
+    if (!chart) return;
+
     const currentSeries = overlaySeriesRef.current;
 
-    // Remove series that are no longer enabled
-    for (const [key, series] of currentSeries.entries()) {
-      if (!enabledOverlays.includes(key as OverlayType) || key === 'levels') {
-        chart.removeSeries(series);
-        currentSeries.delete(key);
-      }
+    // Remove ALL existing line series (clean-slate prevents stale-series errors
+    // that would silently abort the add loop when the chart is recreated)
+    for (const series of currentSeries.values()) {
+      try { chart.removeSeries(series); } catch { /* already gone on chart recreate */ }
     }
+    currentSeries.clear();
 
-    // Add or update enabled overlays (except levels which use price lines)
+    // Add a line series for each enabled overlay
     for (const overlay of enabledOverlays) {
       if (overlay === 'levels') continue;
 
@@ -243,20 +242,19 @@ export function PriceChart({
 
       if (!lineData || lineData.length === 0) continue;
 
-      let series = currentSeries.get(overlay);
-
-      if (!series) {
-        series = chart.addLineSeries({
+      try {
+        const series = chart.addLineSeries({
           color: config.color,
           lineWidth: 2,
           priceLineVisible: false,
           lastValueVisible: false,
           crosshairMarkerVisible: false,
         });
+        series.setData(lineData);
         currentSeries.set(overlay, series);
+      } catch (err) {
+        console.error(`[PriceChart] overlay "${overlay}" failed to render:`, err);
       }
-
-      series.setData(lineData);
     }
   }, [enabledOverlays, overlayData]);
 
