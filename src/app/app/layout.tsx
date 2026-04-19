@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
 import { CommandPalette } from '@/components/command-palette';
+import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { getCurrentUser, logout, type User } from '@/lib/api/auth';
