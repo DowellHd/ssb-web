@@ -447,8 +447,9 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         collapsed ? 'justify-center px-2' : 'justify-between px-4',
       )}>
         {!collapsed && (
-          <Link href="/app" className="font-bold text-lg" onClick={onClose}>
-            SSB
+          <Link href="/app" className="flex items-center gap-2" onClick={onClose}>
+            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md shrink-0" />
+            <span className="font-bold text-lg">SSB</span>
           </Link>
         )}
         {/* Mobile close */}
