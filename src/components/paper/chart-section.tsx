@@ -45,8 +45,12 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
 
   const isLongTerm = useIsLongTerm();
   const rangeOptions = getRangeOptions(isLongTerm);
-  // While limits are loading, allow all overlays so buttons are never spuriously disabled
-  const allowedOverlays = limits?.allowed_overlays ?? getAllOverlayTypes();
+  // Stable reference — getAllOverlayTypes() returns a new array every call, so memoize
+  // to prevent the filter useEffect from firing on every render (infinite re-render loop).
+  const allowedOverlays = useMemo(
+    () => limits?.allowed_overlays ?? getAllOverlayTypes(),
+    [limits]
+  );
 
   // Hydrate range from localStorage after mount (avoids SSR mismatch)
   useEffect(() => {
@@ -174,11 +178,13 @@ export function ChartSection({ symbol, limits, className }: ChartSectionProps) {
     });
   }, []);
 
-  // Filter out disabled overlays when limits change
+  // Filter out overlays that are no longer allowed when tier/limits change
   useEffect(() => {
-    setEnabledOverlays((prev) =>
-      prev.filter((o) => allowedOverlays.includes(o))
-    );
+    setEnabledOverlays((prev) => {
+      const next = prev.filter((o) => allowedOverlays.includes(o));
+      // Return the same reference if nothing changed — prevents unnecessary re-renders
+      return next.length === prev.length ? prev : next;
+    });
   }, [allowedOverlays]);
 
   if (!symbol) {
