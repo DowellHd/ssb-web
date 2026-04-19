@@ -446,35 +446,49 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         'flex h-16 items-center border-b',
         collapsed ? 'justify-center px-2' : 'justify-between px-4',
       )}>
-        {/* Expanded: logo + text */}
-        {!collapsed && (
-          <Link href="/app" className="flex items-center gap-2 min-w-0" onClick={onClose}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.png" alt="SSB logo" className="h-7 w-7 shrink-0 rounded-md object-contain" />
-            <span className="font-bold text-base leading-tight tracking-tight truncate">
-              SSB
-            </span>
-          </Link>
-        )}
-
-        {/* Mobile close (hidden on desktop) */}
-        <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label="Close menu">
-          <X className="h-5 w-5" />
-        </Button>
-
-        {/* Desktop collapse toggle — when collapsed, clicking this expands the sidebar */}
-        {onToggleCollapsed && (
-          <button
-            onClick={onToggleCollapsed}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="hidden lg:flex items-center justify-center rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
-          >
-            {collapsed
-              ? <ChevronsRight className="h-4 w-4" />
-              : <ChevronsLeft className="h-4 w-4" />
-            }
-          </button>
+        {collapsed ? (
+          /* Collapsed desktop: logo icon doubles as the expand button — one element, centered */
+          <>
+            {onToggleCollapsed && (
+              <button
+                onClick={onToggleCollapsed}
+                aria-label="Expand sidebar"
+                title="Expand sidebar"
+                className="hidden lg:flex items-center justify-center rounded-lg p-1 hover:bg-muted transition-colors"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/icon.png" alt="SSB" className="h-8 w-8 rounded-md object-contain" />
+              </button>
+            )}
+            {/* Mobile: just the X close button */}
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label="Close menu">
+              <X className="h-5 w-5" />
+            </Button>
+          </>
+        ) : (
+          /* Expanded: logo on left, collapse arrow on right */
+          <>
+            <Link href="/app" className="flex items-center gap-2 min-w-0" onClick={onClose}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon.png" alt="SSB logo" className="h-7 w-7 shrink-0 rounded-md object-contain" />
+              <span className="font-bold text-base leading-tight tracking-tight truncate">SSB</span>
+            </Link>
+            {/* Mobile close */}
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label="Close menu">
+              <X className="h-5 w-5" />
+            </Button>
+            {/* Desktop collapse toggle */}
+            {onToggleCollapsed && (
+              <button
+                onClick={onToggleCollapsed}
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar"
+                className="hidden lg:flex items-center justify-center rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+            )}
+          </>
         )}
       </div>
 
