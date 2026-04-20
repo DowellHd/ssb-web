@@ -191,7 +191,9 @@ export function PriceChart({
     candleSeriesRef.current = candleSeries;
 
     // Pre-create all four line series — they persist for the lifetime of this chart
-    // instance. Toggling an overlay just calls setData(points) or setData([]).
+    // instance. Start hidden; the visibility effect below shows enabled ones.
+    // We NEVER call setData([]) to hide — that can corrupt lightweight-charts'
+    // internal time-range calculation, causing the entire chart to go blank.
     const makeLineSeries = (color: string) =>
       newChart.addLineSeries({
         color,
@@ -200,6 +202,7 @@ export function PriceChart({
         priceLineVisible: false,
         lastValueVisible: false,
         crosshairMarkerVisible: false,
+        visible: false,
       });
 
     lineSeriesRef.current = {
@@ -228,8 +231,8 @@ export function PriceChart({
     };
   }, [height, isIntraday, barSize]);
 
-  // Update candle data + overlay lines.
-  // Depends on `chart` (state) so this re-runs whenever the chart is recreated.
+  // Effect A — data sync: runs only when the underlying price/overlay data changes,
+  // NOT on every overlay toggle. Sets all series data and re-fits the time scale.
   useEffect(() => {
     if (!chart || !candleSeriesRef.current || !lineSeriesRef.current || candleData.length === 0) return;
 
@@ -237,21 +240,38 @@ export function PriceChart({
 
     const store = lineSeriesRef.current;
     const overlayKeys: Array<keyof typeof store> = ['sma20', 'sma50', 'sma200', 'regression'];
-
     for (const key of overlayKeys) {
-      const series = store[key];
       const lineData = overlayData[key] ?? [];
-      const isEnabled = enabledOverlays.includes(key as OverlayType);
-
       try {
-        series.setData(isEnabled && lineData.length > 0 ? lineData : []);
+        store[key].setData(lineData);
       } catch {
-        // Silently skip if the series is in an invalid state (e.g. during cleanup)
+        // Series may be in cleanup — skip silently
       }
     }
 
     chart.timeScale().fitContent();
-  }, [chart, candleData, enabledOverlays, overlayData]);
+  }, [chart, candleData, overlayData]);
+
+  // Effect B — visibility sync: runs when enabledOverlays changes (i.e. user toggles a
+  // button) and also after chart/data init so initial state is correct.
+  // Uses applyOptions({ visible }) instead of setData([]) — calling setData([]) on a
+  // line series that shares the right price scale can corrupt lightweight-charts'
+  // time-range calculation and blank the entire chart.
+  useEffect(() => {
+    if (!lineSeriesRef.current) return;
+
+    const store = lineSeriesRef.current;
+    const overlayKeys: Array<keyof typeof store> = ['sma20', 'sma50', 'sma200', 'regression'];
+    for (const key of overlayKeys) {
+      const lineData = overlayData[key] ?? [];
+      const isEnabled = enabledOverlays.includes(key as OverlayType);
+      try {
+        store[key].applyOptions({ visible: isEnabled && lineData.length > 0 });
+      } catch {
+        // Series may be in cleanup — skip silently
+      }
+    }
+  }, [chart, enabledOverlays, overlayData]);
 
   // Update key levels (horizontal price lines on the candlestick series)
   useEffect(() => {
