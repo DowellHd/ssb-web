@@ -128,18 +128,25 @@ export default function NewsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    // Backend sends naive UTC datetimes without a timezone suffix.
+    // Append 'Z' so the browser parses them as UTC instead of local time,
+    // which would otherwise produce negative diffs (e.g. "-300m ago").
+    const normalized =
+      dateString.endsWith('Z') || dateString.includes('+')
+        ? dateString
+        : dateString + 'Z';
+    const date = new Date(normalized);
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    // Clamp to 0 to absorb minor clock skew between server and client
+    const diffMs = Math.max(0, now.getTime() - date.getTime());
+    const diffMins = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffHours < 1) {
-      const diffMins = Math.floor(diffMs / (1000 * 60));
-      return `${diffMins}m ago`;
-    }
-    if (diffHours < 24) {
-      return `${diffHours}h ago`;
-    }
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
