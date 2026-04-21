@@ -54,6 +54,7 @@ const SENTIMENT_CONFIG: Record<NewsSentiment, { label: string; color: string; ic
 export default function NewsPage() {
   const router = useRouter();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [dataSource, setDataSource] = useState<'live' | 'seeded' | null>(null);
   const [summary, setSummary] = useState<MarketSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [summaryLoading, setSummaryLoading] = useState(true);
@@ -83,6 +84,7 @@ export default function NewsPage() {
       setArticles(response.articles);
       setTotalCount(response.total_count);
       setHasMore(response.has_more);
+      setDataSource(response.data_source ?? 'live');
     } catch (err: any) {
       const status = err?.response?.status;
       const message = getErrorMessage(err);
@@ -185,6 +187,16 @@ export default function NewsPage() {
           Refresh
         </Button>
       </div>
+
+      {/* Seeded-data notice — only shown when live feed is unavailable */}
+      {dataSource === 'seeded' && !loading && (
+        <div className="rounded-lg bg-yellow-50 border border-yellow-300 p-3 text-sm text-yellow-900 flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-600" />
+          <span>
+            <strong>Demo content:</strong> Live market news feed is not connected. Articles below are sample data only.
+          </span>
+        </div>
+      )}
 
       {/* Market Summary Card */}
       {!summaryLoading && summary && (

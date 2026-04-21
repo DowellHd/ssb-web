@@ -52,6 +52,7 @@ export interface NewsListResponse {
     priority?: string;
     search?: string;
   };
+  data_source?: 'live' | 'seeded';
 }
 
 export interface MarketMover {
