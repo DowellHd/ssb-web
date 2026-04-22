@@ -5,6 +5,7 @@ import {
   Search,
   RefreshCw,
   AlertCircle,
+  AlertTriangle,
   Plus,
   Trash2,
   ChevronDown,
@@ -286,6 +287,12 @@ export default function ScreeningPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
+      {/* Disclaimer */}
+      <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
+        <strong>Disclaimer:</strong> Screening results are for informational and educational purposes only.
+        They do not constitute investment advice or recommendations. Always do your own research.
+      </div>
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-3">

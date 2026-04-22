@@ -186,6 +186,12 @@ export default function RegimePage() {
 
   return (
     <div className="space-y-6">
+      {/* Disclaimer */}
+      <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
+        <strong>Disclaimer:</strong> Regime classifications are ML model outputs for informational purposes only.
+        They do not constitute investment advice or recommendations. Always do your own research.
+      </div>
+
       {/* Page header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
