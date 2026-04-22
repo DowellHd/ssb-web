@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Shield, RefreshCw, AlertCircle, TrendingDown, Activity, BarChart3 } from 'lucide-react';
+import { Shield, RefreshCw, AlertCircle, TrendingDown, Activity, BarChart3, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -83,6 +83,12 @@ export default function RiskPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* Disclaimer */}
+      <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
+        <strong>Disclaimer:</strong> Risk metrics are model estimates for informational purposes only.
+        They do not constitute investment advice or recommendations. Always do your own research.
+      </div>
+
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>

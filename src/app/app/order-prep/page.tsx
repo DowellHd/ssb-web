@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowUpRight,
   CheckCircle,
   ClipboardList,
@@ -150,6 +151,12 @@ export default function OrderPrepPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* Disclaimer */}
+      <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
+        <strong>Disclaimer:</strong> Order preparation tools are for informational purposes only.
+        SSB does not execute trades. This is not investment advice. Always do your own research.
+      </div>
+
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Order Preparation</h1>

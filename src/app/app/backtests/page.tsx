@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { listBacktests, getBacktestEntitlements, type BacktestSummary, type BacktestEntitlements } from '@/lib/api/backtests';
 import { isValidNumber, isUnlimited, formatLimit, safeToFixed } from '@/lib/utils';
@@ -89,6 +89,12 @@ export default function BacktestsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Disclaimer */}
+      <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 text-sm text-slate-800">
+        <strong>Disclaimer:</strong> Backtest results are hypothetical and based on historical data.
+        Past performance does not guarantee future results. Not investment advice.
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
