@@ -24,12 +24,14 @@ import {
   type CatalogModule,
   type CatalogPath,
   type CatalogGlossaryTerm,
+  type TierRequired,
 } from '@/lib/learn/catalog';
 import {
   useLastVisited,
   useClearLastVisited,
   type LearnTab,
 } from '@/lib/learn/use-learn-progress';
+import { useLearnVideoAccess } from '@/lib/learn/learn-video-entitlements';
 
 // ============================================================================
 // Duration buckets
@@ -108,6 +110,7 @@ export default function LearnPage() {
   const { modules, paths, glossary, meta } = useCatalog();
   const lastVisited = useLastVisited();
   const clearLastVisited = useClearLastVisited();
+  const { canAccessTier } = useLearnVideoAccess();
 
   const isSearching = globalSearch.trim().length > 0;
   const searchResults = isSearching ? runSearch(globalSearch, modules, paths, glossary) : null;
@@ -178,7 +181,12 @@ export default function LearnPage() {
 
       {/* Search results or tabbed content */}
       {isSearching ? (
-        <SearchResultsView results={searchResults!} totalCount={totalSearchResults} query={globalSearch} />
+        <SearchResultsView
+          results={searchResults!}
+          totalCount={totalSearchResults}
+          query={globalSearch}
+          canAccessTier={canAccessTier}
+        />
       ) : (
         <>
           {/* Tab navigation */}
@@ -206,8 +214,8 @@ export default function LearnPage() {
             />
           </div>
 
-          {activeTab === 'modules' && <ModulesTab modules={modules} />}
-          {activeTab === 'paths' && <PathsTab paths={paths} />}
+          {activeTab === 'modules' && <ModulesTab modules={modules} canAccessTier={canAccessTier} />}
+          {activeTab === 'paths' && <PathsTab paths={paths} canAccessTier={canAccessTier} />}
           {activeTab === 'glossary' && <GlossaryTab glossary={glossary} />}
         </>
       )}
@@ -275,10 +283,12 @@ function SearchResultsView({
   results,
   totalCount,
   query,
+  canAccessTier,
 }: {
   results: SearchResults;
   totalCount: number;
   query: string;
+  canAccessTier: (tierRequired: TierRequired) => boolean;
 }) {
   if (totalCount === 0) {
     return (
@@ -303,7 +313,7 @@ function SearchResultsView({
           </h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {results.modules.map((m) => (
-              <ModuleCard key={m.id} module={m} />
+              <ModuleCard key={m.id} module={m} canAccessTier={canAccessTier} />
             ))}
           </div>
         </div>
@@ -316,7 +326,7 @@ function SearchResultsView({
           </h3>
           <div className="space-y-4">
             {results.paths.map((p) => (
-              <PathCard key={p.id} path={p} />
+              <PathCard key={p.id} path={p} canAccessTier={canAccessTier} />
             ))}
           </div>
         </div>
@@ -375,7 +385,13 @@ function TabButton({
 // Modules tab
 // ============================================================================
 
-function ModulesTab({ modules }: { modules: CatalogModule[] }) {
+function ModulesTab({
+  modules,
+  canAccessTier,
+}: {
+  modules: CatalogModule[];
+  canAccessTier: (tierRequired: TierRequired) => boolean;
+}) {
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory | ''>('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<ContentDifficulty | ''>('');
   const [selectedDuration, setSelectedDuration] = useState<DurationBucket>('all');
@@ -467,7 +483,7 @@ function ModulesTab({ modules }: { modules: CatalogModule[] }) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((m) => (
-            <ModuleCard key={m.id} module={m} />
+            <ModuleCard key={m.id} module={m} canAccessTier={canAccessTier} />
           ))}
         </div>
       )}
@@ -479,8 +495,15 @@ function ModulesTab({ modules }: { modules: CatalogModule[] }) {
 // Module card
 // ============================================================================
 
-function ModuleCard({ module: m }: { module: CatalogModule }) {
+function ModuleCard({
+  module: m,
+  canAccessTier,
+}: {
+  module: CatalogModule;
+  canAccessTier: (tierRequired: TierRequired) => boolean;
+}) {
   const difficulty = DIFFICULTY_CONFIG[m.level];
+  const locked = m.tierRequired !== 'free' && !canAccessTier(m.tierRequired);
 
   return (
     <Link
@@ -491,7 +514,7 @@ function ModuleCard({ module: m }: { module: CatalogModule }) {
         <span className={`text-xs px-2 py-0.5 rounded ${difficulty.badgeClass}`}>
           {difficulty.label}
         </span>
-        {m.tierRequired !== 'free' && (
+        {locked && (
           <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded flex items-center gap-1">
             <Lock className="h-3 w-3" />
             {m.tierRequired === 'pro' ? 'Pro' : 'Starter+'}
@@ -517,7 +540,13 @@ function ModuleCard({ module: m }: { module: CatalogModule }) {
 // Paths tab
 // ============================================================================
 
-function PathsTab({ paths }: { paths: CatalogPath[] }) {
+function PathsTab({
+  paths,
+  canAccessTier,
+}: {
+  paths: CatalogPath[];
+  canAccessTier: (tierRequired: TierRequired) => boolean;
+}) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<ContentDifficulty | ''>('');
 
   const filtered = paths.filter((p) => {
@@ -564,7 +593,7 @@ function PathsTab({ paths }: { paths: CatalogPath[] }) {
       ) : (
         <div className="space-y-4">
           {filtered.map((p) => (
-            <PathCard key={p.id} path={p} />
+            <PathCard key={p.id} path={p} canAccessTier={canAccessTier} />
           ))}
         </div>
       )}
@@ -576,8 +605,15 @@ function PathsTab({ paths }: { paths: CatalogPath[] }) {
 // Path card
 // ============================================================================
 
-function PathCard({ path: p }: { path: CatalogPath }) {
+function PathCard({
+  path: p,
+  canAccessTier,
+}: {
+  path: CatalogPath;
+  canAccessTier: (tierRequired: TierRequired) => boolean;
+}) {
   const difficulty = DIFFICULTY_CONFIG[p.level];
+  const locked = p.tierRequired !== 'free' && !canAccessTier(p.tierRequired);
 
   return (
     <Link
@@ -591,7 +627,7 @@ function PathCard({ path: p }: { path: CatalogPath }) {
             {difficulty.label}
           </span>
         </div>
-        {p.tierRequired !== 'free' && (
+        {locked && (
           <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded flex items-center gap-1">
             <Lock className="h-3 w-3" />
             {p.tierRequired === 'pro' ? 'Pro' : 'Starter+'}
