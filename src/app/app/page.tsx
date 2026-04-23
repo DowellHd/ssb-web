@@ -109,7 +109,8 @@ const CAPABILITY_MAP: FeatureSection[] = [
       { label: 'Alternatives',         description: 'REITs, PE/VC, commodities, hedge funds',      href: '/app/alternatives',   icon: Layers,           isNew: true },
       { label: 'Crypto',               description: 'Digital asset analytics',                     href: '/app/crypto',         icon: Bitcoin },
       { label: 'Options Chain',        description: 'Greeks, IV, expiration viewer',               href: '/app/options',        icon: CandlestickChart, tier: 'starter' as const },
-      { label: 'Trade Ideas',          description: 'Signal-based idea generation',                href: '/app/trade-ideas',    icon: Lightbulb,        isNew: true },
+      { label: 'Trade Ideas',          description: 'Signal-based idea generation',                href: '/app/trade-ideas',    icon: Lightbulb },
+      { label: 'Signal Feed',          description: 'Live technical setups with full analysis',    href: '/app/signals',        icon: Zap,              isNew: true },
     ],
   },
   {
@@ -121,7 +122,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
       { label: 'Backtests',            description: 'Historical strategy testing',          href: '/app/backtests',  icon: LineChart,      tier: 'starter' as const },
       { label: 'Order Preparation',    description: 'TCA, order tickets & broker links',    href: '/app/order-prep', icon: ClipboardList },
       { label: 'Broker Connections',   description: 'Read-only multi-broker dashboard',     href: '/app/brokers',    icon: Wifi,           isNew: true },
-      { label: 'Trade Ideas',           description: 'AI-generated trading signals',         href: '/app/trade-ideas', icon: Zap,            tier: 'starter' as const },
+      { label: 'Signal Feed',           description: 'Live signals + pre-trade intelligence',href: '/app/signals',     icon: Zap,            isNew: true, tier: 'starter' as const },
       { label: 'Screening',            description: 'Filter stocks & ETFs by criteria',     href: '/app/screening',  icon: Search,         tier: 'starter' as const },
     ],
   },
