@@ -121,7 +121,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
       { label: 'Backtests',            description: 'Historical strategy testing',          href: '/app/backtests',  icon: LineChart,      tier: 'starter' as const },
       { label: 'Order Preparation',    description: 'TCA, order tickets & broker links',    href: '/app/order-prep', icon: ClipboardList },
       { label: 'Broker Connections',   description: 'Read-only multi-broker dashboard',     href: '/app/brokers',    icon: Wifi,           isNew: true },
-      { label: 'Signals',              description: 'AI-generated trading signals',         href: '/app/signals',    icon: Zap,            tier: 'starter' as const },
+      { label: 'Trade Ideas',           description: 'AI-generated trading signals',         href: '/app/trade-ideas', icon: Zap,            tier: 'starter' as const },
       { label: 'Screening',            description: 'Filter stocks & ETFs by criteria',     href: '/app/screening',  icon: Search,         tier: 'starter' as const },
     ],
   },
