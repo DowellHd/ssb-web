@@ -13,6 +13,7 @@ const subsystemLabels: Record<SubsystemKey, string> = {
   learn: 'Learn',
   options: 'Options',
   tradeIdeas: 'Trade Ideas',
+  signals: 'Signal Feed',
   globalMarkets: 'Global Markets',
   fixedIncome: 'Fixed Income',
   alternatives: 'Alternatives',

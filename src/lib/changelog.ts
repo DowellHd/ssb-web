@@ -18,6 +18,24 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    subsystem: 'Signal Feed (Assisted Trading)',
+    version: '1.0.0',
+    date: '2026-04-23',
+    changes: [
+      'Added Signal Feed page (/app/signals) — live technical setups generated from 30+ indicators, filterable and sortable',
+      'Added Pre-Trade Intelligence Panel (/app/signals/[id]) — full breakdown with entry zone, stop-loss, take-profit, risk/reward, and plain-English summary',
+      'Added Smart Order Suggestions section with ATR-based trade levels and broker deep-link support',
+      'Added "I Took This Trade" flow — users can privately log trade entries against any signal',
+      'Added Trade Log & Performance page (/app/signals/performance) — win rate, avg return, best/worst trade',
+      'Added Trading Preferences settings page (/app/settings/trading) — preferred broker, risk tolerance, position cap, confidence threshold, alert preferences',
+      'Added first-time onboarding modal with disclaimer acceptance (logged to DB with timestamp)',
+      'Added non-dismissible DisclaimerBanner on all signal pages per compliance requirements',
+      'Added Open-in-Broker deep links (Robinhood, Webull, Alpaca, TD Ameritrade, Fidelity, IBKR) — opens in new tab, SSB never touches order execution',
+      'Signal confidence: free users see only signals ≥70%; pro+ users respect their stored threshold',
+      'All signal data sourced from TechnicalEngine (30+ indicators, no look-ahead bias)',
+    ],
+  },
+  {
     subsystem: 'Advisor CRM',
     version: '2.1.0',
     date: '2026-04-13',
