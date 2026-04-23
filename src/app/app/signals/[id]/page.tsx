@@ -24,14 +24,14 @@ import {
 } from '@/lib/api/signals';
 import { cn } from '@/lib/utils';
 
-const BROKER_URLS: Record<string, (ticker: string) => string> = {
-  robinhood:    (t) => `https://robinhood.com/stocks/${t}`,
-  webull:       (t) => `https://www.webull.com/quote/${t.toLowerCase()}`,
-  alpaca:       (t) => `https://app.alpaca.markets/trade/${t}`,
-  td_ameritrade:(t) => `https://invest.ameritrade.com/grid/p/site#r=jPage/cgi-bin/apps/u/TradeStocks&symbol=${t}`,
-  fidelity:     (t) => `https://digital.fidelity.com/ftgw/digital/trade-equity/index.html#/tradeEquity?symbol=${t}`,
-  ibkr:         (t) => `https://www.interactivebrokers.com/portal/#!f=trade&tws=1&stock=${t}`,
-};
+const BROKERS: { key: string; label: string; url: (t: string) => string }[] = [
+  { key: 'robinhood',     label: 'Robinhood',        url: (t) => `https://robinhood.com/stocks/${t}` },
+  { key: 'webull',        label: 'Webull',            url: (t) => `https://www.webull.com/quote/${t.toLowerCase()}` },
+  { key: 'alpaca',        label: 'Alpaca',            url: (t) => `https://app.alpaca.markets/trade/${t}` },
+  { key: 'td_ameritrade', label: 'TD Ameritrade',     url: (t) => `https://invest.ameritrade.com/grid/p/site#r=jPage/cgi-bin/apps/u/TradeStocks&symbol=${t}` },
+  { key: 'fidelity',      label: 'Fidelity',          url: (t) => `https://digital.fidelity.com/ftgw/digital/trade-equity/index.html#/tradeEquity?symbol=${t}` },
+  { key: 'ibkr',          label: 'IBKR',              url: (t) => `https://www.interactivebrokers.com/portal/#!f=trade&tws=1&stock=${t}` },
+];
 
 const TIME_HORIZON_LABELS: Record<string, string> = {
   short_term:  'Short-term (1–5 days)',
@@ -91,8 +91,8 @@ export default function SignalDetailPage() {
   const [logSuccess, setLogSuccess] = useState(false);
   const [logError, setLogError] = useState<string | null>(null);
 
-  // Smart order section expand
-  const [orderExpanded, setOrderExpanded] = useState(false);
+  // Smart order section expand — open by default
+  const [orderExpanded, setOrderExpanded] = useState(true);
 
   // Preferred broker from localStorage (set in settings)
   const [preferredBroker, setPreferredBroker] = useState<string>('');
@@ -136,11 +136,6 @@ export default function SignalDetailPage() {
       setLogLoading(false);
     }
   };
-
-  const brokerUrl =
-    signal && preferredBroker && BROKER_URLS[preferredBroker]
-      ? BROKER_URLS[preferredBroker](signal.ticker)
-      : null;
 
   if (loading) {
     return (
@@ -335,24 +330,36 @@ export default function SignalDetailPage() {
                 </p>
               )}
 
-              {/* Open in broker */}
-              {brokerUrl ? (
-                <a
-                  href={brokerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-lg border bg-muted px-4 py-2 text-sm font-medium hover:bg-muted/80 transition-colors"
-                >
-                  Open {preferredBroker.replace(/_/g, ' ')} with {signal.ticker}
-                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                </a>
-              ) : (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Set your preferred broker in{' '}
-                  <a href="/app/settings/trading" className="underline">Trading Preferences</a>{' '}
-                  to get a quick deep-link.
+              {/* Open in broker — show all brokers, highlight preferred */}
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Open in your broker — SSB does not place orders on your behalf.
                 </p>
-              )}
+                <div className="flex flex-wrap gap-2">
+                  {BROKERS.map((b) => (
+                    <a
+                      key={b.key}
+                      href={b.url(signal.ticker)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
+                        preferredBroker === b.key
+                          ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
+                          : 'bg-muted hover:bg-muted/80'
+                      )}
+                    >
+                      {b.label}
+                      <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                    </a>
+                  ))}
+                </div>
+                {!preferredBroker && (
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    <a href="/app/settings/trading" className="underline">Set a preferred broker</a> to highlight it above.
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </section>
