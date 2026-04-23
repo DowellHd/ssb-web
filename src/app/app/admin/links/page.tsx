@@ -152,7 +152,7 @@ export default function LinkCheckerPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={load} variant="ghost" size="icon" disabled={loading || running}>
+          <Button onClick={load} variant="ghost" size="icon" disabled={loading || running} aria-label="Refresh link health">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
           <Button onClick={handleRunAll} disabled={running || loading} variant="default">

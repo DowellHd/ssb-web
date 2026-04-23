@@ -142,7 +142,7 @@ export default function UserAnalyticsPage() {
             )}
           </p>
         </div>
-        <Button onClick={load} variant="ghost" size="icon" disabled={loading}>
+        <Button onClick={load} variant="ghost" size="icon" disabled={loading} aria-label="Refresh analytics">
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>

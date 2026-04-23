@@ -331,7 +331,7 @@ export default function BillingPage() {
             Manage your plan and view your subscription details.
           </p>
         </div>
-        <Button onClick={loadData} variant="ghost" size="icon">
+        <Button onClick={loadData} variant="ghost" size="icon" aria-label="Refresh billing">
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>

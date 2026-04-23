@@ -108,8 +108,8 @@ export default function NewsPage() {
       const response = await getMarketSummary();
       setSummary(response);
     } catch (err: any) {
-      // Don't show error for summary, just log it
-      console.error('Failed to load market summary:', err);
+      // Non-critical; don't block page render
+      console.warn('Failed to load market summary:', err);
     } finally {
       setSummaryLoading(false);
     }

@@ -149,6 +149,7 @@ export function ChatInput({ suggestions }: ChatInputProps) {
           onClick={handleSend}
           disabled={!input.trim() || isLoading || input.length > 2000}
           size="icon"
+          aria-label="Send message"
           className="h-10 w-10 flex-shrink-0"
         >
           <Send className="h-4 w-4" />

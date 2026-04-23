@@ -159,7 +159,7 @@ function CriterionRow({ criterion, onChange, onRemove }: CriterionRowProps) {
         />
       )}
 
-      <Button variant="ghost" size="icon" onClick={onRemove} className="h-9 w-9 shrink-0">
+      <Button variant="ghost" size="icon" onClick={onRemove} className="h-9 w-9 shrink-0" aria-label="Remove filter criterion">
         <Trash2 className="h-4 w-4 text-muted-foreground" />
       </Button>
     </div>
