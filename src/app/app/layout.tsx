@@ -39,6 +39,7 @@ import {
   Users,
   Wifi,
   X,
+  Zap,
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
 import { CommandPalette } from '@/components/command-palette';
@@ -65,7 +66,8 @@ const ANALYSIS_CHILDREN = [
   { href: '/app/analytics', label: 'Analytics',        icon: BarChart3 },
   { href: '/app/screening', label: 'Screener',         icon: Search },
   { href: '/app/portfolio', label: 'Portfolio Mgmt',   icon: PieChart,    badge: 'NEW' },
-  { href: '/app/trade-ideas', label: 'Trade Ideas',    icon: Lightbulb,   badge: 'NEW' },
+  { href: '/app/trade-ideas', label: 'Trade Ideas',    icon: Lightbulb },
+  { href: '/app/signals',     label: 'Signal Feed',    icon: Zap,         badge: 'NEW' },
 ];
 
 const TRADING_CHILDREN = [
