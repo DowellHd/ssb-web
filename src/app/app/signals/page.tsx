@@ -235,9 +235,9 @@ export default function SignalsPage() {
             <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
               <SearchX className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
               <div>
-                <p className="font-medium">No signals match your filters</p>
+                <p className="font-medium">No signals available right now</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters or lowering the confidence threshold.
+                  Signals are generated from live market data during market hours. Check back soon or try refreshing.
                 </p>
               </div>
               <Button
