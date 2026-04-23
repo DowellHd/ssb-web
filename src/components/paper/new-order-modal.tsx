@@ -90,7 +90,7 @@ export function NewOrderModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">New Order</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
             <X className="h-5 w-5" />
           </Button>
         </div>

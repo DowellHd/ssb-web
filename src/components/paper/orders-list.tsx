@@ -248,6 +248,7 @@ export function OrdersList({ orders }: OrdersListProps) {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
+                      aria-label="Cancel order"
                       onClick={(e) => {
                         e.stopPropagation();
                         cancelMutation.mutate(order.id);
@@ -267,7 +268,7 @@ export function OrdersList({ orders }: OrdersListProps) {
                         dismissMutation.mutate([order.id]);
                       }}
                       disabled={dismissMutation.isPending}
-                      title="Remove from history"
+                      aria-label="Remove from history"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

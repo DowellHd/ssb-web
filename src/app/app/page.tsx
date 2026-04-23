@@ -379,7 +379,7 @@ export default function AppDashboardPage() {
               ⌘K
             </kbd>
           </Button>
-          <Button onClick={loadData} variant="ghost" size="icon">
+          <Button onClick={loadData} variant="ghost" size="icon" aria-label="Refresh dashboard">
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>

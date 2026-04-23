@@ -107,7 +107,7 @@ export default function BacktestsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={loadData} variant="ghost" size="icon">
+          <Button onClick={loadData} variant="ghost" size="icon" aria-label="Refresh backtests">
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button

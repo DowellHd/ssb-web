@@ -91,7 +91,7 @@ export default function AuditPage() {
             Security events, login attempts, and account changes.
           </p>
         </div>
-        <Button onClick={() => loadData(page)} variant="ghost" size="icon" disabled={loading}>
+        <Button onClick={() => loadData(page)} variant="ghost" size="icon" disabled={loading} aria-label="Refresh audit log">
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>

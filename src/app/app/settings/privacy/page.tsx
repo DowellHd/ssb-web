@@ -710,7 +710,7 @@ export default function PrivacyDataPage() {
               </p>
               <p className="text-xs text-muted-foreground">
                 Full privacy policy:{' '}
-                <Link href="/privacy" target="_blank" className="text-foreground underline underline-offset-2 hover:no-underline inline-flex items-center gap-0.5">
+                <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-2 hover:no-underline inline-flex items-center gap-0.5">
                   smartstrategiesbuilder.com/privacy <ExternalLink className="h-2.5 w-2.5" />
                 </Link>
               </p>
