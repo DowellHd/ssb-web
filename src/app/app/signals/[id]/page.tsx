@@ -159,9 +159,16 @@ export default function SignalDetailPage() {
 
   const isBullish = signal.trend_bias === 'bullish';
   const confPct = Math.round(signal.confidence_score * 100);
-  const indicators = signal.supporting_data?.indicators as Array<{
-    name: string; value: number | null; signal?: string
-  }> | undefined;
+
+  // supporting_data is a flat dict: { current_price: n, RSI: {value, signal?}, ... }
+  const indicators: Array<{ name: string; value: number | null; signal?: string }> =
+    Object.entries(signal.supporting_data ?? {})
+      .filter(([key, val]) => key !== 'current_price' && val !== null && typeof val === 'object')
+      .map(([key, val]) => {
+        const entry = val as { value?: number | null; signal?: string };
+        return { name: key, value: entry.value ?? null, signal: entry.signal };
+      })
+      .filter((ind) => ind.value !== null);
 
   return (
     <div className="min-h-screen bg-background">
@@ -226,7 +233,7 @@ export default function SignalDetailPage() {
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <MetricBox label="Confidence" value={`${confPct}%`} />
             <MetricBox label="Bias" value={signal.trend_bias} />
-            <MetricBox label="Strength" value={`${signal.signal_strength.toFixed(0)}/100`} />
+            <MetricBox label="Strength" value={signal.signal_strength != null ? `${signal.signal_strength.toFixed(0)}/100` : '—'} />
             <MetricBox
               label="Time Horizon"
               value={
@@ -239,7 +246,7 @@ export default function SignalDetailPage() {
         </section>
 
         {/* Technical indicators */}
-        {indicators && indicators.length > 0 && (
+        {indicators.length > 0 && (
           <section className="mb-6 rounded-xl border bg-card p-5">
             <h2 className="mb-3 text-base font-semibold">Technical Breakdown</h2>
             <div className="divide-y">
