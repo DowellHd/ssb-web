@@ -114,13 +114,10 @@ export default function RegimePage() {
       const message = getErrorMessage(err);
 
       if (status === 401 || status === 403) {
-        toast.error('Please sign in to continue');
-        router.push('/auth/login');
-        return;
+        setError('Your session has expired. Please refresh the page or sign in again.');
+      } else {
+        setError(message || 'Failed to load regime data');
       }
-
-      setError(message || 'Failed to load regime data');
-      toast.error(message || 'Failed to load regime data');
     } finally {
       setLoading(false);
     }
