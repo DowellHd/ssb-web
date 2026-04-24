@@ -627,8 +627,8 @@ export default function RegimePage() {
               </div>
             )}
 
-            {data.indicators.vix_level === undefined &&
-              data.indicators.yield_curve_slope === undefined && (
+            {data.indicators.vix_level == null &&
+              data.indicators.yield_curve_slope == null && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
                   <AlertTriangle className="h-4 w-4" />
                   <span>Macro indicators not available</span>
