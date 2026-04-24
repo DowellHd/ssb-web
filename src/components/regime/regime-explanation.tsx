@@ -228,6 +228,22 @@ export function RegimeExplanation({ regime, confidence, indicators }: RegimeExpl
   const [isExpanded, setIsExpanded] = useState(true);
   const isLongTerm = useIsLongTerm();
 
+  // Confidence=0 means the backend returned an insufficient-data result.
+  // Rendering fake analysis from zeroed indicators would be misleading.
+  if (confidence === 0) {
+    return (
+      <div className="rounded-lg border bg-card p-4">
+        <div className="flex items-center gap-2">
+          <Lightbulb className="h-5 w-5 text-amber-500" />
+          <span className="font-semibold text-muted-foreground">Regime Analysis Unavailable</span>
+        </div>
+        <p className="text-sm text-muted-foreground mt-2">
+          Insufficient price history to classify the current regime. The engine requires at least 50 days of bar data. Data is loading — refresh in a moment.
+        </p>
+      </div>
+    );
+  }
+
   const { supporting, opposing, confidenceReason } = generateExplanations(regime, confidence, indicators);
 
   const regimeLabel = regime.replace('_', ' ');
