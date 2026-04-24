@@ -83,6 +83,7 @@ export interface SignalFilters {
   min_confidence?: number;
   asset_class?: string;
   time_horizon?: string;
+  ticker?: string;
 }
 
 export async function getSignalFeed(filters: SignalFilters = {}): Promise<SignalFeedResponse> {
@@ -93,6 +94,7 @@ export async function getSignalFeed(filters: SignalFilters = {}): Promise<Signal
   if (filters.min_confidence !== undefined) params.min_confidence = filters.min_confidence;
   if (filters.asset_class) params.asset_class = filters.asset_class;
   if (filters.time_horizon) params.time_horizon = filters.time_horizon;
+  if (filters.ticker) params.ticker = filters.ticker.trim().toUpperCase();
   const res = await apiClient.get('/signals', { params });
   return res.data;
 }
