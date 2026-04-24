@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { Filter, RefreshCw, SearchX, Zap } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Filter, RefreshCw, Search, SearchX, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SignalCard } from '@/components/signals/signal-card';
 import { DisclaimerBanner } from '@/components/signals/disclaimer-banner';
@@ -49,6 +49,11 @@ export default function SignalsPage() {
   const [timeHorizon, setTimeHorizon] = useState('');
   const [assetClass, setAssetClass] = useState('');
   const [minConfidence, setMinConfidence] = useState(0);
+  const [tickerSearch, setTickerSearch] = useState('');
+
+  // Page jump input (tracks what the user is typing, separate from committed page)
+  const [pageInputValue, setPageInputValue] = useState('1');
+  const pageInputRef = useRef<HTMLInputElement>(null);
 
   // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -67,16 +72,18 @@ export default function SignalsPage() {
         time_horizon: filters.time_horizon || timeHorizon || undefined,
         asset_class: filters.asset_class || assetClass || undefined,
         min_confidence: filters.min_confidence ?? (minConfidence > 0 ? minConfidence / 100 : undefined),
+        ticker: filters.ticker !== undefined ? filters.ticker : (tickerSearch || undefined),
       });
       setSignals(res.items);
       setTotal(res.total);
       setPage(res.page);
+      setPageInputValue(String(res.page));
     } catch {
       setError('Unable to load signals. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [signalType, timeHorizon, assetClass, minConfidence]);
+  }, [signalType, timeHorizon, assetClass, minConfidence, tickerSearch]);
 
   // Check disclaimer on mount
   useEffect(() => {
@@ -89,7 +96,6 @@ export default function SignalsPage() {
           setDisclaimerChecked(true);
         }
       } catch {
-        // If check fails, show onboarding as safe default
         setShowOnboarding(true);
       }
     }
@@ -102,6 +108,29 @@ export default function SignalsPage() {
 
   const handleFilter = () => {
     load(1);
+  };
+
+  const handleTickerKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') load(1);
+  };
+
+  const totalPages = Math.ceil(total / PER_PAGE);
+
+  const commitPageJump = () => {
+    const n = parseInt(pageInputValue, 10);
+    if (!isNaN(n) && n >= 1 && n <= totalPages && n !== page) {
+      load(n);
+    } else {
+      // Reset input to current page if invalid
+      setPageInputValue(String(page));
+    }
+  };
+
+  const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      pageInputRef.current?.blur();
+      commitPageJump();
+    }
   };
 
   const handleOnboardingAccepted = () => {
@@ -158,6 +187,21 @@ export default function SignalsPage() {
               </div>
 
               <div className="flex flex-wrap gap-2 flex-1">
+                {/* Stock search */}
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                  <input
+                    type="text"
+                    value={tickerSearch}
+                    onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
+                    onKeyDown={handleTickerKeyDown}
+                    placeholder="Search ticker…"
+                    maxLength={10}
+                    aria-label="Search by ticker symbol"
+                    className="h-9 w-36 rounded-md border bg-background pl-8 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+
                 <select
                   value={signalType}
                   onChange={(e) => setSignalType(e.target.value)}
@@ -235,9 +279,13 @@ export default function SignalsPage() {
             <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
               <SearchX className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
               <div>
-                <p className="font-medium">No signals available right now</p>
+                <p className="font-medium">
+                  {tickerSearch ? `No signals found for "${tickerSearch}"` : 'No signals available right now'}
+                </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Signals are generated from live market data during market hours. Check back soon or try refreshing.
+                  {tickerSearch
+                    ? 'Try a different ticker or clear the search to browse all signals.'
+                    : 'Signals are generated from live market data during market hours. Check back soon or try refreshing.'}
                 </p>
               </div>
               <Button
@@ -248,7 +296,8 @@ export default function SignalsPage() {
                   setTimeHorizon('');
                   setAssetClass('');
                   setMinConfidence(0);
-                  load(1, {});
+                  setTickerSearch('');
+                  load(1, { ticker: '' });
                 }}
               >
                 Clear filters
@@ -260,6 +309,7 @@ export default function SignalsPage() {
             <>
               <p className="mb-4 text-sm text-muted-foreground">
                 {total} signal{total !== 1 ? 's' : ''} found
+                {tickerSearch && <span className="ml-1">for <span className="font-medium text-foreground">{tickerSearch}</span></span>}
               </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {signals.map((signal) => (
@@ -268,8 +318,8 @@ export default function SignalsPage() {
               </div>
 
               {/* Pagination */}
-              {total > PER_PAGE && (
-                <div className="mt-8 flex justify-center gap-2">
+              {totalPages > 1 && (
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -278,13 +328,28 @@ export default function SignalsPage() {
                   >
                     Previous
                   </Button>
-                  <span className="flex items-center px-3 text-sm text-muted-foreground">
-                    Page {page} of {Math.ceil(total / PER_PAGE)}
-                  </span>
+
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <span>Page</span>
+                    <input
+                      ref={pageInputRef}
+                      type="number"
+                      min={1}
+                      max={totalPages}
+                      value={pageInputValue}
+                      onChange={(e) => setPageInputValue(e.target.value)}
+                      onBlur={commitPageJump}
+                      onKeyDown={handlePageInputKeyDown}
+                      aria-label={`Go to page, current page ${page} of ${totalPages}`}
+                      className="h-8 w-14 rounded-md border bg-background px-2 text-center text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span>of {totalPages}</span>
+                  </div>
+
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={page >= Math.ceil(total / PER_PAGE) || loading}
+                    disabled={page >= totalPages || loading}
                     onClick={() => load(page + 1)}
                   >
                     Next
