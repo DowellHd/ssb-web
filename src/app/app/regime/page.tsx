@@ -314,7 +314,7 @@ export default function RegimePage() {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Confidence:</span>
               <span className="font-semibold">
-                {((isScenarioMode && scenarioResult ? scenarioResult.confidence : data.confidence) * 100).toFixed(0)}%
+                {(((isScenarioMode && scenarioResult ? scenarioResult.confidence : data.confidence) ?? 0) * 100).toFixed(0)}%
               </span>
               <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                 <div
@@ -322,7 +322,7 @@ export default function RegimePage() {
                     'h-full transition-all',
                     isScenarioMode ? 'bg-purple-500' : 'bg-primary'
                   )}
-                  style={{ width: `${(isScenarioMode && scenarioResult ? scenarioResult.confidence : data.confidence) * 100}%` }}
+                  style={{ width: `${((isScenarioMode && scenarioResult ? scenarioResult.confidence : data.confidence) ?? 0) * 100}%` }}
                 />
               </div>
             </div>
@@ -427,7 +427,7 @@ export default function RegimePage() {
                     <div className="flex justify-between text-sm">
                       <span className="capitalize">{regime.replace('_', ' ')}</span>
                       <span className="font-medium">
-                        {(probability * 100).toFixed(1)}%
+                        {((probability ?? 0) * 100).toFixed(1)}%
                       </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -471,8 +471,8 @@ export default function RegimePage() {
                       {isOverridden && <span className="text-xs text-purple-400">(modified)</span>}
                     </div>
                     <span className="text-sm font-medium">
-                      {trendValue > 0 ? '+' : ''}
-                      {trendValue.toFixed(2)}
+                      {(trendValue ?? 0) > 0 ? '+' : ''}
+                      {(trendValue ?? 0).toFixed(2)}
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -504,7 +504,7 @@ export default function RegimePage() {
                       {isOverridden && <span className="text-xs text-purple-400">(modified)</span>}
                     </div>
                     <span className="text-sm font-medium">
-                      {volValue.toFixed(0)}th
+                      {(volValue ?? 0).toFixed(0)}th
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -540,7 +540,7 @@ export default function RegimePage() {
                       {isOverridden && <span className="text-xs text-purple-400">(modified)</span>}
                     </div>
                     <span className="text-sm font-medium">
-                      {(breadthValue * 100).toFixed(0)}%
+                      {((breadthValue ?? 0) * 100).toFixed(0)}%
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -568,7 +568,7 @@ export default function RegimePage() {
         <div className="rounded-lg border bg-card p-6">
           <h3 className="font-semibold mb-4">Macro Indicators</h3>
           <div className="space-y-4">
-            {data.indicators.vix_level !== undefined && (
+            {data.indicators.vix_level != null && (
               <div className="flex items-center justify-between py-3 border-b">
                 <div>
                   <p className="text-sm font-medium">VIX Level</p>
@@ -597,7 +597,7 @@ export default function RegimePage() {
               </div>
             )}
 
-            {data.indicators.yield_curve_slope !== undefined && (
+            {data.indicators.yield_curve_slope != null && (
               <div className="flex items-center justify-between py-3">
                 <div>
                   <p className="text-sm font-medium">Yield Curve (10Y-2Y)</p>
