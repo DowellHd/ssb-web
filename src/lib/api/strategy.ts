@@ -76,3 +76,7 @@ export async function getAnalysisById(id: string): Promise<StrategyHistoryItem> 
   const res = await apiClient.get(`/strategy/history/${id}`);
   return res.data;
 }
+
+export async function deleteAnalysis(id: string): Promise<void> {
+  await apiClient.delete(`/strategy/history/${id}`);
+}

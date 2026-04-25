@@ -1,19 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Trash2 } from 'lucide-react';
 import { RiskBadge } from './risk-badge';
+import { deleteAnalysis } from '@/lib/api/strategy';
 import type { StrategyHistoryItem } from '@/lib/api/strategy';
 
 interface HistoryPanelProps {
   items: StrategyHistoryItem[];
   total: number;
+  onDeleted: (id: string) => void;
   onLoadMore?: () => void;
   loadingMore?: boolean;
 }
 
-function HistoryRow({ item }: { item: StrategyHistoryItem }) {
+function HistoryRow({ item, onDeleted }: { item: StrategyHistoryItem; onDeleted: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const date = new Date(item.requested_at).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
@@ -23,6 +27,18 @@ function HistoryRow({ item }: { item: StrategyHistoryItem }) {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this analysis? This cannot be undone.')) return;
+    setDeleting(true);
+    try {
+      await deleteAnalysis(item.id);
+      onDeleted(item.id);
+    } catch {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="border-b last:border-b-0">
@@ -46,6 +62,14 @@ function HistoryRow({ item }: { item: StrategyHistoryItem }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <RiskBadge level={item.risk_level} />
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            aria-label="Delete this analysis"
+            className="rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
           {expanded ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (
@@ -79,7 +103,7 @@ function HistoryRow({ item }: { item: StrategyHistoryItem }) {
   );
 }
 
-export function HistoryPanel({ items, total, onLoadMore, loadingMore }: HistoryPanelProps) {
+export function HistoryPanel({ items, total, onDeleted, onLoadMore, loadingMore }: HistoryPanelProps) {
   if (items.length === 0) {
     return (
       <div className="rounded-xl border bg-card p-8 text-center">
@@ -99,7 +123,7 @@ export function HistoryPanel({ items, total, onLoadMore, loadingMore }: HistoryP
         <span className="text-xs text-muted-foreground">{total} total</span>
       </div>
       {items.map((item) => (
-        <HistoryRow key={item.id} item={item} />
+        <HistoryRow key={item.id} item={item} onDeleted={onDeleted} />
       ))}
       {items.length < total && onLoadMore && (
         <div className="px-4 py-3 border-t text-center">
