@@ -62,7 +62,8 @@ export default function StrategyPage() {
     setAnalyzing(true);
     setAnalyzeError(null);
     try {
-      const result = await runAnalysis();
+      // force=true when re-analyzing so the cached stale result is bypassed
+      const result = await runAnalysis(analysis !== null);
       setAnalysis(result);
       // Refresh history so the new record appears
       loadHistory(1);

@@ -57,8 +57,8 @@ export async function acceptAgreement(version = '1.0'): Promise<StrategyAgreemen
   return res.data;
 }
 
-export async function runAnalysis(): Promise<StrategyAnalysis> {
-  const res = await apiClient.post('/strategy/analyze');
+export async function runAnalysis(force = false): Promise<StrategyAnalysis> {
+  const res = await apiClient.post('/strategy/analyze', { force });
   return res.data;
 }
 
