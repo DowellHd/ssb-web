@@ -38,6 +38,11 @@ export default function StrategyPage() {
       .catch(() => setShowModal(true));
   }, []);
 
+  const handleDeleted = (id: string) => {
+    setHistory((prev) => prev.filter((item) => item.id !== id));
+    setHistoryTotal((prev) => Math.max(0, prev - 1));
+  };
+
   const loadHistory = useCallback(async (page = 1, append = false) => {
     if (page === 1) setLoadingHistory(true);
     else setLoadingMore(true);
@@ -165,6 +170,7 @@ export default function StrategyPage() {
                 <HistoryPanel
                   items={history}
                   total={historyTotal}
+                  onDeleted={handleDeleted}
                   onLoadMore={() => loadHistory(historyPage + 1, true)}
                   loadingMore={loadingMore}
                 />
