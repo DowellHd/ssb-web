@@ -18,6 +18,21 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    subsystem: 'AI Strategy Insights',
+    version: '1.0.0',
+    date: '2026-04-23',
+    changes: [
+      'Launched AI Strategy Insights page (/app/strategy) — LLM-powered educational portfolio analysis using GPT-4o-mini',
+      'Integrates Plaid-linked portfolio holdings for context-aware analysis when broker account is connected',
+      'Returns risk level (low/moderate/high), confidence score, diversification score, and 3–5 key portfolio themes',
+      'All AI output is post-processed to strip directive buy/sell language — educational observations only',
+      'Rate-limited to 10 analyses per hour; results cached in Redis for 15 minutes',
+      'Requires one-time agreement to AI disclaimer before first use (logged to DB with timestamp)',
+      'Analysis history panel shows all past analyses with expandable details',
+      'Pro+ plan required; free users see a plan gate',
+    ],
+  },
+  {
     subsystem: 'Signal Feed (Assisted Trading)',
     version: '1.0.0',
     date: '2026-04-23',

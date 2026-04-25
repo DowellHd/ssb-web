@@ -18,6 +18,7 @@ const subsystemLabels: Record<SubsystemKey, string> = {
   fixedIncome: 'Fixed Income',
   alternatives: 'Alternatives',
   advisorCrm: 'Advisor CRM',
+  strategyInsights: 'AI Strategy Insights',
 };
 
 function formatDate(iso: string): string {

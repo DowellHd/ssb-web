@@ -9,6 +9,7 @@ import {
   BarChart3,
   Bitcoin,
   BookOpen,
+  Brain,
   Building2,
   Calculator,
   Calendar,
@@ -97,6 +98,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
       { label: 'ESG Scoring',          description: 'E/S/G ratings & controversy flags',   href: '/app/analytics', icon: Leaf,        tier: 'starter' as const },
       { label: 'Earnings Surprise',    description: 'Beat/miss probability model',          href: '/app/analytics', icon: Calendar,    tier: 'pro' as const },
       { label: 'Factor Analysis',      description: 'Fama-French multi-factor model',       href: '/app/analytics', icon: BarChart3,   tier: 'pro' as const },
+      { label: 'AI Strategy Insights', description: 'LLM portfolio analysis & risk profiling', href: '/app/strategy', icon: Brain,       tier: 'pro' as const, isNew: true },
     ],
   },
   {
@@ -111,6 +113,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
       { label: 'Options Chain',        description: 'Greeks, IV, expiration viewer',               href: '/app/options',        icon: CandlestickChart, tier: 'starter' as const },
       { label: 'Trade Ideas',          description: 'Signal-based idea generation',                href: '/app/trade-ideas',    icon: Lightbulb },
       { label: 'Signal Feed',          description: 'Live technical setups with full analysis',    href: '/app/signals',        icon: Zap,              isNew: true },
+      { label: 'AI Strategy Insights', description: 'LLM portfolio analysis & risk profiling',     href: '/app/strategy',       icon: Brain,            isNew: true, tier: 'pro' as const },
     ],
   },
   {
