@@ -85,6 +85,11 @@ export const SUBSYSTEM_VERSIONS = {
     lastUpdated: '2026-04-13',
     description: 'CRM + Practice Analytics: lead scoring, revenue forecasting, pipeline BI, schedule & reports tabs',
   },
+  strategyInsights: {
+    version: '1.0.0',
+    lastUpdated: '2026-04-23',
+    description: 'AI Strategy Insights: LLM portfolio analysis, risk profiling, diversification scoring, educational themes',
+  },
 } as const satisfies Record<string, SubsystemVersion>;
 
 export type SubsystemKey = keyof typeof SUBSYSTEM_VERSIONS;

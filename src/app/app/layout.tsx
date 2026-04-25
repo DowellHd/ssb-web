@@ -9,6 +9,7 @@ import {
   BarChart3,
   Bitcoin,
   BookOpen,
+  Brain,
   Building2,
   Calculator,
   CandlestickChart,
@@ -68,6 +69,7 @@ const ANALYSIS_CHILDREN = [
   { href: '/app/portfolio', label: 'Portfolio Mgmt',   icon: PieChart,    badge: 'NEW' },
   { href: '/app/trade-ideas', label: 'Trade Ideas',    icon: Lightbulb },
   { href: '/app/signals',     label: 'Signal Feed',    icon: Zap,         badge: 'NEW' },
+  { href: '/app/strategy',    label: 'AI Strategy',    icon: Brain,       badge: 'NEW' },
 ];
 
 const TRADING_CHILDREN = [
