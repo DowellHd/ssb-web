@@ -456,7 +456,7 @@ export default function TermsPage() {
           If you have questions about these Terms of Service, please contact us at:
         </p>
         <p className="font-medium">
-          support@smartstrategiesbuilder.com
+          smartstrategiesbuilder@gmail.com
         </p>
       </section>
 
