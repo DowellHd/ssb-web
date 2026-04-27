@@ -115,6 +115,8 @@ export function ChatInput({ suggestions }: ChatInputProps) {
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
+            id="assistant-chat-input"
+            name="assistant-chat-input"
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
