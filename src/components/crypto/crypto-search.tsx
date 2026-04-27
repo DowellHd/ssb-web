@@ -14,12 +14,14 @@ interface CryptoSearchProps {
   /** Called when a result is selected (non-watchlist use case). */
   onSelect?: (result: CoinSearchResult) => void;
   placeholder?: string;
+  inputId?: string;
 }
 
 export function CryptoSearch({
   showWatchlistAdd = false,
   onSelect,
   placeholder = 'Search coins…',
+  inputId = 'crypto-coin-search',
 }: CryptoSearchProps) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -69,7 +71,10 @@ export function CryptoSearch({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <input
+          id={inputId}
+          name={inputId}
           type="text"
+          autoComplete="off"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);

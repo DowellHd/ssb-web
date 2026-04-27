@@ -87,8 +87,10 @@ function AddHoldingForm({ onClose }: AddHoldingFormProps) {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Quantity</label>
+          <label htmlFor="portfolio-quantity" className="text-xs text-muted-foreground mb-1 block">Quantity</label>
           <input
+            id="portfolio-quantity"
+            name="portfolio-quantity"
             type="number"
             step="any"
             min="0"
@@ -99,8 +101,10 @@ function AddHoldingForm({ onClose }: AddHoldingFormProps) {
           />
         </div>
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Avg Cost (USD)</label>
+          <label htmlFor="portfolio-avg-cost" className="text-xs text-muted-foreground mb-1 block">Avg Cost (USD)</label>
           <input
+            id="portfolio-avg-cost"
+            name="portfolio-avg-cost"
             type="number"
             step="any"
             min="0"
@@ -113,8 +117,10 @@ function AddHoldingForm({ onClose }: AddHoldingFormProps) {
       </div>
 
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Notes (optional)</label>
+        <label htmlFor="portfolio-notes" className="text-xs text-muted-foreground mb-1 block">Notes (optional)</label>
         <input
+          id="portfolio-notes"
+          name="portfolio-notes"
           type="text"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

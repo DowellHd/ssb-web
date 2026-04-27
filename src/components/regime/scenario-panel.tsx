@@ -291,6 +291,8 @@ export function ScenarioPanel({ liveIndicators, planName }: ScenarioPanelProps) 
               </span>
             </div>
             <input
+              id="scenario-volatility"
+              name="scenario-volatility"
               type="range"
               min={0}
               max={100}
@@ -337,6 +339,8 @@ export function ScenarioPanel({ liveIndicators, planName }: ScenarioPanelProps) 
               </span>
             </div>
             <input
+              id="scenario-trend"
+              name="scenario-trend"
               type="range"
               min={-1}
               max={1}
@@ -384,6 +388,8 @@ export function ScenarioPanel({ liveIndicators, planName }: ScenarioPanelProps) 
               </span>
             </div>
             <input
+              id="scenario-breadth"
+              name="scenario-breadth"
               type="range"
               min={0}
               max={1}
@@ -429,6 +435,8 @@ export function ScenarioPanel({ liveIndicators, planName }: ScenarioPanelProps) 
                 <label className="text-sm font-medium">Scenario Label</label>
               </div>
               <input
+                id="scenario-label"
+                name="scenario-label"
                 type="text"
                 value={scenarioLabel}
                 onChange={(e) => setScenarioLabel(e.target.value)}

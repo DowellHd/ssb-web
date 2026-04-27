@@ -611,6 +611,9 @@ export function CommandPalette() {
           <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <input
             ref={inputRef}
+            id="command-palette-search"
+            name="command-palette-search"
+            autoComplete="off"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
             onKeyDown={handleKeyDown}
