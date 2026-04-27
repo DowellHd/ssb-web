@@ -180,6 +180,8 @@ export default function TradingPreferencesPage() {
             </p>
             <div className="flex items-center gap-3">
               <input
+                id="max-position-pct"
+                name="max-position-pct"
                 type="number"
                 min={1}
                 max={100}
@@ -201,6 +203,8 @@ export default function TradingPreferencesPage() {
             </p>
             <div className="flex items-center gap-3">
               <input
+                id="min-signal-confidence"
+                name="min-signal-confidence"
                 type="range"
                 min={0}
                 max={100}
@@ -224,6 +228,8 @@ export default function TradingPreferencesPage() {
             <div className="space-y-3">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
+                  id="alert-email"
+                  name="alert-email"
                   type="checkbox"
                   checked={alertEmail}
                   onChange={(e) => setAlertEmail(e.target.checked)}
@@ -233,6 +239,8 @@ export default function TradingPreferencesPage() {
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
+                  id="alert-push"
+                  name="alert-push"
                   type="checkbox"
                   checked={alertPush}
                   onChange={(e) => setAlertPush(e.target.checked)}

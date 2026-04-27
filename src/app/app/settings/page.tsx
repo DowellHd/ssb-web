@@ -1060,6 +1060,8 @@ export default function SettingsPage() {
                     </div>
                     <p className="text-xs text-muted-foreground mb-2">{description}</p>
                     <input
+                      id={`notification-threshold-${key}`}
+                      name={`notification-threshold-${key}`}
                       type="range"
                       min={min}
                       max={max}
