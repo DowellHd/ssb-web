@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { withSentryConfig } = require('@sentry/nextjs');
 
 // Guard: NEXT_PUBLIC_DEMO_MODE must never be set to 'true' in a production build.
 // Deploying with demo mode on would serve mock data to all real users.
@@ -150,4 +152,18 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  // Upload source maps and delete them after upload so they aren't served publicly
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+  // Suppress verbose build output
+  silent: true,
+  // Remove Sentry debug logger from production bundle
+  disableLogger: true,
+  // Don't auto-create Vercel Cron monitors
+  automaticVercelMonitors: false,
+});
