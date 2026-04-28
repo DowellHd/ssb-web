@@ -59,7 +59,7 @@ export const OVERLAY_CONFIGS: Record<OverlayType, OverlayConfig> = {
     type: 'regression',
     label: 'Trend Line',
     color: '#8b5cf6', // purple
-    description: 'Linear regression trend line (50 periods)',
+    description: 'Linear regression trend line across all visible bars',
   },
   levels: {
     type: 'levels',
@@ -98,20 +98,18 @@ export function calculateSMA(data: OHLCV[], period: number): OverlayPoint[] {
 /**
  * Calculate Linear Regression Trend Line
  *
- * Uses least squares method over the last N candles.
+ * Uses least squares method over all provided candles so the line spans
+ * the full visible range regardless of timeframe.
  *
  * @param data - OHLCV data array (sorted by time ascending)
- * @param period - Number of periods to calculate regression over
- * @returns Array of two points (start and end of trend line)
+ * @returns Array of points forming the trend line across all bars
  */
 export function calculateLinearRegression(
-  data: OHLCV[],
-  period: number = 50
+  data: OHLCV[]
 ): OverlayPoint[] {
   if (data.length < 2) return [];
 
-  // Use last N candles or all available
-  const useData = data.slice(-Math.min(period, data.length));
+  const useData = data;
   const n = useData.length;
 
   // Calculate sums for least squares

@@ -107,7 +107,10 @@ export function PriceChart({
         time: toChartTime(p.time, barSize),
         value: p.value,
       }));
-      result.regression = calculateLinearRegression(data, 50).map((p) => ({
+    }
+
+    if (data.length >= 2) {
+      result.regression = calculateLinearRegression(data).map((p) => ({
         time: toChartTime(p.time, barSize),
         value: p.value,
       }));
