@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Copy, Check, Key, Zap, Shield, BarChart2, BookOpen } from 'lucide-react';
 
-const BASE_URL = 'https://api.ssb.finance/v1';
+const BASE_URL = 'https://api.smartstrategiesbuilder.ai/api/v1';
 
 const SCOPES = [
   {
