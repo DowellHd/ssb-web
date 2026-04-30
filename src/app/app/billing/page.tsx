@@ -189,6 +189,7 @@ export default function BillingPage() {
   const [portalLoading, setPortalLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [canceledMessage, setCanceledMessage] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   // Use normalized plan from centralized store for consistent display
   const normalizedPlan = usePlanStore((state) => state.normalized);
@@ -241,7 +242,7 @@ export default function BillingPage() {
     try {
       const result = await createCheckoutSession({
         plan_name: planName,
-        billing_cycle: 'monthly',
+        billing_cycle: billingCycle,
       });
       // Redirect to Stripe Checkout
       window.location.href = result.checkout_url;
@@ -537,17 +538,54 @@ export default function BillingPage() {
       {/* Available Plans */}
       {plans && plans.plans.length > 0 && (
         <div className="rounded-lg border bg-card p-6">
-          <h2 className="text-lg font-semibold mb-2">Available Plans</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            During early access, all features are available at no cost.
-            Select a plan to set your feature tier—no real charges will occur.
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-lg font-semibold">Available Plans</h2>
+              <p className="text-sm text-muted-foreground">
+                During early access, all features are available at no cost.
+                Select a plan to set your feature tier—no real charges will occur.
+              </p>
+            </div>
+            {/* Billing cycle toggle */}
+            <div className="flex items-center gap-1 rounded-lg bg-muted p-1 self-start sm:self-auto shrink-0">
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  billingCycle === 'monthly'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingCycle('yearly')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  billingCycle === 'yearly'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Yearly
+                <span className="text-xs font-semibold text-green-600 dark:text-green-400">
+                  Save 2 months
+                </span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {plans.plans.map((plan) => {
               const isCurrentPlan = plan.name.toLowerCase() === currentPlanName.toLowerCase();
               const canUpgrade = !isCurrentPlan && plan.price_monthly > 0;
               const isLoading = checkoutLoading === plan.name;
               const features = PLAN_FEATURES[plan.name.toLowerCase()] || [];
+              const showYearly = billingCycle === 'yearly' && plan.price_yearly != null && plan.price_yearly > 0;
+              const displayPrice = showYearly ? plan.price_yearly! : plan.price_monthly;
+              const monthlyCost = showYearly ? (plan.price_yearly! / 12).toFixed(2) : null;
+              const yearlySavings = (plan.price_yearly != null && plan.price_monthly > 0)
+                ? Math.round(((plan.price_monthly * 12) - plan.price_yearly) / (plan.price_monthly * 12) * 100)
+                : 0;
 
               return (
                 <div
@@ -565,16 +603,30 @@ export default function BillingPage() {
                     {getPlanIcon(plan.name)}
                     <h3 className="font-semibold">{getPlanDisplayName(plan.name)}</h3>
                   </div>
-                  <p className="text-2xl font-bold mb-1">
-                    {plan.price_monthly === 0 ? (
-                      'Free'
-                    ) : (
-                      <>
-                        ${plan.price_monthly}
-                        <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                      </>
-                    )}
-                  </p>
+
+                  {/* Price display */}
+                  {plan.price_monthly === 0 ? (
+                    <p className="text-2xl font-bold mb-1">Free</p>
+                  ) : showYearly ? (
+                    <div className="mb-1">
+                      <p className="text-2xl font-bold">
+                        ${displayPrice}
+                        <span className="text-sm font-normal text-muted-foreground">/yr</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">${monthlyCost}/mo billed annually</p>
+                      {yearlySavings > 0 && (
+                        <span className="inline-block mt-1 text-xs font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
+                          Save {yearlySavings}%
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-2xl font-bold mb-1">
+                      ${displayPrice}
+                      <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                    </p>
+                  )}
+
                   {plan.description && (
                     <p className="text-xs text-muted-foreground mb-3">{plan.description}</p>
                   )}
