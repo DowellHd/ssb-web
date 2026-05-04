@@ -31,9 +31,7 @@ import {
 } from '@/lib/api/ibkr';
 
 // This page is intentionally excluded from all navigation.
-// Access is hardcoded to a single founder user ID.
-
-const FOUNDER_ID = '10300939-8853-4c05-a786-11ffec3bcca5';
+// Access is restricted to accounts with is_founder: true.
 
 // ============================================================================
 // Sub-components
@@ -221,7 +219,7 @@ export default function FounderTradingPage() {
     (async () => {
       try {
         const user = await getCurrentUser();
-        if (user.id !== FOUNDER_ID) {
+        if (!user.is_founder) {
           router.replace('/app/dashboard');
           return;
         }
