@@ -11,8 +11,8 @@ const siteUrl = 'https://www.smartstrategiesbuilder.ai';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Smart Strategies Builder (SSB) — Paper Trading, Portfolio Analytics & AI Market Analysis',
-    template: '%s | Smart Strategies Builder',
+    default: 'Smart Strategies Builder (SSB) | AI Finance Platform',
+    template: '%s | SSB',
   },
   description: 'Smart Strategies Builder (SSB) — paper trade, analyze your portfolio, backtest strategies, and get AI market insights. Free to start, no credit card required.',
   keywords: [
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: siteUrl,
     siteName: 'Smart Strategies Builder',
-    title: 'Smart Strategies Builder (SSB) — Paper Trading, Portfolio Analytics & AI Market Analysis',
+    title: 'Smart Strategies Builder (SSB) | AI Finance Platform',
     description: 'Smart Strategies Builder (SSB) — paper trade, analyze your portfolio, backtest strategies, and get AI market insights. Free to start, no credit card required.',
     images: [
       {
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Smart Strategies Builder (SSB) — Paper Trading & Portfolio Analytics',
+    title: 'Smart Strategies Builder (SSB) | AI Finance Platform',
     description: 'SSB finance platform — paper trade, backtest strategies, and analyze your portfolio with AI market insights.',
     images: ['/og-image.png'],
   },
