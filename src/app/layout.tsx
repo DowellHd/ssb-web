@@ -35,6 +35,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'Smart Strategies Builder' }],
   creator: 'Smart Strategies Builder',
   publisher: 'Smart Strategies Builder',
+  verification: {
+    google: '1CweN4cqibeyiCgG7B91q5O7y9YV-TRo1NTY8AVCBb0',
+  },
   robots: {
     index: true,
     follow: true,
