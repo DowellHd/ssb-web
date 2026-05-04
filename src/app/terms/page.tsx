@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { LegalPageLayout } from '@/components/legal';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - Smart Strategies Builder',
-  description: 'Terms of Service for Smart Strategies Builder (SSB) platform.',
+  title: 'Terms of Service — Smart Strategies Builder (SSB)',
+  description: 'Terms of Service for Smart Strategies Builder (SSB) — the SSB trading and portfolio analytics platform.',
+  alternates: { canonical: 'https://www.smartstrategiesbuilder.ai/terms' },
 };
 
 const LAST_UPDATED = 'April 10, 2026';
