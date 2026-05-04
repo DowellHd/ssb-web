@@ -224,11 +224,17 @@ export default function FounderTradingPage() {
           return;
         }
         setAuthorized(true);
-        await fetchData();
       } catch {
         router.replace('/auth/login');
+        return;
       } finally {
         setLoading(false);
+      }
+      // Data fetch errors (e.g. IBKR disabled) must not trigger a logout.
+      try {
+        await fetchData();
+      } catch (err) {
+        toast.error(getErrorMessage(err));
       }
     })();
   }, [router, fetchData]);
