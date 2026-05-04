@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { LegalPageLayout } from '@/components/legal';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - Smart Strategies Builder',
-  description: 'Privacy Policy for Smart Strategies Builder (SSB) platform.',
+  title: 'Privacy Policy — Smart Strategies Builder (SSB)',
+  description: 'Privacy Policy for Smart Strategies Builder (SSB) — how we collect, use, and protect your data on the SSB finance platform.',
+  alternates: { canonical: 'https://www.smartstrategiesbuilder.ai/privacy' },
 };
 
 const LAST_UPDATED = 'April 13, 2026';

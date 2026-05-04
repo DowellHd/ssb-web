@@ -4,8 +4,9 @@ import { AlertTriangle } from 'lucide-react';
 import { LegalPageLayout } from '@/components/legal';
 
 export const metadata: Metadata = {
-  title: 'Trading & Educational Disclaimer - Smart Strategies Builder',
-  description: 'Important disclaimer regarding the educational nature of Smart Strategies Builder (SSB) platform.',
+  title: 'Trading & Educational Disclaimer — Smart Strategies Builder (SSB)',
+  description: 'Important disclaimer regarding the educational nature of Smart Strategies Builder (SSB). SSB finance tools are for educational and informational purposes only.',
+  alternates: { canonical: 'https://www.smartstrategiesbuilder.ai/disclaimer' },
 };
 
 const LAST_UPDATED = 'April 12, 2026';

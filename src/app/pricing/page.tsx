@@ -3,8 +3,14 @@ import Link from 'next/link';
 import { Check, X, FlaskConical, Zap, Building, Star } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Pricing - Smart Strategies Builder',
-  description: 'Simple, transparent pricing for every level of investor. Free to start, no credit card required.',
+  title: 'Pricing — SSB Trading Platform Plans',
+  description: 'Simple, transparent pricing for SSB — the Smart Strategies Builder trading platform. Free to start, no credit card required.',
+  alternates: { canonical: 'https://www.smartstrategiesbuilder.ai/pricing' },
+  openGraph: {
+    title: 'SSB Pricing — Smart Strategies Builder Plans',
+    description: 'Free, Starter ($9/mo), Pro ($79/mo), and Institutional ($299/mo) plans. Start paper trading with SSB for free.',
+    url: 'https://www.smartstrategiesbuilder.ai/pricing',
+  },
 };
 
 const PLANS = [
