@@ -43,6 +43,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
+import { BetaBanner } from '@/components/beta-banner';
 import { CommandPalette } from '@/components/command-palette';
 import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,7 @@ import { usePlanStore } from '@/stores/plan-store';
 import { useCommandPaletteStore } from '@/stores/command-palette-store';
 
 const IS_DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+const IS_BETA_MODE = process.env.NEXT_PUBLIC_BETA_MODE === 'true';
 
 // ============================================================================
 // Nav data
@@ -454,6 +456,11 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
           <Link href="/app" className="flex items-center gap-2" onClick={onClose}>
             <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md shrink-0" />
             <span className="font-bold text-lg">SSB</span>
+            {IS_BETA_MODE && (
+              <span className="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-blue-600 text-white">
+                Beta
+              </span>
+            )}
           </Link>
         )}
         {/* Mobile close */}
@@ -710,6 +717,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     try {
       const userData = await getCurrentUser();
       setUser(userData);
+      if (IS_BETA_MODE) {
+        const key = `beta-welcome-shown-${userData.id}`;
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, '1');
+          toast.success('Welcome to SSB Early Access — everything is free during Beta!', { duration: 6000 });
+        }
+      }
     } catch {
       toast.error('Please sign in to continue');
       router.push('/auth/login');
@@ -791,6 +805,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {IS_DEMO_MODE && (
           <div className="sticky top-16 lg:top-0 z-20 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-xs font-semibold text-amber-950">
             <span>DEMO MODE — all data is simulated. No real trades or accounts.</span>
+          </div>
+        )}
+        {IS_BETA_MODE && !IS_DEMO_MODE && (
+          <div className="sticky top-16 lg:top-0 z-20">
+            <BetaBanner />
           </div>
         )}
         <main className="p-6">{children}</main>
