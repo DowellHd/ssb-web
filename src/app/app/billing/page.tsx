@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, X, Check, FlaskConical } from 'lucide-react';
+import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, X, Check, FlaskConical, PartyPopper } from 'lucide-react';
+
+const IS_BETA_MODE = process.env.NEXT_PUBLIC_BETA_MODE === 'true';
 import { Button } from '@/components/ui/button';
 import { getCapabilities, type Capabilities } from '@/lib/api/meta';
 import { getSubscription, listPlans, createCheckoutSession, getBillingPortal, type SubscriptionResponse, type PlanListResponse } from '@/lib/api/billing';
@@ -338,23 +340,29 @@ export default function BillingPage() {
       </div>
 
       {/* Early Access Banner */}
-      <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-3">
-        <div className="flex items-start gap-3">
-          <FlaskConical className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+      <div className="rounded-xl border-2 border-blue-400 dark:border-blue-600 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 px-6 py-5">
+        <div className="flex items-start gap-4">
+          <div className="rounded-lg bg-blue-100 dark:bg-blue-900/50 p-2 shrink-0">
+            <PartyPopper className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="inline-flex items-center rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white uppercase tracking-wide">
                 Early Access
               </span>
+              <h3 className="text-base font-bold text-blue-900 dark:text-blue-100">
+                SSB is 100% Free Right Now
+              </h3>
             </div>
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              SSB is currently in early access. <strong>All plans are free during this period</strong> and
-              no real charges will occur. When you test the checkout flow, use Stripe test card{' '}
-              <code className="px-1 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-xs font-mono">
-                4242 4242 4242 4242
-              </code>{' '}
-              with any future expiry and CVC. Pricing will apply after general availability.
+            <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+              You have <strong>full access to all features</strong> at no cost during our Beta period.
+              No credit card required. No charges — ever — until we exit Beta and you explicitly choose a paid plan.
             </p>
+            {!IS_BETA_MODE && (
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
+                Plan tiers are shown to preview future pricing and gather feedback. No payments are processed.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -386,11 +394,10 @@ export default function BillingPage() {
         </div>
       )}
 
-      {/* Billing not enabled banner */}
-      {!billingEnabled && (
+      {/* Billing not enabled banner — only show if not already in beta mode (which already says it's free) */}
+      {!billingEnabled && !IS_BETA_MODE && (
         <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-800 p-4 text-sm text-amber-800 dark:text-amber-200">
-          <strong>Note:</strong> Billing is currently in test mode.
-          All features are available during early access. No real charges will occur.
+          <strong>Note:</strong> Billing is currently in test mode. No real charges will occur.
         </div>
       )}
 
@@ -542,8 +549,9 @@ export default function BillingPage() {
             <div>
               <h2 className="text-lg font-semibold">Available Plans</h2>
               <p className="text-sm text-muted-foreground">
-                During early access, all features are available at no cost.
-                Select a plan to set your feature tier—no real charges will occur.
+                {IS_BETA_MODE
+                  ? 'All plan tiers are free during Beta. These are the prices that will apply after Beta ends.'
+                  : 'During early access, all features are available at no cost. No real charges will occur.'}
               </p>
             </div>
             {/* Billing cycle toggle */}
@@ -590,12 +598,17 @@ export default function BillingPage() {
               return (
                 <div
                   key={plan.id}
-                  className={`rounded-lg border p-4 flex flex-col ${
+                  className={`relative rounded-lg border p-4 flex flex-col ${
                     isCurrentPlan
                       ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
                       : 'hover:border-primary/50'
                   }`}
                 >
+                  {IS_BETA_MODE && plan.price_monthly > 0 && (
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-green-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                      Free during Beta
+                    </div>
+                  )}
                   {isCurrentPlan && (
                     <div className="text-xs font-medium text-primary mb-2">Current Plan</div>
                   )}
@@ -648,6 +661,12 @@ export default function BillingPage() {
                     {isCurrentPlan ? (
                       <div className="text-sm text-primary font-medium text-center py-1.5">
                         ✓ Active
+                      </div>
+                    ) : IS_BETA_MODE && canUpgrade ? (
+                      <div className="text-center py-1.5">
+                        <span className="text-xs font-semibold text-green-600 dark:text-green-400">
+                          ✓ Included free during Beta
+                        </span>
                       </div>
                     ) : canUpgrade ? (
                       <Button
@@ -773,8 +792,11 @@ export default function BillingPage() {
 
       {/* Info banner */}
       <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-4 text-sm text-slate-800 dark:text-slate-200">
-        <strong>Secure Payments:</strong> All payments are processed securely through Stripe.
-        We never store your payment information on our servers.
+        {IS_BETA_MODE ? (
+          <><strong>Beta period:</strong> No payment information is collected or stored. When SSB exits Beta, you will be notified and must explicitly select a paid plan before any charges occur.</>
+        ) : (
+          <><strong>Secure Payments:</strong> All payments are processed securely through Stripe. We never store your payment information on our servers.</>
+        )}
       </div>
     </div>
   );
