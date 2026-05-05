@@ -9,7 +9,9 @@ import {
   ChevronUp,
   ClipboardList,
   Loader2,
+  Plus,
   RefreshCw,
+  Trash2,
   XCircle,
   Zap,
 } from 'lucide-react';
@@ -19,15 +21,17 @@ import { getCurrentUser } from '@/lib/api/auth';
 import { getErrorMessage } from '@/lib/api-client';
 import {
   getIBKRPolicy,
-  getPendingIntents,
+  getMyIntents,
   createIntent,
   approveIntent,
   getAuditLog,
   type IBKRPolicy,
   type TradeIntent,
   type AuditEntry,
-  type IntentSide,
-  type OrderType,
+  type IntentLeg,
+  type ExecutionMode,
+  type PricingPolicy,
+  type TimeInForce,
 } from '@/lib/api/ibkr';
 
 // This page is intentionally excluded from all navigation.
@@ -65,10 +69,9 @@ function ModeBadge({ mode }: { mode: string }) {
   const colours: Record<string, string> = {
     paper: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
     live: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
-    simulation: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
   };
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${colours[mode] ?? colours.simulation}`}>
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${colours[mode] ?? colours.paper}`}>
       {mode} mode
     </span>
   );
@@ -80,38 +83,39 @@ function IntentStatusBadge({ status }: { status: TradeIntent['status'] }) {
     approved: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
     queued:   'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
     executed: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+    failed:   'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
     rejected: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-    expired:  'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
   };
   return (
-    <span className={`inline-flex rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ${map[status] ?? map.expired}`}>
+    <span className={`inline-flex rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ${map[status] ?? map.rejected}`}>
       {status}
     </span>
   );
 }
 
+function formatLegs(legs: IntentLeg[]): string {
+  return legs
+    .map(l => `${l.side.toUpperCase()} ${l.qty}× ${l.right.toUpperCase()} @$${l.strike}`)
+    .join(' / ');
+}
+
 // ============================================================================
-// MFA modal
+// Confirmation modal (no MFA code — backend validates MFA at session level)
 // ============================================================================
 
-interface MFAModalProps {
+interface ConfirmModalProps {
   intent: TradeIntent;
-  onConfirm: (code: string) => Promise<void>;
+  onConfirm: () => Promise<void>;
   onCancel: () => void;
 }
 
-function MFAModal({ intent, onConfirm, onCancel }: MFAModalProps) {
-  const [code, setCode] = useState('');
+function ConfirmModal({ intent, onConfirm, onCancel }: ConfirmModalProps) {
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
-    if (code.length !== 6 || !/^\d+$/.test(code)) {
-      toast.error('Enter a 6-digit MFA code');
-      return;
-    }
     setLoading(true);
     try {
-      await onConfirm(code);
+      await onConfirm();
     } finally {
       setLoading(false);
     }
@@ -127,48 +131,33 @@ function MFAModal({ intent, onConfirm, onCancel }: MFAModalProps) {
             <p className="text-sm text-muted-foreground mt-0.5">
               Approving{' '}
               <span className="font-medium text-foreground">
-                {intent.side.toUpperCase()} {intent.quantity} {intent.symbol}
+                {intent.strategy_type.toUpperCase()} on {intent.symbol}
               </span>{' '}
-              ({intent.order_type})
+              ({intent.mode})
             </p>
           </div>
         </div>
 
         <div className="rounded-lg bg-muted/60 px-4 py-3 text-sm space-y-1">
-          {intent.limit_price && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Limit price</span>
-              <span className="font-medium">${intent.limit_price.toFixed(2)}</span>
-            </div>
-          )}
-          {intent.max_loss_usd && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Max loss</span>
-              <span className="font-medium">${intent.max_loss_usd.toFixed(2)}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-sm font-medium">MFA Code</label>
-          <input
-            type="text"
-            inputMode="numeric"
-            maxLength={6}
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            placeholder="000000"
-            autoFocus
-            className="w-full rounded-lg border bg-background px-3 py-2 text-center text-xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Legs</span>
+            <span className="font-medium font-mono text-xs">{formatLegs(intent.legs)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Max debit</span>
+            <span className="font-medium">${intent.max_debit_usd}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Max loss</span>
+            <span className="font-medium">${intent.max_loss_usd}</span>
+          </div>
         </div>
 
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
-          <Button className="flex-1" onClick={submit} disabled={loading || code.length !== 6}>
+          <Button className="flex-1" onClick={submit} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Approve'}
           </Button>
         </div>
@@ -181,15 +170,43 @@ function MFAModal({ intent, onConfirm, onCancel }: MFAModalProps) {
 // Main page
 // ============================================================================
 
-const DEFAULT_FORM = {
+interface LegForm {
+  right: 'call' | 'put';
+  strike: string;
+  side: 'buy' | 'sell';
+  qty: number;
+}
+
+interface FormState {
+  symbol: string;
+  strategy_type: string;
+  expiry: string;
+  legs: LegForm[];
+  pricing_policy: PricingPolicy;
+  max_debit_usd: string;
+  max_loss_usd: string;
+  time_in_force: TimeInForce;
+  mode: ExecutionMode;
+}
+
+const DEFAULT_LEG: LegForm = { right: 'call', strike: '', side: 'buy', qty: 1 };
+
+const DEFAULT_FORM: FormState = {
   symbol: '',
-  side: 'buy' as IntentSide,
-  quantity: 1,
-  order_type: 'market' as OrderType,
-  limit_price: '',
+  strategy_type: '',
+  expiry: '',
+  legs: [{ ...DEFAULT_LEG }],
+  pricing_policy: 'mid',
+  max_debit_usd: '',
   max_loss_usd: '',
-  notes: '',
+  time_in_force: 'DAY',
+  mode: 'paper',
 };
+
+const STRATEGIES = [
+  'long_call', 'long_put', 'bull_call_spread', 'bear_put_spread',
+  'iron_condor', 'straddle', 'strangle', 'covered_call', 'cash_secured_put',
+];
 
 export default function FounderTradingPage() {
   const router = useRouter();
@@ -201,18 +218,18 @@ export default function FounderTradingPage() {
   const [auditOpen, setAuditOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState(DEFAULT_FORM);
+  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [pendingApproval, setPendingApproval] = useState<TradeIntent | null>(null);
 
   const fetchData = useCallback(async () => {
-    const [pol, ints] = await Promise.all([getIBKRPolicy(), getPendingIntents()]);
+    const [pol, ints] = await Promise.all([getIBKRPolicy(), getMyIntents()]);
     setPolicy(pol);
     setIntents(ints);
   }, []);
 
   const fetchAudit = useCallback(async () => {
-    const log = await getAuditLog(50);
-    setAuditLog(log.items);
+    const logs = await getAuditLog(50);
+    setAuditLog(logs);
   }, []);
 
   useEffect(() => {
@@ -230,7 +247,6 @@ export default function FounderTradingPage() {
       } finally {
         setLoading(false);
       }
-      // Data fetch errors (e.g. IBKR disabled) must not trigger a logout.
       try {
         await fetchData();
       } catch (err) {
@@ -239,23 +255,49 @@ export default function FounderTradingPage() {
     })();
   }, [router, fetchData]);
 
+  const updateLeg = (index: number, field: keyof LegForm, value: string | number) => {
+    setForm(f => {
+      const legs = f.legs.map((l, i) => i === index ? { ...l, [field]: value } : l);
+      return { ...f, legs };
+    });
+  };
+
+  const addLeg = () => {
+    setForm(f => ({ ...f, legs: [...f.legs, { ...DEFAULT_LEG }] }));
+  };
+
+  const removeLeg = (index: number) => {
+    setForm(f => ({ ...f, legs: f.legs.filter((_, i) => i !== index) }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.symbol.trim()) { toast.error('Symbol is required'); return; }
-    if (form.order_type === 'limit' && !form.limit_price) { toast.error('Limit price is required for limit orders'); return; }
+    if (!form.strategy_type.trim()) { toast.error('Strategy type is required'); return; }
+    if (form.legs.some(l => !l.strike || parseFloat(l.strike) <= 0)) {
+      toast.error('All legs need a valid strike price');
+      return;
+    }
     setSubmitting(true);
     try {
       await createIntent({
         symbol: form.symbol.trim().toUpperCase(),
-        side: form.side,
-        quantity: form.quantity,
-        order_type: form.order_type,
-        limit_price: form.limit_price ? parseFloat(form.limit_price) : null,
-        max_loss_usd: form.max_loss_usd ? parseFloat(form.max_loss_usd) : null,
-        notes: form.notes || null,
+        strategy_type: form.strategy_type.trim(),
+        expiry: form.expiry || null,
+        legs: form.legs.map(l => ({
+          right: l.right,
+          strike: l.strike,
+          side: l.side,
+          qty: l.qty,
+        })),
+        pricing_policy: form.pricing_policy,
+        max_debit_usd: parseFloat(form.max_debit_usd) || 0,
+        max_loss_usd: parseFloat(form.max_loss_usd) || 0,
+        time_in_force: form.time_in_force,
+        mode: form.mode,
       });
       toast.success('Intent created — approve it to queue for execution');
-      setForm(DEFAULT_FORM);
+      setForm({ ...DEFAULT_FORM, legs: [{ ...DEFAULT_LEG }] });
       await fetchData();
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -264,10 +306,10 @@ export default function FounderTradingPage() {
     }
   };
 
-  const handleApprove = async (code: string) => {
+  const handleApprove = async () => {
     if (!pendingApproval) return;
     try {
-      await approveIntent(pendingApproval.id, code);
+      await approveIntent(pendingApproval.id);
       toast.success('Intent approved and queued');
       setPendingApproval(null);
       await fetchData();
@@ -279,7 +321,7 @@ export default function FounderTradingPage() {
 
   const toggleAudit = async () => {
     if (!auditOpen && auditLog.length === 0) await fetchAudit();
-    setAuditOpen((v) => !v);
+    setAuditOpen(v => !v);
   };
 
   if (loading) {
@@ -297,7 +339,7 @@ export default function FounderTradingPage() {
   return (
     <>
       {pendingApproval && (
-        <MFAModal
+        <ConfirmModal
           intent={pendingApproval}
           onConfirm={handleApprove}
           onCancel={() => setPendingApproval(null)}
@@ -333,15 +375,16 @@ export default function FounderTradingPage() {
           </div>
         </div>
 
-        {/* Disclaimer — non-dismissible */}
+        {/* Disclaimer */}
         <div className="flex gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-4">
           <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="text-sm text-amber-900 dark:text-amber-200 space-y-1">
             <p className="font-semibold">Founder-only execution console — internal use only</p>
             <p>
               Intents submitted here are routed through the local IBKR executor running on your machine.
-              The SSB platform never calls IBKR directly. All approvals require MFA. Review each intent
-              carefully before approving — approved intents are immediately queued for execution.
+              The SSB platform never calls IBKR directly. All approvals require MFA to be active on your
+              account. Review each intent carefully before approving — approved intents are immediately
+              queued for execution.
             </p>
             <p>This page is not indexed, not linked, and not accessible to any other user.</p>
           </div>
@@ -359,11 +402,11 @@ export default function FounderTradingPage() {
         )}
 
         {/* Create intent form */}
-        <section className="rounded-xl border bg-card p-5 space-y-4">
+        <section className="rounded-xl border bg-card p-5 space-y-5">
           <h2 className="text-base font-semibold">New Trade Intent</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {/* Symbol */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Symbol + Strategy + Mode */}
+            <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-1">
                 <label className="text-sm font-medium">Symbol</label>
                 <input
@@ -371,93 +414,176 @@ export default function FounderTradingPage() {
                   type="text"
                   placeholder="e.g. AAPL"
                   value={form.symbol}
-                  onChange={(e) => setForm((f) => ({ ...f, symbol: e.target.value.toUpperCase() }))}
+                  onChange={e => setForm(f => ({ ...f, symbol: e.target.value.toUpperCase() }))}
                   className="w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
-
-              {/* Side */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">Side</label>
-                <select
-                  value={form.side}
-                  onChange={(e) => setForm((f) => ({ ...f, side: e.target.value as IntentSide }))}
-                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="buy">Buy</option>
-                  <option value="sell">Sell</option>
-                </select>
-              </div>
-
-              {/* Quantity */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Quantity</label>
+                <label className="text-sm font-medium">Strategy</label>
                 <input
                   required
-                  type="number"
-                  min={1}
-                  step={1}
-                  value={form.quantity}
-                  onChange={(e) => setForm((f) => ({ ...f, quantity: parseInt(e.target.value) || 1 }))}
+                  list="strategy-list"
+                  type="text"
+                  placeholder="e.g. long_call"
+                  value={form.strategy_type}
+                  onChange={e => setForm(f => ({ ...f, strategy_type: e.target.value }))}
+                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <datalist id="strategy-list">
+                  {STRATEGIES.map(s => <option key={s} value={s} />)}
+                </datalist>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Mode</label>
+                <select
+                  value={form.mode}
+                  onChange={e => setForm(f => ({ ...f, mode: e.target.value as ExecutionMode }))}
+                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="paper">Paper</option>
+                  <option value="live" disabled={!policy?.live_trading_enabled}>Live</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Expiry + Pricing + TIF */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Expiry <span className="text-muted-foreground font-normal">(optional)</span></label>
+                <input
+                  type="date"
+                  value={form.expiry}
+                  onChange={e => setForm(f => ({ ...f, expiry: e.target.value }))}
                   className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
-
-              {/* Order type */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">Order Type</label>
+                <label className="text-sm font-medium">Pricing</label>
                 <select
-                  value={form.order_type}
-                  onChange={(e) => setForm((f) => ({ ...f, order_type: e.target.value as OrderType }))}
+                  value={form.pricing_policy}
+                  onChange={e => setForm(f => ({ ...f, pricing_policy: e.target.value as PricingPolicy }))}
                   className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="market">Market</option>
-                  <option value="limit">Limit</option>
+                  <option value="mid">Mid</option>
+                  <option value="mark">Mark</option>
+                  <option value="manual">Manual</option>
                 </select>
               </div>
-
-              {/* Limit price — only when limit order */}
-              {form.order_type === 'limit' && (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Limit Price (USD)</label>
-                  <input
-                    required
-                    type="number"
-                    min={0.01}
-                    step={0.01}
-                    placeholder="0.00"
-                    value={form.limit_price}
-                    onChange={(e) => setForm((f) => ({ ...f, limit_price: e.target.value }))}
-                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-              )}
-
-              {/* Max loss */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">Max Loss USD <span className="text-muted-foreground font-normal">(optional)</span></label>
+                <label className="text-sm font-medium">Time in Force</label>
+                <select
+                  value={form.time_in_force}
+                  onChange={e => setForm(f => ({ ...f, time_in_force: e.target.value as TimeInForce }))}
+                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="DAY">DAY</option>
+                  <option value="GTC">GTC</option>
+                  <option value="IOC">IOC</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Legs */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Legs</label>
+                <Button type="button" variant="ghost" size="sm" onClick={addLeg} className="h-7 gap-1 text-xs">
+                  <Plus className="h-3 w-3" /> Add Leg
+                </Button>
+              </div>
+              {form.legs.map((leg, i) => (
+                <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 items-end">
+                  <div className="space-y-1">
+                    {i === 0 && <span className="text-xs text-muted-foreground">Right</span>}
+                    <select
+                      value={leg.right}
+                      onChange={e => updateLeg(i, 'right', e.target.value)}
+                      className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="call">Call</option>
+                      <option value="put">Put</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    {i === 0 && <span className="text-xs text-muted-foreground">Strike ($)</span>}
+                    <input
+                      required
+                      type="number"
+                      min={0.01}
+                      step={0.5}
+                      placeholder="0.00"
+                      value={leg.strike}
+                      onChange={e => updateLeg(i, 'strike', e.target.value)}
+                      className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    {i === 0 && <span className="text-xs text-muted-foreground">Side</span>}
+                    <select
+                      value={leg.side}
+                      onChange={e => updateLeg(i, 'side', e.target.value)}
+                      className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="buy">Buy</option>
+                      <option value="sell">Sell</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    {i === 0 && <span className="text-xs text-muted-foreground">Qty</span>}
+                    <input
+                      required
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={leg.qty}
+                      onChange={e => updateLeg(i, 'qty', parseInt(e.target.value) || 1)}
+                      className="w-20 rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  <div className={i === 0 ? 'mt-5' : ''}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeLeg(i)}
+                      disabled={form.legs.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Max debit + Max loss */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Max Debit USD</label>
                 <input
+                  required
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  value={form.max_debit_usd}
+                  onChange={e => setForm(f => ({ ...f, max_debit_usd: e.target.value }))}
+                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Max Loss USD</label>
+                <input
+                  required
                   type="number"
                   min={0}
                   step={0.01}
                   placeholder="0.00"
                   value={form.max_loss_usd}
-                  onChange={(e) => setForm((f) => ({ ...f, max_loss_usd: e.target.value }))}
+                  onChange={e => setForm(f => ({ ...f, max_loss_usd: e.target.value }))}
                   className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
-            </div>
-
-            {/* Notes */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Notes <span className="text-muted-foreground font-normal">(optional)</span></label>
-              <input
-                type="text"
-                placeholder="e.g. Earnings play, stop at 50% loss"
-                value={form.notes}
-                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
             </div>
 
             <div className="flex items-center gap-3">
@@ -474,50 +600,49 @@ export default function FounderTradingPage() {
           </form>
         </section>
 
-        {/* Pending intents */}
+        {/* Intent list */}
         <section className="rounded-xl border bg-card overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b">
             <h2 className="text-base font-semibold flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-muted-foreground" />
-              Pending Intents
+              Intents
             </h2>
             <span className="text-xs text-muted-foreground">{intents.length} intent{intents.length !== 1 ? 's' : ''}</span>
           </div>
 
           {intents.length === 0 ? (
             <div className="px-5 py-8 text-center text-sm text-muted-foreground">
-              No pending intents. Create one above.
+              No intents yet. Create one above.
             </div>
           ) : (
             <div className="divide-y">
-              {intents.map((intent) => (
+              {intents.map(intent => (
                 <div key={intent.id} className="px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`text-sm font-semibold ${intent.side === 'buy' ? 'text-green-600' : 'text-red-600'}`}>
-                        {intent.side.toUpperCase()}
-                      </span>
-                      <span className="text-sm font-mono font-medium">{intent.symbol}</span>
-                      <span className="text-sm text-muted-foreground">×{intent.quantity}</span>
-                      <span className="text-xs text-muted-foreground capitalize">{intent.order_type}</span>
-                      {intent.limit_price && (
-                        <span className="text-xs text-muted-foreground">@ ${intent.limit_price.toFixed(2)}</span>
-                      )}
+                      <span className="text-sm font-semibold font-mono">{intent.symbol}</span>
+                      <span className="text-sm text-muted-foreground">{intent.strategy_type}</span>
+                      <ModeBadge mode={intent.mode} />
                       <IntentStatusBadge status={intent.status} />
                     </div>
-                    {intent.notes && (
-                      <p className="text-xs text-muted-foreground truncate">{intent.notes}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(intent.created_at).toLocaleString()}
+                    <p className="text-xs text-muted-foreground font-mono">
+                      {formatLegs(intent.legs)}
                     </p>
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                      <span>debit ${intent.max_debit_usd}</span>
+                      <span>loss ${intent.max_loss_usd}</span>
+                      {intent.expiry && <span>exp {intent.expiry}</span>}
+                      <span>{new Date(intent.created_at).toLocaleString()}</span>
+                    </div>
+                    {intent.rejection_reason && (
+                      <p className="text-xs text-red-500">{intent.rejection_reason}</p>
+                    )}
                   </div>
 
                   <div className="flex gap-2 shrink-0">
                     {intent.status === 'draft' && (
                       <Button
                         size="sm"
-                        variant="default"
                         disabled={policy?.kill_switch_active}
                         onClick={() => setPendingApproval(intent)}
                       >
@@ -534,7 +659,7 @@ export default function FounderTradingPage() {
           )}
         </section>
 
-        {/* Execution log — collapsible */}
+        {/* Execution audit log */}
         <section className="rounded-xl border bg-card overflow-hidden">
           <button
             onClick={toggleAudit}
@@ -550,11 +675,11 @@ export default function FounderTradingPage() {
                 <div className="px-5 py-8 text-center text-sm text-muted-foreground">No audit entries yet.</div>
               ) : (
                 <div className="divide-y max-h-96 overflow-y-auto">
-                  {auditLog.map((entry) => (
+                  {auditLog.map(entry => (
                     <div key={entry.id} className="px-5 py-3 flex items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-xs font-mono font-medium">{entry.event_type}</span>
+                          <span className="text-xs font-mono font-medium">{entry.action}</span>
                           {entry.intent_id && (
                             <span className="text-xs text-muted-foreground font-mono truncate">
                               intent:{entry.intent_id.slice(0, 8)}…
@@ -564,7 +689,7 @@ export default function FounderTradingPage() {
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {new Date(entry.created_at).toLocaleString()}
                         </p>
-                        {Object.keys(entry.details).length > 0 && (
+                        {entry.details && Object.keys(entry.details).length > 0 && (
                           <pre className="mt-1 text-xs text-muted-foreground font-mono whitespace-pre-wrap break-all">
                             {JSON.stringify(entry.details, null, 2)}
                           </pre>
