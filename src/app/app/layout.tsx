@@ -615,6 +615,20 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             />
           )}
 
+          {/* Trading Console — founder only */}
+          {user.is_founder && (
+            <li>
+              <NavLink
+                href="/app/founder/trading"
+                label="Trading Console"
+                icon={Zap}
+                active={isActive('/app/founder/trading')}
+                onClick={onClose}
+                collapsed={collapsed}
+              />
+            </li>
+          )}
+
           {/* More */}
           <NavGroup
             label="More"
