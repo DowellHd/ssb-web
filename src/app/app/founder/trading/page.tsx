@@ -958,6 +958,16 @@ export default function FounderTradingPage() {
     try { setIntents(await getMyIntents()); } catch { /* silent */ } finally { setLoadingIntents(false); }
   }, []);
 
+  // Token keep-alive — proactively refreshes the JWT before the 15-min expiry
+  // so the data timers never hit a stale-token 401.
+  useEffect(() => {
+    if (!authorized) return;
+    const tokenTimer = setInterval(() => {
+      getCurrentUser().catch(() => {});
+    }, 10 * 60 * 1000);
+    return () => clearInterval(tokenTimer);
+  }, [authorized]);
+
   // Auto-refresh timers
   useEffect(() => {
     if (!authorized) return;
