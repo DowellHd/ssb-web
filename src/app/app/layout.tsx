@@ -110,6 +110,11 @@ const ENTERPRISE_CHILDREN = [
   { href: '/app/enterprise/compliance',        label: 'Compliance',         icon: ShieldCheck },
 ];
 
+const ADMIN_CHILDREN = [
+  { href: '/app/admin',            label: 'Admin Dashboard', icon: ShieldCheck },
+  { href: '/app/founder/trading',  label: 'Trading Console', icon: Zap },
+];
+
 // Items shown only in the UserMenu dropdown
 const USER_MENU_ITEMS = [
   { href: '/app/settings', label: 'Settings', icon: Settings },
@@ -412,6 +417,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
   const marketsActive    = MARKETS_CHILDREN.some((c) => isActive(c.href));
   const moreActive       = MORE_CHILDREN.some((c) => isActive(c.href));
   const enterpriseActive = pathname.startsWith('/app/enterprise');
+  const adminActive      = pathname.startsWith('/app/admin') || pathname.startsWith('/app/founder/trading');
 
   const [analysisOpen,  setAnalysisOpen]  = useState(analysisActive);
   const [tradingOpen,   setTradingOpen]   = useState(tradingActive);
@@ -420,6 +426,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
   const [marketsOpen,   setMarketsOpen]   = useState(marketsActive);
   const [moreOpen,      setMoreOpen]      = useState(moreActive);
   const [enterpriseOpen,setEnterpriseOpen]= useState(enterpriseActive);
+  const [adminOpen,     setAdminOpen]     = useState(adminActive);
 
   useEffect(() => {
     if (analysisActive)   setAnalysisOpen(true);
@@ -429,6 +436,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
     if (marketsActive)    setMarketsOpen(true);
     if (moreActive)       setMoreOpen(true);
     if (enterpriseActive) setEnterpriseOpen(true);
+    if (adminActive)      setAdminOpen(true);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When clicking a group icon while collapsed: expand sidebar, close all
@@ -615,18 +623,20 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
             />
           )}
 
-          {/* Trading Console — founder only */}
-          {user.is_founder && (
-            <li>
-              <NavLink
-                href="/app/founder/trading"
-                label="Trading Console"
-                icon={Zap}
-                active={isActive('/app/founder/trading')}
-                onClick={onClose}
-                collapsed={collapsed}
-              />
-            </li>
+          {/* Admin — founders and admins only */}
+          {(user.is_founder || user.role === 'admin') && (
+            <NavGroup
+              label="Admin"
+              icon={ShieldCheck}
+              items={ADMIN_CHILDREN}
+              isOpen={adminOpen}
+              hasActiveChild={adminActive}
+              onToggle={() => setAdminOpen((v) => !v)}
+              isActive={isActive}
+              onNavClick={onClose}
+              collapsed={collapsed}
+              onCollapsedClick={() => expandGroup(setAdminOpen)}
+            />
           )}
 
           {/* More */}
