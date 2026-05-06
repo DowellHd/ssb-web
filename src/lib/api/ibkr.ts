@@ -1,13 +1,17 @@
 import { apiClient } from '../api-client';
 
 // ============================================================================
-// Types
+// Core Types
 // ============================================================================
 
 export type IntentStatus = 'draft' | 'approved' | 'queued' | 'executed' | 'failed' | 'rejected';
 export type PricingPolicy = 'mid' | 'mark' | 'manual';
 export type TimeInForce = 'DAY' | 'GTC' | 'IOC';
 export type ExecutionMode = 'paper' | 'live';
+export type TimeHorizon = 'short' | 'medium' | 'long';
+export type RiskTolerance = 'conservative' | 'moderate' | 'aggressive';
+export type SignalAlignment = 'aligned' | 'neutral' | 'against';
+export type VixLevel = 'low' | 'normal' | 'elevated' | 'high' | 'extreme' | 'unknown';
 
 export interface IntentLeg {
   right: 'call' | 'put';
@@ -17,12 +21,10 @@ export interface IntentLeg {
 }
 
 export interface IBKRPolicy {
-  // Runtime settings
   ibkr_enabled: boolean;
   kill_switch_active: boolean;
   execution_mode: ExecutionMode;
   live_trading_enabled: boolean;
-  // Per-user policy
   paper_only: boolean;
   require_manual_approval: boolean;
   allowed_strategies: string[];
@@ -89,7 +91,111 @@ export interface AuditEntry {
 }
 
 // ============================================================================
-// API functions
+// Founder Intelligence Types
+// ============================================================================
+
+export interface AIRecommendation {
+  ticker: string;
+  recommendation: 'BUY' | 'SELL' | 'HOLD';
+  confidence: number;
+  entry_zone_low: number | null;
+  entry_zone_high: number | null;
+  stop_loss: number | null;
+  take_profit: number | null;
+  position_size_pct: number;
+  risk_reward_ratio: number | null;
+  reasoning: string;
+  key_risks: string[];
+  signal_type: string | null;
+  signal_strength: number | null;
+  trend_bias: string | null;
+  regime_context: string;
+  generated_at: string;
+  from_cache: boolean;
+}
+
+export interface PortfolioHolding {
+  ticker: string;
+  quantity: number;
+  avg_cost: number;
+  current_price: number | null;
+  market_value: number;
+  weight_pct: number;
+  unrealized_pnl: number;
+  unrealized_pnl_pct: number;
+  daily_change_pct: number | null;
+  signal_bias: string | null;
+}
+
+export interface PortfolioSnapshot {
+  total_value: number;
+  cash: number;
+  invested_value: number;
+  daily_pnl: number;
+  daily_pnl_pct: number;
+  total_pnl: number;
+  total_pnl_pct: number;
+  var_95: number | null;
+  sharpe_ratio: number | null;
+  beta: number | null;
+  holdings: PortfolioHolding[];
+  concentration_warning: boolean;
+  top_holding_ticker: string | null;
+  top_holding_pct: number | null;
+  risk_alerts: string[];
+  regime_context: string;
+  last_updated: string;
+  from_cache: boolean;
+}
+
+export interface MarketSignal {
+  ticker: string;
+  signal_type: string;
+  trend_bias: string;
+  confidence: number;
+  signal_strength: number;
+  entry_zone_low: number | null;
+  stop_loss: number | null;
+  take_profit: number | null;
+  plain_english: string | null;
+}
+
+export interface MarketPulse {
+  regime_label: string;
+  regime_confidence: number;
+  regime_description: string;
+  regime_strategy_hint: string;
+  vix_value: number | null;
+  vix_level: VixLevel;
+  vix_interpretation: string;
+  top_signals: MarketSignal[];
+  total_active_signals: number;
+  signal_bias: string;
+  last_updated: string;
+  from_cache: boolean;
+}
+
+export interface TradeAnalysis {
+  ticker: string;
+  action: string;
+  quantity: number;
+  estimated_value: number | null;
+  position_size_pct: number | null;
+  concentration_warning: boolean;
+  signal_alignment: SignalAlignment;
+  regime_alignment: SignalAlignment;
+  current_signal_type: string | null;
+  current_signal_confidence: number | null;
+  current_trend_bias: string | null;
+  risk_score: number;
+  risk_label: string;
+  proceed: boolean;
+  warnings: string[];
+  recommendation: string;
+}
+
+// ============================================================================
+// Core IBKR API Functions
 // ============================================================================
 
 export async function getIBKRPolicy(): Promise<IBKRPolicy> {
@@ -116,5 +222,47 @@ export async function approveIntent(id: string): Promise<TradeIntent> {
 
 export async function getAuditLog(limit = 50): Promise<AuditEntry[]> {
   const res = await apiClient.get<AuditEntry[]>('/integrations/ibkr/audit', { params: { limit } });
+  return res.data;
+}
+
+// ============================================================================
+// Founder Intelligence API Functions
+// ============================================================================
+
+export async function getMarketPulse(): Promise<MarketPulse> {
+  const res = await apiClient.get<MarketPulse>('/integrations/ibkr/founder/market-pulse');
+  return res.data;
+}
+
+export async function getPortfolioSnapshot(): Promise<PortfolioSnapshot> {
+  const res = await apiClient.get<PortfolioSnapshot>('/integrations/ibkr/founder/portfolio-snapshot');
+  return res.data;
+}
+
+export async function getAIRecommendation(
+  ticker: string,
+  timeHorizon: TimeHorizon = 'medium',
+  riskTolerance: RiskTolerance = 'moderate',
+): Promise<AIRecommendation> {
+  const res = await apiClient.post<AIRecommendation>('/integrations/ibkr/founder/ai-recommend', {
+    ticker,
+    time_horizon: timeHorizon,
+    risk_tolerance: riskTolerance,
+  });
+  return res.data;
+}
+
+export async function analyzeTradeIntent(
+  ticker: string,
+  action: 'BUY' | 'SELL',
+  quantity: number,
+  limitPrice?: number,
+): Promise<TradeAnalysis> {
+  const res = await apiClient.post<TradeAnalysis>('/integrations/ibkr/founder/analyze-trade', {
+    ticker,
+    action,
+    quantity,
+    limit_price: limitPrice ?? null,
+  });
   return res.data;
 }
