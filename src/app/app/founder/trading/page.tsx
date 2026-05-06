@@ -347,13 +347,16 @@ function MarketPulsePanel({
 function AICockpitPanel({
   policy,
   onIntentCreated,
+  initialTicker = '',
 }: {
   policy: IBKRPolicy | null;
   onIntentCreated: () => void;
+  initialTicker?: string;
 }) {
-  const [ticker, setTicker] = useState('');
+  const [ticker, setTicker] = useState(initialTicker);
   const [timeHorizon, setTimeHorizon] = useState<TimeHorizon>('medium');
   const [riskTolerance, setRiskTolerance] = useState<RiskTolerance>('moderate');
+  const formRef = useRef<HTMLDivElement>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [recommendation, setRecommendation] = useState<AIRecommendation | null>(null);
   const [reasoningOpen, setReasoningOpen] = useState(false);
@@ -366,6 +369,10 @@ function AICockpitPanel({
   const [approvingId, setApprovingId] = useState<string | null>(null);
 
   const canSubmit = !policy?.kill_switch_active && policy?.ibkr_enabled;
+
+  useEffect(() => {
+    if (initialTicker) setTicker(initialTicker);
+  }, [initialTicker]);
 
   const handleAnalyze = async () => {
     if (!ticker.trim()) return;
@@ -401,6 +408,8 @@ function AICockpitPanel({
         qty: 1,
       }],
     }));
+    toast.success(`${recommendation.ticker} numbers applied — review the form below`);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
   const updateLeg = (i: number, field: keyof LegForm, val: string | number) => {
@@ -601,7 +610,7 @@ function AICockpitPanel({
       )}
 
       {/* Trade form */}
-      <div className="rounded-xl border border-zinc-700/50 bg-[#0D0D14] overflow-hidden">
+      <div ref={formRef} className="rounded-xl border border-zinc-700/50 bg-[#0D0D14] overflow-hidden">
         <div className="px-4 py-3 border-b border-zinc-700/40 bg-zinc-900/30">
           <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400">New Trade Intent</h2>
         </div>
@@ -815,7 +824,7 @@ function PortfolioPanel({
                 <div className="space-y-1">
                   {snapshot.holdings.slice(0, 8).map(h => (
                     <div key={h.ticker} className="flex items-center gap-2 text-xs py-1 border-b border-zinc-700/20 last:border-0">
-                      <span className="font-mono font-bold text-white w-10 shrink-0">{h.ticker}</span>
+                      <span className="font-mono font-bold text-white w-16 shrink-0 truncate">{h.ticker}</span>
                       <div className="flex-1 min-w-0">
                         <div className="h-1 rounded-full bg-zinc-800 overflow-hidden">
                           <div className="h-full rounded-full bg-zinc-600" style={{ width: `${Math.min(h.weight_pct, 100)}%` }} />
@@ -1070,6 +1079,7 @@ export default function FounderTradingPage() {
           <AICockpitPanel
             policy={policy}
             onIntentCreated={refreshIntents}
+            initialTicker={tickerForAnalysis}
           />
 
           {/* Panel 3: Portfolio & Activity */}
