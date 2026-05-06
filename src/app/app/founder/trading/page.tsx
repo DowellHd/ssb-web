@@ -670,7 +670,7 @@ function AICockpitPanel({
                   className="rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-yellow-600">
                   <option value="call">Call</option><option value="put">Put</option>
                 </select>
-                <input required type="number" min={0.01} step={0.5} placeholder="Strike"
+                <input required type="number" min={0.5} step={0.5} placeholder="Strike"
                   value={leg.strike} onChange={e => updateLeg(i, 'strike', e.target.value)}
                   className="rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-yellow-600" />
                 <select value={leg.side} onChange={e => updateLeg(i, 'side', e.target.value)}
