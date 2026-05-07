@@ -5,7 +5,7 @@ import { apiClient } from '../api-client';
 // ============================================================================
 
 export type IntentStatus = 'draft' | 'approved' | 'queued' | 'executed' | 'failed' | 'rejected';
-export type PricingPolicy = 'mid' | 'mark' | 'manual';
+export type PricingPolicy = 'mid' | 'mark' | 'manual' | 'market';
 export type TimeInForce = 'DAY' | 'GTC' | 'IOC';
 export type ExecutionMode = 'paper' | 'live';
 export type TimeHorizon = 'short' | 'medium' | 'long';

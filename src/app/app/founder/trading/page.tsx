@@ -651,7 +651,7 @@ function AICockpitPanel({
               <label className="text-xs text-zinc-500">Pricing</label>
               <select value={form.pricing_policy} onChange={e => setForm(f => ({ ...f, pricing_policy: e.target.value as PricingPolicy }))}
                 className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-yellow-600">
-                <option value="mid">Mid</option><option value="mark">Mark</option><option value="manual">Manual</option>
+                <option value="mid">Mid</option><option value="mark">Mark</option><option value="manual">Manual</option><option value="market">Market Order</option>
               </select>
             </div>
             <div className="space-y-1">
@@ -957,6 +957,16 @@ export default function FounderTradingPage() {
     setLoadingIntents(true);
     try { setIntents(await getMyIntents()); } catch { /* silent */ } finally { setLoadingIntents(false); }
   }, []);
+
+  // Token keep-alive — proactively refreshes the JWT before the 15-min expiry
+  // so the data timers never hit a stale-token 401.
+  useEffect(() => {
+    if (!authorized) return;
+    const tokenTimer = setInterval(() => {
+      getCurrentUser().catch(() => {});
+    }, 10 * 60 * 1000);
+    return () => clearInterval(tokenTimer);
+  }, [authorized]);
 
   // Auto-refresh timers
   useEffect(() => {
