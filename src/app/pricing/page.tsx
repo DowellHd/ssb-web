@@ -382,8 +382,8 @@ export default function PricingPage() {
               <p className="text-sm text-muted-foreground">
                 We evaluate refund requests on a case-by-case basis for extenuating circumstances.
                 To request a refund, contact us at{' '}
-                <a href="mailto:support@smartstrategiesbuilder.com" className="text-primary hover:underline">
-                  support@smartstrategiesbuilder.com
+                <a href="mailto:smartstrategiesbuilder@gmail.com" className="text-primary hover:underline">
+                  smartstrategiesbuilder@gmail.com
                 </a>{' '}
                 within 7 days of your charge. Approved refunds are processed within 5–10 business days.
               </p>
@@ -428,7 +428,7 @@ export default function PricingPage() {
               },
               {
                 q: 'Do you offer refunds?',
-                a: 'We do not issue automatic prorated refunds, but we evaluate refund requests for extenuating circumstances within 7 days of a charge. Contact support@smartstrategiesbuilder.com.',
+                a: 'We do not issue automatic prorated refunds, but we evaluate refund requests for extenuating circumstances within 7 days of a charge. Contact smartstrategiesbuilder@gmail.com.',
               },
             ].map(({ q, a }) => (
               <div key={q} className="rounded-xl border border-border bg-card p-5 space-y-2">

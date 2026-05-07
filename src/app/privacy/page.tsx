@@ -309,7 +309,7 @@ export default function PrivacyPage() {
           If you have questions about this Privacy Policy, our data practices, or wish to exercise your privacy rights, please contact us at:
         </p>
         <p className="font-medium">
-          privacy@smartstrategiesbuilder.com
+          smartstrategiesbuilder@gmail.com
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
           We will respond to privacy requests within 30 days, or as otherwise required by applicable law.

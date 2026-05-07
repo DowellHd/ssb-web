@@ -398,7 +398,7 @@ export default function TermsPage() {
 
         <h3 className="text-lg font-medium mb-2">Cancellation</h3>
         <p className="mb-4">
-          You may cancel your subscription at any time through the Billing section of your account settings or by contacting us at support@smartstrategiesbuilder.com. Cancellations take effect at the end of the current billing period. You retain full access to your paid plan features until the end of the period for which you have already paid. No early termination fees apply.
+          You may cancel your subscription at any time through the Billing section of your account settings or by contacting us at smartstrategiesbuilder@gmail.com. Cancellations take effect at the end of the current billing period. You retain full access to your paid plan features until the end of the period for which you have already paid. No early termination fees apply.
         </p>
 
         <h3 className="text-lg font-medium mb-2">Refunds</h3>
@@ -409,7 +409,7 @@ export default function TermsPage() {
           <strong>Annual plans:</strong> Annual subscriptions are billed upfront. No prorated refunds are issued for the unused portion of an annual term upon cancellation, except where required by applicable law (including California law).
         </p>
         <p className="mb-4">
-          <strong>Refund requests:</strong> We evaluate refund requests on a case-by-case basis for extenuating circumstances. To request a refund, contact us within 7 days of the charge at support@smartstrategiesbuilder.com. Approved refunds are processed within 5–10 business days.
+          <strong>Refund requests:</strong> We evaluate refund requests on a case-by-case basis for extenuating circumstances. To request a refund, contact us within 7 days of the charge at smartstrategiesbuilder@gmail.com. Approved refunds are processed within 5–10 business days.
         </p>
 
         <h3 className="text-lg font-medium mb-2">Downgrades</h3>
