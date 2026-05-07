@@ -186,7 +186,7 @@ const USER_RIGHTS = [
   {
     icon: Lock,
     title: 'Right to Restrict Processing (GDPR Art. 18)',
-    desc: 'Limit how we process your data. Contact privacy@smartstrategiesbuilder.com to submit a restriction request.',
+    desc: 'Limit how we process your data. Contact smartstrategiesbuilder@gmail.com to submit a restriction request.',
     action: null,
     actionLabel: null,
   },
@@ -702,8 +702,8 @@ export default function PrivacyDataPage() {
               <p className="text-xs font-semibold">Exercise Your Rights or Ask a Question</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 To submit a data subject request, withdraw consent, or ask about our data practices, email us at{' '}
-                <a href="mailto:privacy@smartstrategiesbuilder.com" className="text-foreground underline underline-offset-2 hover:no-underline">
-                  privacy@smartstrategiesbuilder.com
+                <a href="mailto:smartstrategiesbuilder@gmail.com" className="text-foreground underline underline-offset-2 hover:no-underline">
+                  smartstrategiesbuilder@gmail.com
                 </a>.
                 We will respond within 30 days (or sooner as required by law) and may ask you to verify your identity
                 before processing the request.
