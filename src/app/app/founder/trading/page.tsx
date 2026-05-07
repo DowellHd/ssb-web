@@ -791,6 +791,14 @@ function PortfolioPanel({
 }) {
   const [intentsOpen, setIntentsOpen] = useState(true);
   const [expandedIntentId, setExpandedIntentId] = useState<string | null>(null);
+  const [intentFilter, setIntentFilter] = useState<'all' | 'active' | 'executed' | 'failed'>('all');
+
+  const filteredIntents = intents.filter(i => {
+    if (intentFilter === 'active') return ['draft', 'approved', 'queued'].includes(i.status);
+    if (intentFilter === 'executed') return i.status === 'executed';
+    if (intentFilter === 'failed') return ['failed', 'cancelled', 'rejected'].includes(i.status);
+    return true;
+  });
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-y-auto">
@@ -867,7 +875,7 @@ function PortfolioPanel({
             {loadingIntents && <Loader2 className="h-3 w-3 animate-spin text-zinc-600" />}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-600">{intents.length}</span>
+            <span className="text-xs text-zinc-600">{filteredIntents.length}{intentFilter !== 'all' && `/${intents.length}`}</span>
             <button onClick={e => { e.stopPropagation(); onRefreshIntents(); }} className="text-zinc-600 hover:text-zinc-300 p-0.5">
               <RefreshCw className="h-3 w-3" />
             </button>
@@ -876,10 +884,19 @@ function PortfolioPanel({
         </button>
 
         {intentsOpen && (
+          <div>
+            <div className="flex gap-1 px-3 py-2 border-b border-zinc-700/30 bg-zinc-900/20">
+              {(['all', 'active', 'executed', 'failed'] as const).map(f => (
+                <button key={f} onClick={() => setIntentFilter(f)}
+                  className={`px-2 py-0.5 rounded text-xs capitalize transition-colors ${intentFilter === f ? 'bg-zinc-700 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
           <div className="divide-y divide-zinc-700/20 max-h-80 overflow-y-auto">
-            {intents.length === 0 ? (
-              <p className="px-4 py-6 text-xs text-zinc-600 italic text-center">No intents yet</p>
-            ) : intents.map(intent => (
+            {filteredIntents.length === 0 ? (
+              <p className="px-4 py-6 text-xs text-zinc-600 italic text-center">{intents.length === 0 ? 'No intents yet' : `No ${intentFilter} intents`}</p>
+            ) : filteredIntents.map(intent => (
               <div key={intent.id} className="px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-xs text-white">{intent.symbol}</span>
@@ -913,6 +930,7 @@ function PortfolioPanel({
                 )}
               </div>
             ))}
+          </div>
           </div>
         )}
       </div>
