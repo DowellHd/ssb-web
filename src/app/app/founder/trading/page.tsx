@@ -48,6 +48,8 @@ import {
   type TimeHorizon,
   type RiskTolerance,
 } from '@/lib/api/ibkr';
+import { getOptionSnapshot } from '@/lib/api/market-data';
+import type { OptionSnapshot } from '@/lib/api/market-data';
 
 // ============================================================================
 // Design tokens
@@ -873,6 +875,94 @@ function AICockpitPanel({
 }
 
 // ============================================================================
+// Live P&L component (uses live option price from backend)
+// ============================================================================
+
+function LivePnL({
+  intent,
+  fillPrice,
+}: {
+  intent: TradeIntent;
+  fillPrice: number;
+}) {
+  const [snapshot, setSnapshot] = useState<OptionSnapshot | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchSnapshot = useCallback(async () => {
+    if (!intent.expiry || !intent.legs || intent.legs.length === 0) return;
+    const leg = intent.legs[0] as { right: 'call' | 'put'; strike: string; qty: number };
+    if (!leg.right || !leg.strike) return;
+    setLoading(true);
+    try {
+      const snap = await getOptionSnapshot(
+        intent.symbol,
+        intent.expiry,
+        leg.right,
+        parseFloat(leg.strike),
+      );
+      setSnapshot(snap);
+    } finally {
+      setLoading(false);
+    }
+  }, [intent]);
+
+  useEffect(() => {
+    void fetchSnapshot();
+  }, [fetchSnapshot]);
+
+  const leg = intent.legs?.[0] as { side: string; qty: number } | undefined;
+  const qty = leg?.qty ?? 1;
+  const direction = leg?.side === 'sell' ? -1 : 1;
+
+  const mid = snapshot?.mid ?? null;
+  const pnl = mid !== null ? direction * (mid - fillPrice) * qty * 100 : null;
+
+  return (
+    <div className="rounded-lg border border-zinc-700/30 bg-zinc-900/20 p-2 space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Live P&amp;L</span>
+        <button
+          onClick={() => void fetchSnapshot()}
+          disabled={loading}
+          className="text-zinc-600 hover:text-zinc-300 transition-colors disabled:opacity-40"
+        >
+          <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+      {loading && !snapshot ? (
+        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          <span>Fetching live price…</span>
+        </div>
+      ) : snapshot && mid !== null ? (
+        <div className="space-y-0.5 text-xs">
+          <div className="flex justify-between">
+            <span className="text-zinc-400">Current mid</span>
+            <span className="text-white font-mono">${mid.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-zinc-400">Fill price</span>
+            <span className="text-zinc-400 font-mono">${fillPrice.toFixed(2)}</span>
+          </div>
+          {pnl !== null && (
+            <div className="flex justify-between border-t border-zinc-700/30 pt-1">
+              <span className="text-zinc-400">P&amp;L</span>
+              <span className={`font-bold font-mono ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {pnl >= 0 ? '+' : ''}{pnl < 0 ? '-' : ''}${Math.abs(pnl).toFixed(2)}
+              </span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-[10px] text-zinc-600 italic">
+          {snapshot === null && !loading ? 'Price unavailable — market may be closed' : '—'}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // Portfolio & Activity Panel
 // ============================================================================
 
@@ -1019,12 +1109,70 @@ function PortfolioPanel({
                   <div className="mt-2 space-y-1.5 text-xs">
                     <div className="rounded-lg border border-zinc-700/30 bg-zinc-900/30 p-2 space-y-1">
                       <div className="flex justify-between"><span className="text-zinc-500">Mode</span><span className="text-white capitalize">{intent.mode}</span></div>
+                      <div className="flex justify-between"><span className="text-zinc-500">Expiry</span><span className="text-white font-mono">{intent.expiry ?? '—'}</span></div>
                       <div className="flex justify-between"><span className="text-zinc-500">Max Debit</span><span className="text-white">${intent.max_debit_usd}</span></div>
                       <div className="flex justify-between"><span className="text-zinc-500">Max Loss</span><span className="text-white">${intent.max_loss_usd}</span></div>
                       {intent.rejection_reason && (
-                        <div className="text-red-400">Rejected: {intent.rejection_reason}</div>
+                        <div className="text-red-400 pt-1">Rejected: {intent.rejection_reason}</div>
                       )}
                     </div>
+
+                    {/* Fill details for executed intents */}
+                    {intent.status === 'executed' && (() => {
+                      const meta = intent.execution_metadata as Record<string, unknown> | null;
+                      const fills = meta?.fill_prices as Record<string, number> | null | undefined;
+                      if (!fills || Object.keys(fills).length === 0) return null;
+
+                      const legs = intent.legs as Array<{ side: string; qty: number }>;
+                      const totalQty = legs.reduce((s, l) => s + (l.qty ?? 1), 0);
+                      const fillEntries = Object.entries(fills);
+                      const avgFillPrice = fillEntries.reduce((s, [, p]) => s + p, 0) / fillEntries.length;
+                      const totalCost = avgFillPrice * totalQty * 100;
+                      const maxDebit = parseFloat(String(intent.max_debit_usd));
+                      const savings = maxDebit > 0 ? maxDebit - totalCost : null;
+
+                      return (
+                        <div className="rounded-lg border border-emerald-800/40 bg-emerald-950/20 p-2 space-y-1.5">
+                          <p className="text-xs font-bold text-emerald-400 uppercase tracking-wide">Fill Details</p>
+                          {fillEntries.map(([sym, price]) => (
+                            <div key={sym} className="flex items-center justify-between gap-2">
+                              <span className="text-zinc-500 font-mono text-[10px] truncate">{sym}</span>
+                              <span className="text-emerald-300 shrink-0">${price.toFixed(2)}/share</span>
+                            </div>
+                          ))}
+                          <div className="border-t border-emerald-800/30 pt-1 space-y-0.5">
+                            <div className="flex justify-between">
+                              <span className="text-zinc-400">Total paid</span>
+                              <span className="text-white font-semibold">${totalCost.toFixed(2)}</span>
+                            </div>
+                            {savings !== null && (
+                              <div className="flex justify-between">
+                                <span className="text-zinc-400">vs max debit</span>
+                                <span className={savings >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                                  {savings >= 0 ? '-' : '+'}${Math.abs(savings).toFixed(2)}
+                                  {savings >= 0 ? ' saved' : ' over'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <LivePnL intent={intent} fillPrice={avgFillPrice} />
+                        </div>
+                      );
+                    })()}
+
+                    {/* Executor error for failed intents */}
+                    {intent.status === 'failed' && (() => {
+                      const meta = intent.execution_metadata as Record<string, unknown> | null;
+                      const errMsg = meta?.error as string | null | undefined;
+                      if (!errMsg) return null;
+                      return (
+                        <div className="rounded-lg border border-red-800/40 bg-red-950/20 p-2">
+                          <p className="text-xs font-bold text-red-400 uppercase tracking-wide mb-1">Executor Error</p>
+                          <p className="text-xs text-red-300 break-words">{errMsg}</p>
+                        </div>
+                      );
+                    })()}
+
                     {intent.status === 'draft' && (
                       <Button size="sm" onClick={() => onApprove(intent.id)} disabled={!!approvingId}
                         className="w-full text-xs font-bold gap-1 bg-blue-600 hover:bg-blue-500 text-white">
