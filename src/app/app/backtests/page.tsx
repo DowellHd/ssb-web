@@ -2,10 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar, AlertTriangle } from 'lucide-react';
+import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { listBacktests, getBacktestEntitlements, type BacktestSummary, type BacktestEntitlements } from '@/lib/api/backtests';
 import { isValidNumber, isUnlimited, formatLimit, safeToFixed } from '@/lib/utils';
+
+const STRATEGY_LABELS: Record<string, string> = {
+  buy_and_hold: 'Buy & Hold',
+  sma_crossover: 'SMA Crossover',
+  rsi_mean_reversion: 'RSI Mean Reversion',
+  momentum: 'Momentum',
+};
+
+function formatStrategyName(strategyType: string | undefined): string {
+  if (!strategyType) return '—';
+  return STRATEGY_LABELS[strategyType] ?? strategyType;
+}
 
 function formatDateRange(days: number | null | undefined): string {
   if (!isValidNumber(days) || days <= 0) return '—';
@@ -158,6 +170,7 @@ export default function BacktestsPage() {
             <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Name</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Strategy</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Symbols</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Period</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Return</th>
@@ -169,6 +182,9 @@ export default function BacktestsPage() {
               {backtests.map((backtest) => (
                 <tr key={backtest.id} className="border-t hover:bg-muted/30 cursor-pointer">
                   <td className="p-4 font-medium">{backtest.name}</td>
+                  <td className="p-4 text-sm text-muted-foreground">
+                    {formatStrategyName(backtest.strategy_type)}
+                  </td>
                   <td className="p-4 text-sm text-muted-foreground">
                     {backtest.symbols.slice(0, 3).join(', ')}
                     {backtest.symbols.length > 3 && ` +${backtest.symbols.length - 3}`}

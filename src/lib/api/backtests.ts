@@ -17,6 +17,7 @@ export interface BacktestSummary {
   total_return_pct?: number;
   max_drawdown?: number;
   total_trades?: number;
+  strategy_type?: string;
   created_at: string;
 }
 
