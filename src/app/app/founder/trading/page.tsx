@@ -136,6 +136,19 @@ function validateExpiry(expiry: string): { error: string | null; warning: string
   return { error: null, warning: null };
 }
 
+/** Suggest a Friday expiry based on the selected time horizon. */
+function suggestExpiry(horizon: TimeHorizon): string {
+  const daysAhead = horizon === 'short' ? 7 : horizon === 'long' ? 60 : 30;
+  const target = new Date();
+  target.setDate(target.getDate() + daysAhead);
+  // Advance to the nearest Friday at or after the target date
+  const dow = target.getDay(); // 0=Sun … 6=Sat, 5=Fri
+  if (dow !== 5) {
+    target.setDate(target.getDate() + ((5 - dow + 7) % 7));
+  }
+  return target.toISOString().split('T')[0];
+}
+
 // ============================================================================
 // Regime & VIX styling
 // ============================================================================
@@ -454,10 +467,12 @@ function AICockpitPanel({
 
   const useRecommendation = () => {
     if (!recommendation) return;
+    const suggestedExpiry = suggestExpiry(timeHorizon);
     setForm(f => ({
       ...f,
       symbol: recommendation.ticker,
       strategy_type: recommendation.signal_type || 'long_call',
+      expiry: suggestedExpiry,
       max_loss_usd: recommendation.stop_loss
         ? String(Math.round((recommendation.entry_zone_high || 0) - recommendation.stop_loss))
         : '',
@@ -471,7 +486,7 @@ function AICockpitPanel({
         qty: 1,
       }],
     }));
-    toast.success(`${recommendation.ticker} numbers applied — review the form below`);
+    toast.success(`${recommendation.ticker} numbers applied — verify expiry date (${suggestedExpiry})`);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
@@ -499,6 +514,7 @@ function AICockpitPanel({
     e.preventDefault();
     if (!form.symbol.trim()) { toast.error('Symbol required'); return; }
     if (!form.strategy_type.trim()) { toast.error('Strategy required'); return; }
+    if (!form.expiry) { toast.error('Expiry date is required for options'); return; }
     if (form.legs.some(l => !l.strike || parseFloat(l.strike) <= 0)) { toast.error('All legs need a strike price'); return; }
     setSubmitting(true);
     try {
