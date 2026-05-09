@@ -99,11 +99,11 @@ function computeMarketStatus(): MarketStatus {
   const OPEN = 9 * 60 + 30;
   const CLOSE = 16 * 60;
 
-  if (day === 6) return { isOpen: false, reason: 'Weekend (Saturday)', nextOpenLabel: 'Opens 9:30 AM ET Mon' };
-  if (day === 0) return { isOpen: false, reason: 'Weekend (Sunday)',   nextOpenLabel: 'Opens 9:30 AM ET Mon' };
-  if (mins < OPEN)  return { isOpen: false, reason: 'Pre-market',  nextOpenLabel: 'Opens 9:30 AM ET today' };
-  if (mins >= CLOSE) return { isOpen: false, reason: 'After hours', nextOpenLabel: 'Opens 9:30 AM ET tomorrow' };
-  return { isOpen: true, reason: 'Market open', nextOpenLabel: 'Closes 4:00 PM ET' };
+  if (day === 6) return { isOpen: false, reason: 'Weekend (Saturday)', nextOpenLabel: 'Opens 6:30 AM PT Mon' };
+  if (day === 0) return { isOpen: false, reason: 'Weekend (Sunday)',   nextOpenLabel: 'Opens 6:30 AM PT Mon' };
+  if (mins < OPEN)  return { isOpen: false, reason: 'Pre-market',  nextOpenLabel: 'Opens 6:30 AM PT today' };
+  if (mins >= CLOSE) return { isOpen: false, reason: 'After hours', nextOpenLabel: 'Opens 6:30 AM PT tomorrow' };
+  return { isOpen: true, reason: 'Market open', nextOpenLabel: 'Closes 1:00 PM PT' };
 }
 
 function useMarketStatus(): MarketStatus {
@@ -131,7 +131,7 @@ function validateExpiry(expiry: string): { error: string | null; warning: string
   if (isToday) {
     const mins = nyNow.getHours() * 60 + nyNow.getMinutes();
     if (mins >= 16 * 60) return { error: null, warning: 'Market is closed for today — this contract expires today and cannot fill.' };
-    if (mins < 9 * 60 + 30) return { error: null, warning: 'Market not yet open — order will queue for 9:30 AM ET open.' };
+    if (mins < 9 * 60 + 30) return { error: null, warning: 'Market not yet open — order will queue for 6:30 AM PT open.' };
   }
   return { error: null, warning: null };
 }
