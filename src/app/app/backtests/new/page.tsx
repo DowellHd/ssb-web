@@ -139,6 +139,8 @@ const STRATEGIES: StrategyDef[] = [
 // Page Component
 // ============================================================================
 
+const TODAY = new Date().toISOString().split('T')[0];
+
 export default function NewBacktestPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -196,6 +198,19 @@ export default function NewBacktestPage() {
       return;
     }
 
+    const today = new Date().toISOString().split('T')[0];
+    if (formData.endDate > today) {
+      toast.error('End date cannot be in the future');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.endDate <= formData.startDate) {
+      toast.error('End date must be after start date');
+      setLoading(false);
+      return;
+    }
+
     const capitalNum = parseFloat(formData.initialCapital);
     if (isNaN(capitalNum) || capitalNum < 1000) {
       toast.error('Initial capital must be at least $1,000');
@@ -235,8 +250,12 @@ export default function NewBacktestPage() {
       toast.success('Backtest complete!');
       router.push('/app/backtests');
     } catch (err: any) {
-      const detail =
-        err?.response?.data?.detail ?? err?.message ?? 'Failed to create backtest';
+      const raw = err?.response?.data?.detail ?? err?.message ?? 'Failed to create backtest';
+      const detail = Array.isArray(raw)
+        ? raw.map((e: any) => e?.msg ?? JSON.stringify(e)).join('; ')
+        : typeof raw === 'string'
+          ? raw
+          : JSON.stringify(raw);
       toast.error(detail);
     } finally {
       setLoading(false);
@@ -314,6 +333,7 @@ export default function NewBacktestPage() {
               <Input
                 id="startDate"
                 type="date"
+                max={TODAY}
                 value={formData.startDate}
                 onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                 className="mt-1"
@@ -329,6 +349,7 @@ export default function NewBacktestPage() {
               <Input
                 id="endDate"
                 type="date"
+                max={TODAY}
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 className="mt-1"
