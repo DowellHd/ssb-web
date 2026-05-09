@@ -77,6 +77,66 @@ function ageLabel(iso: string): string {
 }
 
 // ============================================================================
+// Market hours helpers
+// ============================================================================
+
+interface MarketStatus {
+  isOpen: boolean;
+  reason: string;        // e.g. "After hours", "Weekend", "Pre-market"
+  nextOpenLabel: string; // e.g. "Opens 9:30 AM ET Mon"
+}
+
+function getNYDate(): Date {
+  // Parse current time in America/New_York to a plain Date whose local fields
+  // reflect NY wall-clock values — reliable across all browser timezones.
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+}
+
+function computeMarketStatus(): MarketStatus {
+  const ny = getNYDate();
+  const day = ny.getDay(); // 0=Sun … 6=Sat
+  const mins = ny.getHours() * 60 + ny.getMinutes();
+  const OPEN = 9 * 60 + 30;
+  const CLOSE = 16 * 60;
+
+  if (day === 6) return { isOpen: false, reason: 'Weekend (Saturday)', nextOpenLabel: 'Opens 9:30 AM ET Mon' };
+  if (day === 0) return { isOpen: false, reason: 'Weekend (Sunday)',   nextOpenLabel: 'Opens 9:30 AM ET Mon' };
+  if (mins < OPEN)  return { isOpen: false, reason: 'Pre-market',  nextOpenLabel: 'Opens 9:30 AM ET today' };
+  if (mins >= CLOSE) return { isOpen: false, reason: 'After hours', nextOpenLabel: 'Opens 9:30 AM ET tomorrow' };
+  return { isOpen: true, reason: 'Market open', nextOpenLabel: 'Closes 4:00 PM ET' };
+}
+
+function useMarketStatus(): MarketStatus {
+  const [status, setStatus] = useState<MarketStatus>(computeMarketStatus);
+  useEffect(() => {
+    const tick = () => setStatus(computeMarketStatus());
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return status;
+}
+
+/** Returns a warning string if the expiry date is problematic, null if fine. */
+function validateExpiry(expiry: string): { error: string | null; warning: string | null } {
+  if (!expiry) return { error: null, warning: null };
+  const d = new Date(expiry + 'T12:00:00'); // noon to avoid timezone edge cases
+  const now = new Date();
+  if (d < new Date(now.toDateString())) return { error: 'Expiry date is in the past.', warning: null };
+  const dow = d.getDay();
+  if (dow === 6) return { error: 'Options cannot expire on Saturday — use the Friday before.', warning: null };
+  if (dow === 0) return { error: 'Options cannot expire on Sunday — use the nearest Friday.', warning: null };
+  // Same-day expiry while market is closed
+  const nyNow = getNYDate();
+  const isToday = d.toDateString() === new Date(nyNow.toDateString()).toDateString();
+  if (isToday) {
+    const mins = nyNow.getHours() * 60 + nyNow.getMinutes();
+    if (mins >= 16 * 60) return { error: null, warning: 'Market is closed for today — this contract expires today and cannot fill.' };
+    if (mins < 9 * 60 + 30) return { error: null, warning: 'Market not yet open — order will queue for 9:30 AM ET open.' };
+  }
+  return { error: null, warning: null };
+}
+
+// ============================================================================
 // Regime & VIX styling
 // ============================================================================
 
@@ -369,6 +429,9 @@ function AICockpitPanel({
   const [approvingId, setApprovingId] = useState<string | null>(null);
 
   const canSubmit = !policy?.kill_switch_active && policy?.ibkr_enabled;
+  const marketStatus = useMarketStatus();
+  const expiryValidation = validateExpiry(form.expiry);
+  const hasExpiryError = !!expiryValidation.error;
 
   useEffect(() => {
     if (initialTicker) setTicker(initialTicker);
@@ -635,7 +698,17 @@ function AICockpitPanel({
             <label className="text-xs text-zinc-500">Expiry <span className="text-zinc-600">(required for options)</span></label>
             <input required type="date" value={form.expiry}
               onChange={e => setForm(f => ({ ...f, expiry: e.target.value }))}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-yellow-600 [color-scheme:dark]" />
+              className={`w-full rounded-lg border bg-zinc-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-yellow-600 [color-scheme:dark] ${expiryValidation.error ? 'border-red-500/70' : 'border-zinc-700'}`} />
+            {expiryValidation.error && (
+              <p className="flex items-center gap-1 text-xs text-red-400">
+                <AlertTriangle className="h-3 w-3 shrink-0" />{expiryValidation.error}
+              </p>
+            )}
+            {!expiryValidation.error && expiryValidation.warning && (
+              <p className="flex items-center gap-1 text-xs text-amber-400">
+                <AlertTriangle className="h-3 w-3 shrink-0" />{expiryValidation.warning}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -743,13 +816,30 @@ function AICockpitPanel({
             </div>
           )}
 
+          {/* Market status banner */}
+          {!marketStatus.isOpen && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 space-y-0.5">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
+                <AlertTriangle className="h-3 w-3 shrink-0" />
+                Market closed — {marketStatus.reason}
+              </div>
+              <p className="text-xs text-amber-300/70">{marketStatus.nextOpenLabel}. Market orders will queue and fill at open; limit orders require data subscription to fill.</p>
+            </div>
+          )}
+          {marketStatus.isOpen && (
+            <div className="flex items-center gap-1.5 text-xs text-emerald-500">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Market open · {marketStatus.nextOpenLabel}
+            </div>
+          )}
+
           <div className="flex gap-2 pt-1">
             <Button type="button" variant="outline" size="sm" onClick={runPreTrade} disabled={runningPreTrade}
               className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800 text-xs gap-1">
               {runningPreTrade ? <Loader2 className="h-3 w-3 animate-spin" /> : <Shield className="h-3 w-3" />}
               Analyze Risk
             </Button>
-            <Button type="submit" size="sm" disabled={submitting || !canSubmit}
+            <Button type="submit" size="sm" disabled={submitting || !canSubmit || hasExpiryError}
               className="flex-1 text-xs font-bold gap-1" style={{ backgroundColor: GOLD, color: '#0A0A0F' }}>
               {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Zap className="h-3 w-3" />}
               Create Intent
