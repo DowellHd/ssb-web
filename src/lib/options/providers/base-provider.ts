@@ -68,16 +68,14 @@ export interface OptionsProvider {
 /**
  * Returns the active options provider for the current environment.
  *
- * Phase 1: always returns SimulatedOptionsProvider.
- * Phase 2+: check a config flag or environment variable to swap providers.
- *
- * Example future extension (do NOT implement in Phase 1):
- *
- *   if (process.env.NEXT_PUBLIC_OPTIONS_PROVIDER === 'polygon') {
- *     return new PolygonOptionsProvider(apiKey);
- *   }
+ * Set NEXT_PUBLIC_OPTIONS_PROVIDER=alpaca to use live Alpaca data via
+ * the SSB API backend. Defaults to the simulated (educational) provider.
  */
 export async function getOptionsProvider(): Promise<OptionsProvider> {
+  if (process.env.NEXT_PUBLIC_OPTIONS_PROVIDER === 'alpaca') {
+    const { ApiOptionsProvider } = await import('./api-provider');
+    return new ApiOptionsProvider();
+  }
   const { SimulatedOptionsProvider } = await import('./simulated-provider');
   return new SimulatedOptionsProvider();
 }
