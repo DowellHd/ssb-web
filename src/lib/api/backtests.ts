@@ -189,3 +189,10 @@ export async function getEquityCurve(backtestId: string): Promise<EquityCurveRes
   const response = await apiClient.get(`/backtests/${backtestId}/equity-curve`);
   return response.data;
 }
+
+/**
+ * Delete a backtest and all its associated data.
+ */
+export async function deleteBacktest(backtestId: string): Promise<void> {
+  await apiClient.delete(`/backtests/${backtestId}`);
+}
