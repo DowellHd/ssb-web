@@ -180,7 +180,7 @@ export default function BacktestsPage() {
             </thead>
             <tbody>
               {backtests.map((backtest) => (
-                <tr key={backtest.id} className="border-t hover:bg-muted/30 cursor-pointer">
+                <tr key={backtest.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => router.push(`/app/backtests/${backtest.id}`)}>
                   <td className="p-4 font-medium">{backtest.name}</td>
                   <td className="p-4 text-sm text-muted-foreground">
                     {formatStrategyName(backtest.strategy_type)}
