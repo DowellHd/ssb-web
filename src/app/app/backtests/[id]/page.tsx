@@ -11,6 +11,7 @@ import {
   BarChart2,
   AlertTriangle,
   Clock,
+  Trash2,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -26,6 +27,7 @@ import {
   getBacktest,
   getEquityCurve,
   getBacktestTrades,
+  deleteBacktest,
   type BacktestDetails,
   type EquityCurvePoint,
   type BacktestTrade,
@@ -86,6 +88,8 @@ export default function BacktestDetailPage() {
   const [trades, setTrades] = useState<BacktestTrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -108,6 +112,18 @@ export default function BacktestDetailPage() {
       }
     })();
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!backtest) return;
+    setDeleting(true);
+    try {
+      await deleteBacktest(backtest.id);
+      router.push('/app/backtests');
+    } catch {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -180,12 +196,41 @@ export default function BacktestDetailPage() {
               <span>{backtest.symbols.join(', ')}</span>
             </div>
           </div>
-          {backtest.execution_time_ms != null && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              Ran in {(backtest.execution_time_ms / 1000).toFixed(1)}s
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {backtest.execution_time_ms != null && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                Ran in {(backtest.execution_time_ms / 1000).toFixed(1)}s
+              </div>
+            )}
+            {confirmDelete ? (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Delete this backtest?</span>
+                <button
+                  className="text-red-600 font-medium hover:underline disabled:opacity-50"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Deleting…' : 'Yes, delete'}
+                </button>
+                <button
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 transition-colors"
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

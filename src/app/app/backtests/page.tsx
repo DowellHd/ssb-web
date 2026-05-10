@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { listBacktests, getBacktestEntitlements, type BacktestSummary, type BacktestEntitlements } from '@/lib/api/backtests';
+import { listBacktests, getBacktestEntitlements, deleteBacktest, type BacktestSummary, type BacktestEntitlements } from '@/lib/api/backtests';
 import { isValidNumber, isUnlimited, formatLimit, safeToFixed } from '@/lib/utils';
 
 const STRATEGY_LABELS: Record<string, string> = {
@@ -32,6 +32,8 @@ export default function BacktestsPage() {
   const [entitlements, setEntitlements] = useState<BacktestEntitlements | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const canCreateBacktest = entitlements && (isUnlimited(entitlements.monthly_limit) || (entitlements.monthly_remaining ?? 0) > 0);
 
@@ -56,9 +58,30 @@ export default function BacktestsPage() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    setConfirmDeleteId(null);
+    try {
+      await deleteBacktest(id);
+      setBacktests((prev) => prev.filter((b) => b.id !== id));
+    } catch {
+      // silently ignore — row stays in list
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
+
+  // Close confirm popover on outside click
+  useEffect(() => {
+    if (!confirmDeleteId) return;
+    const handler = () => setConfirmDeleteId(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [confirmDeleteId]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -176,11 +199,16 @@ export default function BacktestsPage() {
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Return</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Drawdown</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
+                <th className="p-4" />
               </tr>
             </thead>
             <tbody>
               {backtests.map((backtest) => (
-                <tr key={backtest.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => router.push(`/app/backtests/${backtest.id}`)}>
+                <tr
+                  key={backtest.id}
+                  className="border-t hover:bg-muted/30 cursor-pointer"
+                  onClick={() => router.push(`/app/backtests/${backtest.id}`)}
+                >
                   <td className="p-4 font-medium">{backtest.name}</td>
                   <td className="p-4 text-sm text-muted-foreground">
                     {formatStrategyName(backtest.strategy_type)}
@@ -217,6 +245,40 @@ export default function BacktestsPage() {
                     )}
                   </td>
                   <td className="p-4">{getStatusBadge(backtest.status)}</td>
+                  <td
+                    className="p-4 text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {confirmDeleteId === backtest.id ? (
+                      <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-xs text-muted-foreground">Delete?</span>
+                        <button
+                          className="text-xs text-red-600 font-medium hover:underline"
+                          onClick={() => handleDelete(backtest.id)}
+                          disabled={deletingId === backtest.id}
+                        >
+                          {deletingId === backtest.id ? '...' : 'Yes'}
+                        </button>
+                        <button
+                          className="text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() => setConfirmDeleteId(null)}
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="p-1 rounded text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
+                        aria-label="Delete backtest"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmDeleteId(backtest.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
