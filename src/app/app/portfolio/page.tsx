@@ -32,6 +32,8 @@ import {
   getPortfolioSummary,
   getWashSaleScan,
   getRealVsPaperComparison,
+  listBrokerConnections,
+  getBrokerHoldings,
   type AttributionResponse,
   type CorrelationResponse,
   type RebalanceResponse,
@@ -39,14 +41,17 @@ import {
   type TaxLossResponse,
   type Benchmark,
   type BenchmarkComparisonResult,
+  type HoldingInput,
+  type PlaidHolding,
   type PortfolioSummary,
   type WashSaleScanResult,
   type RealVsPaperResult,
 } from '@/lib/api/portfolio';
 
-// ── Demo helpers ──────────────────────────────────────────────────────────────
+// ── Demo fallback helpers ──────────────────────────────────────────────────────
+// Used only when no broker account is connected.
 
-const DEMO_HOLDINGS = [
+const DEMO_HOLDINGS: HoldingInput[] = [
   { symbol: 'AAPL', weight: 0.25, sector: 'Technology', return_pct: 0.032 },
   { symbol: 'MSFT', weight: 0.20, sector: 'Technology', return_pct: 0.028 },
   { symbol: 'JPM',  weight: 0.15, sector: 'Financials', return_pct: 0.019 },
@@ -56,11 +61,33 @@ const DEMO_HOLDINGS = [
 ];
 
 const DEMO_POSITIONS = [
-  { symbol: 'AAPL', cost_basis: 185.00, current_price: 172.50, quantity: 50, purchase_date: '2024-11-01' },
-  { symbol: 'NFLX', cost_basis: 520.00, current_price: 445.00, quantity: 10, purchase_date: '2024-09-15' },
-  { symbol: 'INTC', cost_basis: 38.00,  current_price: 21.50,  quantity: 200, purchase_date: '2024-03-10' },
-  { symbol: 'PFE',  cost_basis: 32.00,  current_price: 26.80,  quantity: 100, purchase_date: '2024-06-20' },
+  { symbol: 'AAPL', cost_basis: 185.00, current_price: 172.50, quantity: 50 },
+  { symbol: 'NFLX', cost_basis: 520.00, current_price: 445.00, quantity: 10 },
+  { symbol: 'INTC', cost_basis: 38.00,  current_price: 21.50,  quantity: 200 },
+  { symbol: 'PFE',  cost_basis: 32.00,  current_price: 26.80,  quantity: 100 },
 ];
+
+type Position = { symbol: string; cost_basis: number; current_price: number; quantity: number };
+
+function plaidToHoldings(plaid: PlaidHolding[]): { holdings: HoldingInput[]; positions: Position[] } {
+  const totalValue = plaid.reduce((sum, h) => sum + h.institution_value, 0);
+  const holdings: HoldingInput[] = plaid.map(h => ({
+    symbol: h.symbol,
+    weight: totalValue > 0 ? h.institution_value / totalValue : 0,
+    return_pct: h.cost_basis != null && h.cost_basis > 0
+      ? (h.institution_price - h.cost_basis) / h.cost_basis
+      : undefined,
+  }));
+  const positions: Position[] = plaid
+    .filter(h => h.cost_basis != null && h.cost_basis > 0)
+    .map(h => ({
+      symbol: h.symbol,
+      cost_basis: h.cost_basis!,
+      current_price: h.institution_price,
+      quantity: h.quantity,
+    }));
+  return { holdings, positions };
+}
 
 // ── Tab config ────────────────────────────────────────────────────────────────
 
@@ -140,6 +167,37 @@ function ToolsTab() {
   const [correlation, setCorrelation] = useState<CorrelationResponse | null>(null);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [realHoldings, setRealHoldings] = useState<HoldingInput[] | null>(null);
+  const [realPositions, setRealPositions] = useState<Position[] | null>(null);
+  const [holdingsReady, setHoldingsReady] = useState(false);
+
+  useEffect(() => {
+    async function loadRealHoldings() {
+      try {
+        const connections = await listBrokerConnections();
+        const active = connections.filter(c => c.connection_status === 'active');
+        if (active.length === 0) return;
+        const results = await Promise.allSettled(active.map(c => getBrokerHoldings(c.id)));
+        const allPlaid: PlaidHolding[] = [];
+        results.forEach(r => { if (r.status === 'fulfilled') allPlaid.push(...r.value.holdings); });
+        if (allPlaid.length > 0) {
+          const { holdings, positions } = plaidToHoldings(allPlaid);
+          setRealHoldings(holdings);
+          setRealPositions(positions);
+        }
+      } catch {
+        // silently fall back to demo data
+      } finally {
+        setHoldingsReady(true);
+      }
+    }
+    loadRealHoldings();
+  }, []);
+
+  const holdings = realHoldings ?? DEMO_HOLDINGS;
+  const positions = realPositions ?? DEMO_POSITIONS;
+  const isDemo = realHoldings === null;
+  const portfolioLabel = isDemo ? '(demo portfolio)' : '(your portfolio)';
 
   async function run(key: string, fn: () => Promise<void>) {
     setLoading(l => ({ ...l, [key]: true }));
@@ -151,8 +209,19 @@ function ToolsTab() {
     }
   }
 
+  if (!holdingsReady) {
+    return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  }
+
   return (
     <div className="space-y-4">
+      {isDemo && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 p-3 text-xs text-blue-800 dark:text-blue-300">
+          Running on a <strong>demo portfolio</strong> — these results are illustrative only.{' '}
+          <Link href="/app/brokers" className="underline font-medium">Connect a broker</Link> to run tools on your real holdings.
+        </div>
+      )}
+
       {/* Performance Attribution */}
       <Section title="Performance Attribution" icon={BarChart3} defaultOpen>
         <p className="text-sm text-muted-foreground mb-4">
@@ -160,11 +229,11 @@ function ToolsTab() {
         </p>
         <Button
           size="sm"
-          onClick={() => run('attribution', async () => setAttribution(await getAttribution({ holdings: DEMO_HOLDINGS, benchmark_symbol: 'SPY', period_days: 30 })))}
+          onClick={() => run('attribution', async () => setAttribution(await getAttribution({ holdings, benchmark_symbol: 'SPY', period_days: 30 })))}
           disabled={loading.attribution}
         >
           {loading.attribution ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Run Attribution (Demo Portfolio)
+          Run Attribution {portfolioLabel}
         </Button>
         {errors.attribution && <p className="text-sm text-destructive mt-2">{errors.attribution}</p>}
         {attribution && (
@@ -219,11 +288,11 @@ function ToolsTab() {
         </p>
         <Button
           size="sm"
-          onClick={() => run('stress', async () => setStress(await runStressTest({ holdings: DEMO_HOLDINGS, portfolio_value: 100000 })))}
+          onClick={() => run('stress', async () => setStress(await runStressTest({ holdings, portfolio_value: 100000 })))}
           disabled={loading.stress}
         >
           {loading.stress ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Run Stress Test ($100K portfolio)
+          Run Stress Test {portfolioLabel}
         </Button>
         {errors.stress && <p className="text-sm text-destructive mt-2">{errors.stress}</p>}
         {stress && (
@@ -255,11 +324,11 @@ function ToolsTab() {
         </p>
         <Button
           size="sm"
-          onClick={() => run('taxloss', async () => setTaxLoss(await getTaxLoss({ positions: DEMO_POSITIONS, tax_rate: 0.35 })))}
+          onClick={() => run('taxloss', async () => setTaxLoss(await getTaxLoss({ positions, tax_rate: 0.35 })))}
           disabled={loading.taxloss}
         >
           {loading.taxloss ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Scan for Opportunities
+          Scan for Opportunities {portfolioLabel}
         </Button>
         {errors.taxloss && <p className="text-sm text-destructive mt-2">{errors.taxloss}</p>}
         {taxLoss && (
@@ -299,11 +368,11 @@ function ToolsTab() {
         </p>
         <Button
           size="sm"
-          onClick={() => run('corr', async () => setCorrelation(await getCorrelation(DEMO_HOLDINGS.map(h => h.symbol))))}
+          onClick={() => run('corr', async () => setCorrelation(await getCorrelation(holdings.map(h => h.symbol))))}
           disabled={loading.corr}
         >
           {loading.corr ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Analyze Correlations
+          Analyze Correlations {portfolioLabel}
         </Button>
         {errors.corr && <p className="text-sm text-destructive mt-2">{errors.corr}</p>}
         {correlation && (
@@ -340,15 +409,19 @@ function ToolsTab() {
         </p>
         <Button
           size="sm"
-          onClick={() => run('rebalance', async () => setRebalance(await getRebalance({
-            holdings: DEMO_HOLDINGS,
-            target_weights: { AAPL: 0.20, MSFT: 0.20, JPM: 0.15, XOM: 0.10, JNJ: 0.15, AMZN: 0.20 },
-            portfolio_value: 100000,
-          })))}
+          onClick={() => {
+            const equalWeight = 1 / holdings.length;
+            const targetWeights = Object.fromEntries(holdings.map(h => [h.symbol, equalWeight]));
+            run('rebalance', async () => setRebalance(await getRebalance({
+              holdings,
+              target_weights: targetWeights,
+              portfolio_value: 100000,
+            })));
+          }}
           disabled={loading.rebalance}
         >
           {loading.rebalance ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Calculate Rebalance Trades
+          Calculate Rebalance Trades {portfolioLabel}
         </Button>
         {errors.rebalance && <p className="text-sm text-destructive mt-2">{errors.rebalance}</p>}
         {rebalance && (
