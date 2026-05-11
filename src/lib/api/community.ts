@@ -468,3 +468,46 @@ export async function listClubMembers(clubId: string): Promise<ClubMember[]> {
   const res = await apiClient.get(`/community/clubs/${clubId}/members`);
   return res.data;
 }
+
+// --- Content Reports (moderation) ---
+
+export interface CommunityReport {
+  id: string;
+  reporter_id: string;
+  content_type: string;
+  content_id: string;
+  reason: string;
+  notes: string | null;
+  status: string;
+  reviewed_by: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+}
+
+export interface CommunityReportListResponse {
+  reports: CommunityReport[];
+  total: number;
+}
+
+export async function reportContent(data: {
+  content_type: 'post' | 'idea' | 'comment';
+  content_id: string;
+  reason: 'spam' | 'harassment' | 'misinformation' | 'inappropriate' | 'other';
+  notes?: string;
+}): Promise<CommunityReport> {
+  const res = await apiClient.post('/community/reports', data);
+  return res.data;
+}
+
+export async function listContentReports(params?: {
+  report_status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<CommunityReportListResponse> {
+  const res = await apiClient.get('/community/reports', { params });
+  return res.data;
+}
+
+export async function dismissReport(reportId: string): Promise<void> {
+  await apiClient.delete(`/community/reports/${reportId}`);
+}

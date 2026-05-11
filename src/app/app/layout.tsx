@@ -22,6 +22,7 @@ import {
   FileText,
   Globe,
   History,
+  Newspaper,
   LayoutDashboard,
   Layers,
   Lightbulb,
@@ -95,6 +96,7 @@ const COMMUNITY_CHILDREN = [
 ];
 
 const MARKETS_CHILDREN = [
+  { href: '/app/news',           label: 'Market News',      icon: Newspaper },
   { href: '/app/global-markets', label: 'Global Markets',   icon: Globe,      badge: 'NEW' },
   { href: '/app/fixed-income',   label: 'Fixed Income',     icon: BarChart3,  badge: 'NEW' },
   { href: '/app/alternatives',   label: 'Alternatives',     icon: TrendingUp, badge: 'NEW' },

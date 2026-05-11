@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   BookOpen,
   Clock,
+  Flag,
   Heart,
   Info,
   Lock,
@@ -14,6 +16,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import {
@@ -22,6 +25,7 @@ import {
   listCommunityPosts,
   listInvestmentClubs,
   listCommunityWatchlists,
+  reportContent,
   type CommunityEntitlements,
   type TradeIdea,
   type CommunityPost,
@@ -44,15 +48,96 @@ function timeAgo(isoString: string): string {
 }
 
 // ============================================================================
+// Report button (inline)
+// ============================================================================
+
+const REPORT_REASONS = [
+  { value: 'spam', label: 'Spam' },
+  { value: 'harassment', label: 'Harassment' },
+  { value: 'misinformation', label: 'Misinformation' },
+  { value: 'inappropriate', label: 'Inappropriate content' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+type ReportReason = (typeof REPORT_REASONS)[number]['value'];
+
+function ReportButton({
+  contentType,
+  contentId,
+}: {
+  contentType: 'post' | 'idea';
+  contentId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [open]);
+
+  async function submit(reason: ReportReason) {
+    setSubmitting(true);
+    try {
+      await reportContent({ content_type: contentType, content_id: contentId, reason });
+      setDone(true);
+      setOpen(false);
+      toast.success('Report submitted. Thank you for helping keep the community safe.');
+    } catch {
+      toast.error('Failed to submit report. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (done) return null;
+
+  return (
+    <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Report content"
+        title="Report this content"
+        className="p-1 rounded text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted transition-colors"
+      >
+        <Flag className="h-3.5 w-3.5" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-6 z-50 w-44 rounded-lg border bg-popover shadow-md overflow-hidden">
+          <p className="px-3 py-2 text-xs font-medium text-muted-foreground border-b">Report reason</p>
+          {REPORT_REASONS.map((r) => (
+            <button
+              key={r.value}
+              disabled={submitting}
+              onClick={() => submit(r.value)}
+              className="flex w-full px-3 py-2 text-xs text-left hover:bg-muted transition-colors disabled:opacity-50"
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // Trade Idea Card
 // ============================================================================
 
 function TradeIdeaCard({ idea }: { idea: TradeIdea }) {
+  const router = useRouter();
   const isLong = idea.direction === 'long';
   return (
-    <Link
-      href={`/app/community/ideas/${idea.id}`}
-      className="block rounded-lg border bg-card p-4 hover:bg-muted/30 transition-colors group"
+    <div
+      onClick={() => router.push(`/app/community/ideas/${idea.id}`)}
+      className="rounded-lg border bg-card p-4 hover:bg-muted/30 transition-colors cursor-pointer"
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -77,10 +162,13 @@ function TradeIdeaCard({ idea }: { idea: TradeIdea }) {
             {idea.status}
           </span>
         </div>
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          {timeAgo(idea.created_at)}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {timeAgo(idea.created_at)}
+          </span>
+          <ReportButton contentType="idea" contentId={idea.id} />
+        </div>
       </div>
 
       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{idea.thesis}</p>
@@ -101,7 +189,7 @@ function TradeIdeaCard({ idea }: { idea: TradeIdea }) {
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -110,6 +198,7 @@ function TradeIdeaCard({ idea }: { idea: TradeIdea }) {
 // ============================================================================
 
 function PostCard({ post }: { post: CommunityPost }) {
+  const router = useRouter();
   const typeColors: Record<string, string> = {
     research: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
     commentary: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
@@ -117,9 +206,9 @@ function PostCard({ post }: { post: CommunityPost }) {
     news: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   };
   return (
-    <Link
-      href={`/app/community/posts/${post.id}`}
-      className="block rounded-lg border bg-card p-4 hover:bg-muted/30 transition-colors group"
+    <div
+      onClick={() => router.push(`/app/community/posts/${post.id}`)}
+      className="rounded-lg border bg-card p-4 hover:bg-muted/30 transition-colors cursor-pointer"
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -132,10 +221,13 @@ function PostCard({ post }: { post: CommunityPost }) {
             </span>
           ))}
         </div>
-        <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-          <Clock className="h-3 w-3" />
-          {timeAgo(post.created_at)}
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {timeAgo(post.created_at)}
+          </span>
+          <ReportButton contentType="post" contentId={post.id} />
+        </div>
       </div>
 
       {post.title && <p className="font-medium text-sm mb-1">{post.title}</p>}
@@ -157,7 +249,7 @@ function PostCard({ post }: { post: CommunityPost }) {
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
