@@ -30,7 +30,6 @@ const PLANS = [
       'Crypto watchlist',
       '4 free learning modules',
       'Community access',
-      'Community support',
     ],
   },
   {
@@ -49,7 +48,6 @@ const PLANS = [
       'Options chain viewer',
       'Crypto portfolio tracker',
       'All 14 learning modules',
-      'Email support',
     ],
   },
   {
@@ -72,7 +70,6 @@ const PLANS = [
       'Alternative investments tracker',
       'Webhooks (up to 20)',
       'Algo strategies (up to 5)',
-      'Priority support',
     ],
   },
   {
@@ -93,7 +90,6 @@ const PLANS = [
       'Advisor CRM platform',
       'Unlimited algo strategies',
       'Compliance & audit reports',
-      'Dedicated support',
     ],
   },
 ];
@@ -175,12 +171,6 @@ const COMPARISON: ComparisonSection[] = [
       { label: 'Advisor CRM', free: false, starter: false, pro: false, institutional: true },
       { label: 'Compliance & Audit Reports', free: false, starter: false, pro: false, institutional: true },
       { label: 'Algo Strategy Builder', free: false, starter: false, pro: 'Up to 5', institutional: 'Unlimited' },
-    ],
-  },
-  {
-    section: 'Support',
-    rows: [
-      { label: 'Support', free: 'Community', starter: 'Email', pro: 'Priority email', institutional: 'Dedicated' },
       { label: 'Audit Log', free: true, starter: true, pro: true, institutional: true },
     ],
   },
