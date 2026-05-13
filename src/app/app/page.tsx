@@ -268,6 +268,7 @@ export default function AppDashboardPage() {
   const [marketSummary, setMarketSummary] = useState<MarketSummaryResponse | null>(null);
   const [portfolioSummary, setPortfolioSummary] = useState<PortfolioSummary | null>(null);
   const [regimeData, setRegimeData] = useState<RegimeResult | null>(null);
+  const [regimeLastUpdated, setRegimeLastUpdated] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verificationSending, setVerificationSending] = useState(false);
@@ -308,6 +309,7 @@ export default function AppDashboardPage() {
       try {
         const regime = await getRegimeAnalysis({ symbol: 'SPY', lookback_days: 200 });
         setRegimeData(regime);
+        setRegimeLastUpdated(new Date());
       } catch {
         // Regime data is optional — dashboard still works without it
       }
@@ -319,6 +321,36 @@ export default function AppDashboardPage() {
   };
 
   useEffect(() => { loadData(); }, []);
+
+  // Auto-refresh regime data every 60 s during market hours (9:30–16:00 ET, Mon–Fri)
+  useEffect(() => {
+    const isMarketHours = () => {
+      const now = new Date();
+      const etStr = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(now);
+      const [h, m] = etStr.split(':').map(Number);
+      const mins = h * 60 + m;
+      const isWeekday = now.getDay() >= 1 && now.getDay() <= 5;
+      return isWeekday && mins >= 9 * 60 + 30 && mins < 16 * 60;
+    };
+
+    const interval = setInterval(async () => {
+      if (!isMarketHours()) return;
+      try {
+        const regime = await getRegimeAnalysis({ symbol: 'SPY', lookback_days: 200 });
+        setRegimeData(regime);
+        setRegimeLastUpdated(new Date());
+      } catch {
+        // Silently ignore — stale data is better than an error banner
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (verificationCooldown > 0) {
@@ -493,7 +525,7 @@ export default function AppDashboardPage() {
 
       {/* Market Indicators */}
       {regimeData && (
-        <MarketIndicatorsWidget indicators={regimeData.indicators} />
+        <MarketIndicatorsWidget indicators={regimeData.indicators} lastUpdated={regimeLastUpdated} />
       )}
 
       {/* ── Real Portfolio Panel ──────────────────────────────────────── */}
@@ -714,7 +746,13 @@ function QuickStat({
   );
 }
 
-function MarketIndicatorsWidget({ indicators }: { indicators: RegimeResult['indicators'] }) {
+function MarketIndicatorsWidget({
+  indicators,
+  lastUpdated,
+}: {
+  indicators: RegimeResult['indicators'];
+  lastUpdated: Date | null;
+}) {
   const trend = indicators.trend_score;
   const vol = indicators.volatility_percentile;
   const breadth = indicators.breadth_score;
@@ -728,6 +766,10 @@ function MarketIndicatorsWidget({ indicators }: { indicators: RegimeResult['indi
   const breadthColor = breadth > 0.2 ? 'text-green-500' : breadth < -0.2 ? 'text-red-500' : 'text-yellow-500';
   const breadthBar   = breadth > 0.2 ? 'bg-green-500' : breadth < -0.2 ? 'bg-red-500' : 'bg-yellow-500';
 
+  const updatedLabel = lastUpdated
+    ? lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null;
+
   return (
     <div className="rounded-xl border border-border/70 bg-card p-4 elevation-1">
       <div className="flex items-center justify-between mb-4">
@@ -736,19 +778,29 @@ function MarketIndicatorsWidget({ indicators }: { indicators: RegimeResult['indi
           <span className="font-semibold text-sm">Market Indicators</span>
           <span className="text-xs text-muted-foreground/50 num">SPY</span>
         </div>
-        <Link href="/app/regime" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-          Full analysis →
-        </Link>
+        <div className="flex items-center gap-3">
+          {updatedLabel && (
+            <span className="text-xs text-muted-foreground/50">as of {updatedLabel}</span>
+          )}
+          <Link href="/app/regime" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            Full analysis →
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 divide-x divide-border/50">
         {/* Trend Score */}
         <div className="pr-5">
-          <p className="stat-label mb-1">Trend Score</p>
+          <p
+            className="stat-label mb-1 cursor-help"
+            title="Trend score measures SPY momentum relative to its 50-day and 200-day moving averages. Range: −1.0 (strong downtrend) to +1.0 (strong uptrend). Near 0 = sideways."
+          >
+            Trend Score
+          </p>
           <p className={cn('text-2xl font-bold num leading-none', trendColor)}>
             {trend > 0 ? '+' : ''}{trend.toFixed(2)}
           </p>
-          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">SPY price bars</p>
+          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">vs 50d/200d MA</p>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div
               className={cn('h-full rounded-full transition-all', trendBar)}
