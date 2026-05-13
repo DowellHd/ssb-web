@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import { ChatBubble } from '@/components/assistant';
 import { BetaBanner } from '@/components/beta-banner';
+import { DemoBanner } from '@/components/demo-banner';
 import { CommandPalette } from '@/components/command-palette';
 import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
@@ -840,6 +841,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <BetaBanner />
           </div>
         )}
+        <div className="sticky top-16 lg:top-0 z-20">
+          <DemoBanner />
+        </div>
         <main className="p-6">{children}</main>
       </div>
 
