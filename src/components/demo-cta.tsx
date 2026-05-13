@@ -15,7 +15,7 @@ export function DemoCTA() {
     setError(null);
     try {
       await startDemoSession();
-      router.push('/app/page');
+      router.push('/app');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Demo unavailable. Please try again.');
       setLoading(false);
