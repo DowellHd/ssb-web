@@ -45,7 +45,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { getDashboardSummary, getCapabilities, type DashboardSummary, type Capabilities } from '@/lib/api/meta';
 import { CHANGELOG } from '@/lib/changelog';
-import { getIntelligenceEntitlements, type EntitlementsInfo } from '@/lib/api/intelligence';
+import { getIntelligenceEntitlements, getRegimeAnalysis, type EntitlementsInfo, type RegimeResult } from '@/lib/api/intelligence';
 import { getMarketSummary, type MarketSummaryResponse } from '@/lib/api/news';
 import { resendVerification } from '@/lib/api/auth';
 import { getPortfolioSummary, type PortfolioSummary } from '@/lib/api/portfolio';
@@ -267,6 +267,7 @@ export default function AppDashboardPage() {
   const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
   const [marketSummary, setMarketSummary] = useState<MarketSummaryResponse | null>(null);
   const [portfolioSummary, setPortfolioSummary] = useState<PortfolioSummary | null>(null);
+  const [regimeData, setRegimeData] = useState<RegimeResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verificationSending, setVerificationSending] = useState(false);
@@ -302,6 +303,13 @@ export default function AppDashboardPage() {
         setPortfolioSummary(portfolioData);
       } catch {
         // Portfolio summary is optional — shown only if brokers connected
+      }
+
+      try {
+        const regime = await getRegimeAnalysis({ symbol: 'SPY', lookback_days: 200 });
+        setRegimeData(regime);
+      } catch {
+        // Regime data is optional — dashboard still works without it
       }
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to load dashboard');
@@ -437,6 +445,11 @@ export default function AppDashboardPage() {
           capitalize
         />
       </div>
+
+      {/* Market Indicators */}
+      {regimeData && (
+        <MarketIndicatorsWidget indicators={regimeData.indicators} />
+      )}
 
       {/* Market summary — compact */}
       {marketSummary && (
@@ -696,6 +709,83 @@ function QuickStat({
         <p className={cn('stat-value text-lg', capitalize && 'capitalize')}>
           {value}
         </p>
+      </div>
+    </div>
+  );
+}
+
+function MarketIndicatorsWidget({ indicators }: { indicators: RegimeResult['indicators'] }) {
+  const trend = indicators.trend_score;
+  const vol = indicators.volatility_percentile;
+  const breadth = indicators.breadth_score;
+
+  const trendColor = trend > 0.2 ? 'text-green-500' : trend < -0.2 ? 'text-red-500' : 'text-yellow-500';
+  const trendBar  = trend > 0.2 ? 'bg-green-500' : trend < -0.2 ? 'bg-red-500' : 'bg-yellow-500';
+
+  const volColor = vol > 70 ? 'text-red-500' : vol < 30 ? 'text-green-500' : 'text-yellow-500';
+  const volBar   = vol > 70 ? 'bg-red-500' : vol < 30 ? 'bg-green-500' : 'bg-yellow-500';
+
+  const breadthColor = breadth > 0.2 ? 'text-green-500' : breadth < -0.2 ? 'text-red-500' : 'text-yellow-500';
+  const breadthBar   = breadth > 0.2 ? 'bg-green-500' : breadth < -0.2 ? 'bg-red-500' : 'bg-yellow-500';
+
+  return (
+    <div className="rounded-xl border border-border/70 bg-card p-4 elevation-1">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Activity className="h-4 w-4 text-muted-foreground" />
+          <span className="font-semibold text-sm">Market Indicators</span>
+          <span className="text-xs text-muted-foreground/50 num">SPY</span>
+        </div>
+        <Link href="/app/regime" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          Full analysis →
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-3 divide-x divide-border/50">
+        {/* Trend Score */}
+        <div className="pr-5">
+          <p className="stat-label mb-1">Trend Score</p>
+          <p className={cn('text-2xl font-bold num leading-none', trendColor)}>
+            {trend > 0 ? '+' : ''}{trend.toFixed(2)}
+          </p>
+          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">SPY price bars</p>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className={cn('h-full rounded-full transition-all', trendBar)}
+              style={{ width: `${((trend + 1) / 2) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Volatility Percentile */}
+        <div className="px-5">
+          <p className="stat-label mb-1">Volatility</p>
+          <p className={cn('text-2xl font-bold num leading-none', volColor)}>
+            {vol.toFixed(0)}<span className="text-base font-medium">th</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">SPY price bars</p>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className={cn('h-full rounded-full transition-all', volBar)}
+              style={{ width: `${vol}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Market Breadth */}
+        <div className="pl-5">
+          <p className="stat-label mb-1">Market Breadth</p>
+          <p className={cn('text-2xl font-bold num leading-none', breadthColor)}>
+            {(breadth * 100).toFixed(0)}<span className="text-base font-medium">%</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">11 sector ETFs</p>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className={cn('h-full rounded-full transition-all', breadthBar)}
+              style={{ width: `${Math.max(0, breadth * 100)}%` }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
