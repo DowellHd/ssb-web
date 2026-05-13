@@ -793,14 +793,14 @@ function MarketIndicatorsWidget({
         <div className="pr-5">
           <p
             className="stat-label mb-1 cursor-help"
-            title="Trend score measures SPY momentum relative to its 50-day and 200-day moving averages. Range: −1.0 (strong downtrend) to +1.0 (strong uptrend). Near 0 = sideways."
+            title="Compares SPY price to its 50-day and 200-day moving averages. +1.0 = strong uptrend, −1.0 = strong downtrend, ~0 = sideways."
           >
             Trend Score
           </p>
           <p className={cn('text-2xl font-bold num leading-none', trendColor)}>
             {trend > 0 ? '+' : ''}{trend.toFixed(2)}
           </p>
-          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">vs 50d/200d MA</p>
+          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">score: −1 to +1</p>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div
               className={cn('h-full rounded-full transition-all', trendBar)}
@@ -811,11 +811,16 @@ function MarketIndicatorsWidget({
 
         {/* Volatility Percentile */}
         <div className="px-5">
-          <p className="stat-label mb-1">Volatility</p>
-          <p className={cn('text-2xl font-bold num leading-none', volColor)}>
-            {vol.toFixed(0)}<span className="text-base font-medium">th</span>
+          <p
+            className="stat-label mb-1 cursor-help"
+            title="Ranks SPY's current realized volatility against its own history. 14th percentile = calmer than 86% of historical readings."
+          >
+            Volatility
           </p>
-          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">SPY price bars</p>
+          <p className={cn('text-2xl font-bold num leading-none', volColor)}>
+            {vol.toFixed(0)}<span className="text-base font-medium">th %ile</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">of historical SPY vol</p>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div
               className={cn('h-full rounded-full transition-all', volBar)}
@@ -824,19 +829,34 @@ function MarketIndicatorsWidget({
           </div>
         </div>
 
-        {/* Market Breadth */}
+        {/* Market Breadth — show actual % of sector ETFs above their 200d MA */}
         <div className="pl-5">
-          <p className="stat-label mb-1">Market Breadth</p>
-          <p className={cn('text-2xl font-bold num leading-none', breadthColor)}>
-            {(breadth * 100).toFixed(0)}<span className="text-base font-medium">%</span>
-          </p>
-          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">11 sector ETFs</p>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className={cn('h-full rounded-full transition-all', breadthBar)}
-              style={{ width: `${Math.abs(breadth) * 100}%` }}
-            />
-          </div>
+          {(() => {
+            // Reverse the breadth score back to the underlying percentage.
+            // Score formula: (breadth_pct - 50) / 30, clamped to [-1, 1].
+            // Inverse: breadth_pct = score * 30 + 50.
+            const breadthPct = Math.min(100, Math.max(0, Math.round(breadth * 30 + 50)));
+            return (
+              <>
+                <p
+                  className="stat-label mb-1 cursor-help"
+                  title="Percentage of the 11 GICS sector ETFs currently trading above their 200-day moving average. Above 50% = broad participation, below 50% = narrow/weak breadth."
+                >
+                  Market Breadth
+                </p>
+                <p className={cn('text-2xl font-bold num leading-none', breadthColor)}>
+                  {breadthPct}<span className="text-base font-medium">%</span>
+                </p>
+                <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">above 200d MA · 11 ETFs</p>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={cn('h-full rounded-full transition-all', breadthBar)}
+                    style={{ width: `${breadthPct}%` }}
+                  />
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>
