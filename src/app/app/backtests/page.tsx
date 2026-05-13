@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar, Trash2 } from 'lucide-react';
+import { LineChart, RefreshCw, AlertCircle, Plus, TrendingUp, TrendingDown, Calendar, Trash2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { listBacktests, getBacktestEntitlements, deleteBacktest, type BacktestSummary, type BacktestEntitlements } from '@/lib/api/backtests';
 import { isValidNumber, isUnlimited, formatLimit, safeToFixed } from '@/lib/utils';
+import { useDemoSession } from '@/hooks/use-demo-session';
+import { DemoRestricted } from '@/components/demo-restricted';
 
 const STRATEGY_LABELS: Record<string, string> = {
   buy_and_hold: 'Buy & Hold',
@@ -28,6 +30,7 @@ function formatDateRange(days: number | null | undefined): string {
 
 export default function BacktestsPage() {
   const router = useRouter();
+  const { isDemo } = useDemoSession();
   const [backtests, setBacktests] = useState<BacktestSummary[]>([]);
   const [entitlements, setEntitlements] = useState<BacktestEntitlements | null>(null);
   const [loading, setLoading] = useState(true);
@@ -145,13 +148,15 @@ export default function BacktestsPage() {
           <Button onClick={loadData} variant="ghost" size="icon" aria-label="Refresh backtests">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button
-            onClick={handleCreateBacktest}
-            disabled={!canCreateBacktest}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Backtest
-          </Button>
+          <DemoRestricted action="run your own backtests">
+            <Button
+              onClick={handleCreateBacktest}
+              disabled={!canCreateBacktest && !isDemo}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Backtest
+            </Button>
+          </DemoRestricted>
         </div>
       </div>
 
@@ -185,6 +190,26 @@ export default function BacktestsPage() {
         </div>
       )}
 
+      {/* Demo sample data notice */}
+      {isDemo && backtests.length > 0 && (
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-400/5 p-4 flex items-start gap-3">
+          <Sparkles className="h-5 w-5 text-yellow-400 mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-yellow-400">Sample backtests</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              These pre-run strategies show what SSB can do.{' '}
+              <button
+                className="text-yellow-400 hover:underline font-medium"
+                onClick={() => router.push('/auth/signup')}
+              >
+                Sign up free
+              </button>{' '}
+              to run your own against any symbol and date range.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Backtests list */}
       {backtests.length > 0 ? (
         <div className="rounded-lg border bg-card overflow-hidden">
@@ -209,7 +234,16 @@ export default function BacktestsPage() {
                   className="border-t hover:bg-muted/30 cursor-pointer"
                   onClick={() => router.push(`/app/backtests/${backtest.id}`)}
                 >
-                  <td className="p-4 font-medium">{backtest.name}</td>
+                  <td className="p-4 font-medium">
+                    <div className="flex items-center gap-2">
+                      {backtest.name}
+                      {isDemo && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-400/10 text-yellow-400 border border-yellow-500/20 shrink-0">
+                          Sample
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="p-4 text-sm text-muted-foreground">
                     {formatStrategyName(backtest.strategy_type)}
                   </td>
@@ -249,7 +283,7 @@ export default function BacktestsPage() {
                     className="p-4 text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {confirmDeleteId === backtest.id ? (
+                    {isDemo ? null : confirmDeleteId === backtest.id ? (
                       <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                         <span className="text-xs text-muted-foreground">Delete?</span>
                         <button

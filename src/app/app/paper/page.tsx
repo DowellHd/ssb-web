@@ -1,13 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { RefreshCw, Plus, TrendingUp, TrendingDown, DollarSign, BarChart3, Download, CheckCircle, XCircle, SkipForward } from 'lucide-react';
+import { RefreshCw, Plus, TrendingUp, TrendingDown, DollarSign, BarChart3, Download, CheckCircle, XCircle, SkipForward, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAccount, usePositions, useOrders, useTierLimits } from '@/hooks/use-paper-trading';
 import { usePortfolioHealth } from '@/hooks/use-portfolio-health';
 import { cn, formatCurrency, formatPercent, isUnlimited, safeNumber } from '@/lib/utils';
 import { importRealPortfolio, type ImportPortfolioResult } from '@/lib/api/paper';
+import { useDemoSession } from '@/hooks/use-demo-session';
+import { DemoRestricted } from '@/components/demo-restricted';
 import { AccountSummaryCard } from '@/components/paper/account-summary-card';
 import { PositionsTable } from '@/components/paper/positions-table';
 import { OrdersList } from '@/components/paper/orders-list';
@@ -19,6 +22,8 @@ import { getRegimeAnalysis } from '@/lib/api/intelligence';
 import type { RegimeType } from '@/lib/chart/regime-context';
 
 export default function PaperTradingPage() {
+  const router = useRouter();
+  const { isDemo } = useDemoSession();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [orderSymbol, setOrderSymbol] = useState<string | undefined>();
   const [orderSide, setOrderSide] = useState<'buy' | 'sell'>('buy');
@@ -118,16 +123,40 @@ export default function PaperTradingPage() {
             <RefreshCw className={cn('h-4 w-4 mr-2', isLoading && 'animate-spin')} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={() => { setImportResult(null); setShowImportConfirm(true); }}>
-            <Download className="h-4 w-4 mr-2" />
-            Copy Real Portfolio
-          </Button>
-          <Button size="sm" onClick={handleNewOrder}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Order
-          </Button>
+          <DemoRestricted action="import your real portfolio">
+            <Button variant="outline" size="sm" onClick={() => { setImportResult(null); setShowImportConfirm(true); }}>
+              <Download className="h-4 w-4 mr-2" />
+              Copy Real Portfolio
+            </Button>
+          </DemoRestricted>
+          <DemoRestricted action="place paper orders">
+            <Button size="sm" onClick={handleNewOrder}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Order
+            </Button>
+          </DemoRestricted>
         </div>
       </div>
+
+      {/* Demo sample portfolio notice */}
+      {isDemo && (
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-400/5 p-4 flex items-start gap-3">
+          <Sparkles className="h-5 w-5 text-yellow-400 mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-yellow-400">Sample portfolio</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              This pre-seeded portfolio shows what paper trading looks like in SSB.{' '}
+              <button
+                className="text-yellow-400 hover:underline font-medium"
+                onClick={() => router.push('/auth/signup')}
+              >
+                Sign up free
+              </button>{' '}
+              to trade with your own virtual positions.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Tier Limits Banner */}
       {limits && !limits.is_unlimited && (
