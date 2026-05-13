@@ -446,11 +446,6 @@ export default function AppDashboardPage() {
         />
       </div>
 
-      {/* Market Indicators */}
-      {regimeData && (
-        <MarketIndicatorsWidget indicators={regimeData.indicators} />
-      )}
-
       {/* Market summary — compact */}
       {marketSummary && (
         <div className="rounded-xl border border-border/70 bg-card p-4 elevation-1">
@@ -494,6 +489,11 @@ export default function AppDashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Market Indicators */}
+      {regimeData && (
+        <MarketIndicatorsWidget indicators={regimeData.indicators} />
       )}
 
       {/* ── Real Portfolio Panel ──────────────────────────────────────── */}
