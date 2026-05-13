@@ -811,11 +811,16 @@ function MarketIndicatorsWidget({
 
         {/* Volatility Percentile */}
         <div className="px-5">
-          <p className="stat-label mb-1">Volatility</p>
-          <p className={cn('text-2xl font-bold num leading-none', volColor)}>
-            {vol.toFixed(0)}<span className="text-base font-medium">th</span>
+          <p
+            className="stat-label mb-1 cursor-help"
+            title="Volatility percentile ranks current SPY realized volatility against its own history. Low = calm market, High = choppy market."
+          >
+            Volatility
           </p>
-          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">SPY price bars</p>
+          <p className={cn('text-2xl font-bold num leading-none', volColor)}>
+            {vol.toFixed(0)}<span className="text-base font-medium">th %ile</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground/50 mt-1 mb-2">historical SPY vol</p>
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div
               className={cn('h-full rounded-full transition-all', volBar)}
