@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
+  Activity,
   AlertTriangle,
   BarChart3,
   Bitcoin,
@@ -77,8 +78,9 @@ const ANALYSIS_CHILDREN = [
 
 const TRADING_CHILDREN = [
   { href: '/app/paper',      label: 'Paper Trading', icon: CandlestickChart },
-  { href: '/app/backtests',  label: 'Backtests',     icon: LineChart },
-  { href: '/app/options',    label: 'Options',       icon: Layers },
+  { href: '/app/backtests',    label: 'Backtests',     icon: LineChart },
+  { href: '/app/simulations',  label: 'Simulations',   icon: Activity,    badge: 'NEW' },
+  { href: '/app/options',      label: 'Options',       icon: Layers },
   { href: '/app/crypto',     label: 'Crypto',        icon: Bitcoin },
   { href: '/app/order-prep', label: 'Order Prep',    icon: ClipboardList, badge: 'NEW' },
   { href: '/app/brokers',    label: 'Broker Connections', icon: Wifi, badge: 'NEW' },
