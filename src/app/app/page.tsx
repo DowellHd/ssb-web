@@ -52,6 +52,7 @@ import { getPortfolioSummary, type PortfolioSummary } from '@/lib/api/portfolio'
 import { getPlanDisplayName } from '@/lib/plan-config';
 import { cn } from '@/lib/utils';
 import { useCommandPaletteStore } from '@/stores/command-palette-store';
+import { useDemoSession } from '@/hooks/use-demo-session';
 
 // ============================================================================
 // Capability map data
@@ -274,6 +275,7 @@ export default function AppDashboardPage() {
   const [verificationCooldown, setVerificationCooldown] = useState(0);
 
   const openPalette = useCommandPaletteStore((s) => s.openPalette);
+  const { isDemo } = useDemoSession();
 
   const loadData = async () => {
     setLoading(true);
@@ -366,12 +368,24 @@ export default function AppDashboardPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">
-            Welcome{dashboard?.full_name ? `, ${dashboard.full_name.split(' ')[0]}` : ''}!
+            {isDemo
+              ? "You're exploring SSB"
+              : `Welcome${dashboard?.full_name ? `, ${dashboard.full_name.split(' ')[0]}` : ''}!`}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {getPlanDisplayName(entitlements?.plan_name)} plan
-            {entitlements?.can_upgrade && (
-              <> &middot; <Link href="/app/billing" className="text-primary hover:underline">Upgrade for more</Link></>
+            {isDemo ? (
+              <>
+                30-minute demo &middot;{' '}
+                <Link href="/auth/signup" className="text-yellow-400 hover:underline">Sign up free</Link>
+                {' '}to save your work
+              </>
+            ) : (
+              <>
+                {getPlanDisplayName(entitlements?.plan_name)} plan
+                {entitlements?.can_upgrade && (
+                  <> &middot; <Link href="/app/billing" className="text-primary hover:underline">Upgrade for more</Link></>
+                )}
+              </>
             )}
           </p>
         </div>
