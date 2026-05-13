@@ -3,6 +3,8 @@
  * Handles one-click demo login, session storage, and expiry.
  */
 
+import { ASSISTANT_HINT_STORAGE_KEY } from '@/lib/assistant-hint';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const API_PREFIX = process.env.NEXT_PUBLIC_API_PREFIX || '/api/v1';
 
@@ -28,6 +30,8 @@ export async function startDemoSession(): Promise<void> {
     sessionStorage.setItem('access_token', data.access_token);
     localStorage.setItem('is_demo_session', 'true');
     localStorage.setItem('demo_start_time', Date.now().toString());
+    // Reset hint so every new demo session sees the assistant popup
+    localStorage.removeItem(ASSISTANT_HINT_STORAGE_KEY);
     // Clear any stale logged-in cookie from a previous session
     document.cookie = 'ssb_logged_in=demo; path=/; SameSite=Lax; Max-Age=1800';
   }
