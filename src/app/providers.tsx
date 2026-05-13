@@ -5,6 +5,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { Suspense, useState } from 'react';
 import { PostHogProvider } from '@/components/posthog-provider';
+import { CookieConsentBanner } from '@/components/cookie-consent-banner';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -31,6 +32,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <PostHogProvider>
             {children}
             <Toaster position="top-right" richColors closeButton />
+            <CookieConsentBanner />
           </PostHogProvider>
         </Suspense>
       </QueryClientProvider>

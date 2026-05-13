@@ -41,6 +41,8 @@ import {
   type DataExport,
 } from '@/lib/api/privacy';
 import { getErrorMessage } from '@/lib/api-client';
+import { getCookieConsent, setCookieConsent } from '@/lib/cookie-consent';
+import { initPostHog, teardownPostHog } from '@/components/posthog-provider';
 
 // ============================================================================
 // Types
@@ -335,6 +337,15 @@ export default function PrivacyDataPage() {
     setLoadingPrefs(true);
     try {
       const data = await getPrivacyPreferences();
+      // Reconcile: if the user declined in the consent banner, honour that
+      // locally even if the backend still has analytics_consent=true (the
+      // backend will be updated the next time they toggle the setting).
+      const localConsent = getCookieConsent();
+      if (localConsent === 'declined' && data.analytics_consent) {
+        data.analytics_consent = false;
+      } else if (localConsent === 'accepted' && !data.analytics_consent) {
+        data.analytics_consent = true;
+      }
       setPrefs(data);
     } catch {
       toast.error('Failed to load privacy preferences');
@@ -356,6 +367,18 @@ export default function PrivacyDataPage() {
     try {
       const updated = await updatePrivacyPreferences({ [key]: value });
       setPrefs(updated);
+
+      // Keep localStorage consent in sync with the analytics toggle
+      if (key === 'analytics_consent') {
+        if (value) {
+          setCookieConsent('accepted');
+          initPostHog();
+        } else {
+          setCookieConsent('declined');
+          teardownPostHog();
+        }
+      }
+
       toast.success('Preference updated');
     } catch (err) {
       setPrefs({ ...prefs, [key]: prev });
