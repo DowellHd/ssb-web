@@ -28,7 +28,12 @@ export type PageScope =
   | 'portfolio'
   | 'options'
   | 'learn'
-  | 'enterprise';
+  | 'enterprise'
+  | 'simulations'
+  | 'signals'
+  | 'community'
+  | 'crypto'
+  | 'news';
 
 export interface KBEntry {
   id: string;
@@ -262,6 +267,118 @@ export const QUERY_SYNONYMS: Record<string, string> = {
   'api scope': 'api scopes',
   'rate limit': 'api rate limits',
   'rate limits': 'api rate limits',
+
+  // Demo mode
+  'demo mode': 'demo mode',
+  'try it free': 'demo mode',
+  'try demo': 'demo mode',
+  'guest mode': 'demo mode',
+  'no signup': 'demo mode',
+  'demo session': 'demo mode',
+  'demo account': 'demo mode',
+
+  // Simulations
+  'simulation': 'simulations',
+  'monte carlo': 'simulations',
+  'portfolio forecast': 'simulations',
+  'outcome simulation': 'simulations',
+  'probability simulation': 'simulations',
+  'projected outcome': 'simulations',
+
+  // Signal feed
+  'signal': 'signal feed',
+  'signals': 'signal feed',
+  'trade signal': 'signal feed',
+  'technical setup': 'signal feed',
+  'signal alert': 'signal feed',
+
+  // Community
+  'community': 'community feed',
+  'trade ideas': 'community feed',
+  'community post': 'community feed',
+  'idea feed': 'community feed',
+
+  // Crypto
+  'crypto': 'cryptocurrency',
+  'bitcoin': 'cryptocurrency',
+  'ethereum': 'cryptocurrency',
+  'digital assets': 'cryptocurrency',
+  'defi': 'cryptocurrency',
+  'altcoin': 'cryptocurrency',
+
+  // Technical indicators
+  'rsi': 'relative strength index',
+  'relative strength': 'relative strength index',
+  'macd': 'macd indicator',
+  'moving average convergence divergence': 'macd indicator',
+  'bollinger': 'bollinger bands',
+  'bband': 'bollinger bands',
+
+  // Fundamental analysis
+  'fundamentals': 'fundamental analysis',
+  'pe ratio': 'fundamental analysis',
+  'p/e ratio': 'fundamental analysis',
+  'price to earnings': 'fundamental analysis',
+  'earnings per share': 'fundamental analysis',
+  'eps': 'fundamental analysis',
+  'valuation': 'fundamental analysis',
+  'intrinsic value': 'fundamental analysis',
+  'revenue growth': 'fundamental analysis',
+  'free cash flow': 'fundamental analysis',
+  'fcf': 'fundamental analysis',
+
+  // Dollar cost averaging
+  'dca': 'dollar cost averaging',
+  'dollar cost average': 'dollar cost averaging',
+  'systematic investing': 'dollar cost averaging',
+  'periodic investing': 'dollar cost averaging',
+
+  // Position sizing
+  'kelly': 'position sizing',
+  'kelly criterion': 'position sizing',
+  'bet size': 'position sizing',
+  'position size': 'position sizing',
+  'how much to buy': 'position sizing',
+
+  // Risk/reward
+  'stop loss': 'risk reward',
+  'stop-loss': 'risk reward',
+  'take profit': 'risk reward',
+  'risk reward': 'risk reward',
+  'risk/reward': 'risk reward',
+  'r/r': 'risk reward',
+  'rr ratio': 'risk reward',
+  'reward risk': 'risk reward',
+
+  // Index funds
+  'index fund': 'index funds',
+  'passive investing': 'index funds',
+  'passive fund': 'index funds',
+  'expense ratio': 'index funds',
+  'active vs passive': 'index funds',
+
+  // Sector rotation
+  'sector rotation': 'sector rotation',
+  'sectors': 'sector rotation',
+  'sector exposure': 'sector rotation',
+  'defensive sectors': 'sector rotation',
+  'cyclical sectors': 'sector rotation',
+
+  // Portfolio theory
+  'mpt': 'portfolio theory',
+  'modern portfolio theory': 'portfolio theory',
+  'efficient frontier': 'portfolio theory',
+  'mean variance': 'portfolio theory',
+  'diversification theory': 'portfolio theory',
+
+  // Fixed income
+  'bond': 'fixed income',
+  'bonds': 'fixed income',
+  'treasury': 'fixed income',
+  'yield': 'fixed income',
+  'coupon': 'fixed income',
+  'duration': 'fixed income',
+  'fixed income investing': 'fixed income',
 };
 
 /**
@@ -378,11 +495,17 @@ export const KB_ENTRIES: Record<string, KBEntry> = {
 **Key Features:**
 - **Market Regime Analysis**: Understand whether markets are in bull, bear, or ranging conditions
 - **Risk Analytics**: Calculate VaR, volatility, and drawdown metrics
-- **Backtesting**: Test investment hypotheses against historical data
+- **Backtesting**: Test investment hypotheses against historical data with SPY benchmark comparison and CSV export
 - **Paper Trading**: Practice with simulated portfolios (no real money)
+- **Simulations**: Monte Carlo-style portfolio outcome projections across time horizons
 - **Stress Testing**: See how portfolios might perform in crisis scenarios
 - **Options Education**: Explore options chains and simulated options paper trading with a Black-Scholes model
+- **Signal Feed**: Live technical setups and pre-trade intelligence (Starter+)
+- **Community**: Share trade ideas and analysis with other users
+- **Crypto Dashboard**: Digital asset analytics and market data
+- **News & Market Summary**: Daily financial news with top movers
 - **Structured Learning**: Guided modules and learning paths covering investing fundamentals through advanced topics
+- **Demo Mode**: Try the full platform for 30 minutes with no account required
 - **API Access**: Enterprise API keys for programmatic access to platform data (Pro+)
 
 SSB is designed for education and research. It does not execute real trades or provide personalized financial advice.`,
@@ -888,7 +1011,13 @@ The output is a **regime label + confidence score**, not a simple up/down signal
 - Use out-of-sample testing
 - Account for realistic costs
 - Be skeptical of perfect results
-- Test across multiple market regimes`,
+- Test across multiple market regimes
+
+**Backtest Detail Page (Pro+):**
+- **Equity Curve**: Interactive chart showing portfolio value over time
+- **SPY Benchmark Overlay**: Dashed purple line showing SPY buy-and-hold performance over the same period — useful for comparing strategy vs. the market
+- **Export CSV**: Download the full trade-by-trade history as a spreadsheet
+- **Trade History Table**: Every simulated fill with entry/exit, P&L, and duration`,
       troubleshoot: `**Backtest Issues:**
 
 **"Not enough data":**
@@ -966,14 +1095,15 @@ The output is a **regime label + confidence score**, not a simple up/down signal
 - No options access
 - Learning modules 1–4, 7–10, 14 (free tier)
 
-**Starter ($9/mo):**
+**Starter ($9/mo) — includes 14-day free trial:**
 - Paper trading: 25 positions, 100 orders/day, 365-day history, daily resets
 - SMA 20, SMA 50, Key Levels overlays
 - 3 Scenario overrides, baseline compare, deltas, presets
 - Options Chain Viewer (view-only, simulated data)
+- Signal Feed access
 - All free learning modules
 
-**Pro ($29/mo):**
+**Pro ($29/mo) — includes 14-day free trial:**
 - Paper trading: 200 positions, 1,000 orders/day, unlimited resets
 - All chart overlays
 - Real-time regime insights
@@ -981,6 +1111,8 @@ The output is a **regime label + confidence score**, not a simple up/down signal
 - Portfolio Health widget (sector, concentration, risk score)
 - 3 Scenario overrides with full features
 - Options Chain Viewer + Options Paper Trading (up to 50 contracts) + Options Analytics
+- Portfolio Simulations (Monte Carlo projections)
+- Backtest CSV export and SPY benchmark overlay
 - All learning modules including pro-only (5–6, 11–13)
 - API key access (market data, paper trading, portfolio, analytics scopes)
 
@@ -1564,6 +1696,233 @@ Your module completions and path progress are saved between sessions.`,
   },
 
   // -------------------------------------------------------------------------
+  // Demo Mode
+  // -------------------------------------------------------------------------
+  demo_mode: {
+    id: 'demo_mode',
+    title: 'Demo Mode — Try It Free',
+    keywords: ['demo mode', 'demo session', 'try it free', 'no signup', 'guest', 'demo account'],
+    aliases: ['try without account', 'free trial', 'guest access', 'demo login'],
+    pageScopes: ['global', 'dashboard'],
+    content: {
+      definition: `**Demo Mode** lets anyone explore SSB with no account required — just click "Try It Free — No Signup" on the landing page for an instant 30-minute session.
+
+**How It Works:**
+- One-click access — no email, no password, no credit card
+- Sessions last **30 minutes** (timer shown in the top banner)
+- Uses a pre-seeded account with sample backtests and a sample paper portfolio
+- Access is **free-tier only** — Pro features show upgrade prompts behind locked UI
+
+**What You Can Do in Demo Mode:**
+- Browse all navigation sections and feature pages
+- View sample backtest results and the paper trading portfolio
+- Explore the dashboard, market regime analysis, and risk pages
+- See how tier-gated features look (with upgrade prompts)
+
+**What Is Restricted:**
+- Creating new backtests (requires signup)
+- Placing paper trading orders (requires signup)
+- Connecting a real broker or importing a portfolio
+- Posting to the community
+
+**Session End:**
+- At 30 minutes the session expires and you're redirected to the landing page
+- You can start a new demo session at any time
+- All demo data is reset — no data persists between sessions
+
+**Note:** Demo sessions are rate-limited to prevent abuse. If the button is temporarily unavailable, wait a moment and try again.`,
+      how_to: `**Starting a Demo Session:**
+
+1. Go to the **landing page** (smartstrategiesbuilder.ai)
+2. Click **"Try It Free — No Signup"** (yellow button below the main CTAs)
+3. You're instantly logged in to a demo account
+4. The yellow "Demo Mode" banner at the top shows your remaining time
+
+**Signing Up from Demo:**
+- Click **"Sign up free"** in the banner or any upgrade prompt
+- Your demo exploration does not carry over to the new account`,
+      troubleshoot: `**Demo Mode Issues:**
+
+**Button shows "Demo unavailable":**
+- Briefly rate-limited; wait 60 seconds and try again
+- The backend may be restarting — try again shortly
+
+**Session expired before 30 minutes:**
+- The session uses a short-lived token that expires exactly at 30 min
+- Start a new demo from the landing page
+
+**"Feature locked" prompts everywhere:**
+- Demo accounts are on the Free plan — Pro and Starter features show upgrade prompts by design
+- This is intentional to show what's available with a paid account`,
+    },
+    relatedTopics: ['what_is_ssb', 'entitlements', 'paper_trading'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Simulations
+  // -------------------------------------------------------------------------
+  simulations: {
+    id: 'simulations',
+    title: 'Portfolio Simulations',
+    keywords: ['simulations', 'monte carlo', 'portfolio forecast', 'outcome projection', 'probability'],
+    aliases: ['simulation', 'outcome simulation', 'portfolio projection', 'monte carlo simulation'],
+    pageScopes: ['global', 'dashboard', 'simulations'],
+    content: {
+      definition: `**Portfolio Simulations** project a range of possible future portfolio outcomes using randomized return scenarios — similar in concept to Monte Carlo simulation.
+
+**How It Works:**
+1. You define a starting portfolio value and select a time horizon
+2. SSB runs thousands of simulated return paths based on historical return distributions
+3. The results are grouped into percentile bands (10th, 50th, 90th) showing the range of outcomes
+
+**Key Output Metrics:**
+- **Median Outcome (50th percentile)**: The middle-of-the-road projected value
+- **Optimistic (90th percentile)**: Result achieved in the best 10% of scenarios
+- **Pessimistic (10th percentile)**: Result only exceeded in the worst 10% of scenarios
+- **Probability of Profit**: Estimated % of scenarios where the portfolio grows
+
+**Time Horizons Available:**
+- 1 Year, 3 Years, 5 Years, 10 Years, 20 Years
+
+**Important Limitations:**
+- Simulations are based on historical return distributions, which may not represent future markets
+- Does not account for taxes, fees, or behavioral factors
+- Results are probabilistic — they represent a range of possibilities, not a prediction
+
+**Disclaimer:** Simulation results are hypothetical and for educational purposes only. They are not a forecast or guarantee of future performance.`,
+      how_to: `**Running a Simulation:**
+
+1. Navigate to **Simulations** from the sidebar
+2. Enter your **starting portfolio value**
+3. Select a **time horizon** preset (1Y, 3Y, 5Y, 10Y, 20Y)
+4. Choose an **asset mix** or use the default (e.g., 60/40 stocks/bonds)
+5. View the projected outcome chart with percentile bands
+6. Adjust inputs to explore different scenarios
+
+**Reading the Chart:**
+- The shaded area shows the range between pessimistic and optimistic outcomes
+- The center line is the median (50th percentile) projection
+- Wider bands = more uncertainty over longer horizons`,
+    },
+    relatedTopics: ['backtesting', 'risk_analytics', 'stress_testing', 'portfolio_theory'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Signal Feed
+  // -------------------------------------------------------------------------
+  signal_feed: {
+    id: 'signal_feed',
+    title: 'Signal Feed',
+    keywords: ['signal feed', 'signals', 'trade signal', 'technical setup', 'alerts'],
+    aliases: ['signal alerts', 'trading signals', 'technical signals', 'signal list'],
+    pageScopes: ['global', 'dashboard', 'signals'],
+    content: {
+      definition: `**Signal Feed** delivers live technical setups and pre-trade intelligence — pattern-based alerts generated from price action analysis across hundreds of symbols.
+
+**What a Signal Includes:**
+- **Symbol**: The ticker that triggered the signal
+- **Signal Type**: The pattern or setup detected (e.g., momentum breakout, RSI oversold, trend reversal)
+- **Strength**: Confidence rating for the signal
+- **Direction**: Bullish or bearish bias of the setup
+- **Supporting Indicators**: The technical factors that contributed to the signal
+- **Context**: How the signal fits within the current market regime
+
+**Signal Types:**
+- Momentum breakouts
+- Mean reversion setups (RSI extremes)
+- Moving average crossovers
+- Volume surges
+- Support/resistance interactions
+
+**Tier Access:**
+- Starter and above
+
+**Important Disclaimer:**
+Signals are educational pattern detections, not buy/sell recommendations. They indicate technical conditions — not predictions of price direction. Always verify signals with your own analysis.`,
+      how_to: `**Using the Signal Feed:**
+
+1. Navigate to **Signal Feed** from the sidebar
+2. Browse signals sorted by recency or strength
+3. Click a signal to open its **detail page** with full indicator context
+4. Use the regime context panel to understand how the signal fits the current market environment
+5. Cross-reference with paper trading to test signal-based strategies risk-free`,
+    },
+    relatedTopics: ['market_regime', 'rsi_indicator', 'macd_indicator', 'backtesting', 'paper_trading'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Community
+  // -------------------------------------------------------------------------
+  community_feed: {
+    id: 'community_feed',
+    title: 'Community — Trade Ideas & Discussion',
+    keywords: ['community feed', 'trade ideas', 'community post', 'discussion', 'idea sharing'],
+    aliases: ['community', 'idea feed', 'social feed', 'shared ideas'],
+    pageScopes: ['global', 'community'],
+    content: {
+      definition: `**Community** is SSB's social feed where users share trade ideas, analysis, and market discussion.
+
+**Features:**
+- **Trade Ideas**: Post a symbol with your thesis, timeframe, and supporting analysis
+- **Discussion Posts**: Share market observations, educational content, or questions
+- **Comments**: Engage with ideas from other community members
+- **Upvotes & Reactions**: Surface the most insightful contributions
+
+**Community Guidelines:**
+- Share educational analysis, not specific trading advice
+- No pump-and-dump or promotional content
+- Constructive critique and healthy debate are encouraged
+
+**Demo / Free Users:**
+- Can read all community posts
+- Posting requires a registered (non-demo) account
+
+**Note:** Community content is user-generated and not verified by SSB. Nothing in the community constitutes financial advice.`,
+      how_to: `**Participating in the Community:**
+
+1. Navigate to **Community** from the sidebar
+2. Browse the feed of recent trade ideas and posts
+3. Click any idea to read the full thesis and comments
+4. Click **"New Idea"** to share a trade setup (requires non-demo account)
+5. React and comment to engage with other users`,
+    },
+    relatedTopics: ['signal_feed', 'paper_trading', 'backtesting'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Crypto Dashboard
+  // -------------------------------------------------------------------------
+  crypto_page: {
+    id: 'crypto_page',
+    title: 'Crypto Dashboard',
+    keywords: ['cryptocurrency', 'crypto', 'bitcoin', 'ethereum', 'digital assets'],
+    aliases: ['crypto page', 'crypto analytics', 'digital asset dashboard'],
+    pageScopes: ['global', 'dashboard', 'crypto'],
+    content: {
+      definition: `**Crypto Dashboard** provides market data and analytics for major digital assets alongside traditional financial analysis tools.
+
+**What's Included:**
+- Price data and charts for major cryptocurrencies
+- Market cap and volume overview
+- Correlation of crypto assets to traditional equity markets
+- Volatility metrics for digital assets
+
+**Supported Assets:**
+Bitcoin (BTC), Ethereum (ETH), and other major digital assets by market cap.
+
+**Key Differences from Equities:**
+- Crypto markets trade 24/7 (no market hours)
+- Much higher historical volatility than most equities
+- Different risk factors: regulation, network adoption, sentiment-driven
+- No earnings reports or fundamental metrics in the traditional sense
+
+**Important Disclaimer:**
+Cryptocurrency is highly speculative and carries significant risk including the potential for total loss. SSB's crypto tools are educational and informational only. Not investment advice.`,
+    },
+    relatedTopics: ['volatility', 'risk_analytics', 'market_regime'],
+  },
+
+  // -------------------------------------------------------------------------
   // API Keys / Enterprise
   // -------------------------------------------------------------------------
   api_keys: {
@@ -1636,6 +1995,526 @@ View 24h and 7-day request counts per key in the API Keys management page.`,
     },
     relatedTopics: ['entitlements', 'what_is_ssb', 'audit_log'],
   },
+
+  // -------------------------------------------------------------------------
+  // Finance Concepts — Technical Analysis
+  // -------------------------------------------------------------------------
+  rsi_indicator: {
+    id: 'rsi_indicator',
+    title: 'RSI — Relative Strength Index',
+    keywords: ['relative strength index', 'rsi', 'overbought', 'oversold', 'momentum indicator'],
+    aliases: ['rsi indicator', 'rsi oscillator', 'relative strength'],
+    pageScopes: ['global', 'paper', 'backtest', 'signals'],
+    content: {
+      definition: `**RSI (Relative Strength Index)** is a momentum oscillator that measures the speed and magnitude of recent price changes to evaluate overbought or oversold conditions.
+
+**Range:** 0 to 100
+
+**Key Levels:**
+- **Above 70**: Often considered overbought — price may be due for a pullback
+- **Below 30**: Often considered oversold — price may be due for a bounce
+- **50**: Midpoint; above = net bullish momentum, below = net bearish
+
+**Calculation:**
+RSI = 100 − [100 / (1 + Average Gain / Average Loss)] over a 14-period default lookback.
+
+**How to Use RSI:**
+- **Divergence**: If price makes a new high but RSI does not, it may signal weakening momentum
+- **Overbought/Oversold**: Useful in range-bound markets; less reliable in strong trends
+- **Trend confirmation**: RSI above 50 in an uptrend supports bullish bias
+
+**Limitations:**
+- In a strong trend, RSI can remain overbought (or oversold) for extended periods
+- Best used alongside other indicators (MACD, volume, trend direction)
+- Not predictive on its own — confirms momentum, not direction
+
+**In SSB:** RSI-based signals appear in the Signal Feed. The RSI mean reversion strategy is one of the available backtest strategy types.`,
+      how_to: `**Using RSI in SSB:**
+
+1. **Signal Feed**: Look for RSI-based setups (e.g., RSI oversold bounce)
+2. **Backtesting**: Select "RSI Mean Reversion" as the strategy type
+3. **Paper Trading**: Use chart overlays to observe price momentum alongside RSI signals`,
+    },
+    relatedTopics: ['signal_feed', 'macd_indicator', 'backtesting', 'technical_analysis'],
+  },
+
+  macd_indicator: {
+    id: 'macd_indicator',
+    title: 'MACD — Moving Average Convergence Divergence',
+    keywords: ['macd indicator', 'macd', 'signal line', 'histogram', 'momentum'],
+    aliases: ['macd oscillator', 'moving average crossover indicator'],
+    pageScopes: ['global', 'paper', 'backtest', 'signals'],
+    content: {
+      definition: `**MACD (Moving Average Convergence Divergence)** is a trend-following momentum indicator that shows the relationship between two exponential moving averages.
+
+**Components:**
+- **MACD Line**: 12-period EMA minus 26-period EMA
+- **Signal Line**: 9-period EMA of the MACD line
+- **Histogram**: MACD line minus Signal line (visual of divergence/convergence)
+
+**Key Signals:**
+- **Bullish crossover**: MACD line crosses above Signal line → potential upward momentum
+- **Bearish crossover**: MACD line crosses below Signal line → potential downward momentum
+- **Zero-line cross**: MACD crosses above 0 (bullish) or below 0 (bearish)
+- **Divergence**: Price moves in one direction while MACD moves in the opposite — often a trend weakening signal
+
+**Histogram Interpretation:**
+- Growing bars → momentum increasing in that direction
+- Shrinking bars → momentum fading, potential reversal ahead
+
+**Limitations:**
+- MACD is a lagging indicator — based on past price data
+- Generates more false signals in choppy, sideways markets
+- Best used in trending conditions`,
+    },
+    relatedTopics: ['rsi_indicator', 'chart_overlay', 'signal_feed', 'technical_analysis'],
+  },
+
+  bollinger_bands: {
+    id: 'bollinger_bands',
+    title: 'Bollinger Bands',
+    keywords: ['bollinger bands', 'upper band', 'lower band', 'band squeeze', 'volatility bands'],
+    aliases: ['bb', 'bband', 'price bands', 'standard deviation bands'],
+    pageScopes: ['global', 'paper', 'signals'],
+    content: {
+      definition: `**Bollinger Bands** are volatility-based price envelopes plotted two standard deviations above and below a moving average.
+
+**Components:**
+- **Middle Band**: 20-period Simple Moving Average (SMA)
+- **Upper Band**: Middle Band + 2 standard deviations
+- **Lower Band**: Middle Band − 2 standard deviations
+
+**Key Concepts:**
+
+**Band Width:**
+- Wide bands = high volatility
+- Narrow bands ("squeeze") = low volatility — often precedes a significant price move
+
+**Price Touching Bands:**
+- Touching the upper band is not inherently a sell signal (in a strong uptrend, prices can "walk" the band)
+- In a ranging market, touching the lower band may signal oversold, upper band overbought
+
+**%B Indicator:**
+- Measures where price is relative to the bands (0 = lower band, 1 = upper band)
+
+**Practical Uses:**
+- Identify volatility contractions before breakouts
+- Define relative high/low conditions in ranging markets
+- Confirm momentum strength (price walking the band)
+
+**Limitations:**
+- Not predictive of direction — only measures relative price position vs. recent volatility
+- Band width based on past volatility; actual forward volatility may differ`,
+    },
+    relatedTopics: ['chart_overlay', 'volatility', 'rsi_indicator', 'signal_feed'],
+  },
+
+  technical_analysis: {
+    id: 'technical_analysis',
+    title: 'Technical Analysis Overview',
+    keywords: ['technical analysis', 'chart patterns', 'price action', 'support resistance', 'ta'],
+    aliases: ['charting', 'price chart analysis', 'chart reading'],
+    pageScopes: ['global', 'paper', 'backtest'],
+    content: {
+      definition: `**Technical Analysis (TA)** is the study of historical price and volume data to identify patterns, trends, and signals that may indicate future price behavior.
+
+**Core Principles:**
+1. **Price discounts everything** — all known information is already reflected in price
+2. **Prices move in trends** — once established, trends are more likely to continue than reverse
+3. **History repeats** — patterns recur because human psychology repeats
+
+**Main Categories:**
+
+**Trend Analysis:**
+- Moving averages (SMA, EMA)
+- Trendlines and channels
+- Higher highs/lows (uptrend) vs. lower highs/lows (downtrend)
+
+**Momentum:**
+- RSI, MACD, Stochastics
+- Rate of change (ROC)
+
+**Volatility:**
+- Bollinger Bands, ATR (Average True Range)
+
+**Volume:**
+- Volume confirms price moves; rising price on falling volume = weak move
+
+**Support & Resistance:**
+- **Support**: Price level where buying has historically emerged
+- **Resistance**: Price level where selling pressure has historically appeared
+- Once broken, support often becomes resistance (and vice versa)
+
+**Chart Patterns:**
+- Head & Shoulders (reversal), Double Top/Bottom (reversal)
+- Flags, Pennants (continuation)
+- Triangles (breakout setups)
+
+**In SSB:**
+Chart overlays (SMA, trend lines) are available in Paper Trading. The Signal Feed surfaces TA-based setups. Backtesting lets you quantify historical performance of TA-based strategies.
+
+**Important:** Technical analysis is a probabilistic tool, not a crystal ball. No pattern has a 100% success rate.`,
+    },
+    relatedTopics: ['rsi_indicator', 'macd_indicator', 'bollinger_bands', 'chart_overlay', 'signal_feed'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Finance Concepts — Fundamental Analysis
+  // -------------------------------------------------------------------------
+  fundamental_analysis: {
+    id: 'fundamental_analysis',
+    title: 'Fundamental Analysis',
+    keywords: ['fundamental analysis', 'pe ratio', 'eps', 'revenue', 'valuation', 'intrinsic value', 'free cash flow'],
+    aliases: ['fundamentals', 'stock analysis', 'company valuation', 'financial ratios'],
+    pageScopes: ['global', 'dashboard'],
+    content: {
+      definition: `**Fundamental Analysis** evaluates a company's intrinsic value by examining financial statements, competitive position, management, and macroeconomic factors.
+
+**Key Valuation Ratios:**
+
+**P/E Ratio (Price-to-Earnings):**
+- Share price divided by earnings per share (EPS)
+- High P/E = market expects high future growth (or stock is expensive)
+- Low P/E = mature/value company or potentially undervalued
+- Compare within the same sector — P/E varies widely across industries
+
+**EPS (Earnings Per Share):**
+- Net income divided by shares outstanding
+- Growing EPS generally signals a healthy business
+
+**P/B Ratio (Price-to-Book):**
+- Share price divided by book value per share
+- Under 1.0 may indicate undervaluation; used heavily in banking/finance analysis
+
+**P/S Ratio (Price-to-Sales):**
+- Market cap divided by annual revenue
+- Useful for early-stage companies with no earnings
+
+**EV/EBITDA:**
+- Enterprise Value divided by Earnings Before Interest, Taxes, Depreciation, and Amortization
+- A debt-agnostic valuation multiple
+
+**Free Cash Flow (FCF):**
+- Cash generated after capital expenditures
+- More difficult to manipulate than earnings; often considered a "purer" profitability measure
+
+**Qualitative Factors:**
+- Competitive moat (brand, patents, network effects, switching costs)
+- Management quality and capital allocation track record
+- Industry trends and regulatory environment
+
+**Fundamental vs. Technical Analysis:**
+- Fundamental: What to buy (which company is undervalued)
+- Technical: When to buy (timing entry and exit)
+- Many investors use both in combination`,
+      how_to: `**Applying Fundamental Analysis on SSB:**
+
+1. Use **Backtesting** to test fundamental factor-based strategies (e.g., buy low-P/E stocks)
+2. The **Learning Hub** covers valuation fundamentals in detail
+3. Use risk analytics to complement fundamental views with quantitative risk measures
+4. Use **Stress Testing** to model how fundamentally sound companies might behave in crisis scenarios`,
+    },
+    relatedTopics: ['backtesting', 'risk_analytics', 'portfolio_theory', 'learn_feature'],
+  },
+
+  // -------------------------------------------------------------------------
+  // Finance Concepts — Portfolio & Risk
+  // -------------------------------------------------------------------------
+  portfolio_theory: {
+    id: 'portfolio_theory',
+    title: 'Modern Portfolio Theory (MPT)',
+    keywords: ['portfolio theory', 'modern portfolio theory', 'efficient frontier', 'mean variance', 'diversification theory'],
+    aliases: ['mpt', 'markowitz', 'optimal portfolio', 'efficient portfolio'],
+    pageScopes: ['global', 'risk', 'portfolio', 'dashboard'],
+    content: {
+      definition: `**Modern Portfolio Theory (MPT)**, developed by Harry Markowitz in 1952, provides a mathematical framework for constructing portfolios that maximize expected return for a given level of risk.
+
+**Core Idea:**
+A portfolio's risk is not just the sum of individual asset risks — it depends on how assets move relative to each other (correlation). Combining uncorrelated assets can reduce overall portfolio risk without sacrificing expected return.
+
+**Efficient Frontier:**
+The set of portfolios offering the highest expected return for each level of risk. Portfolios on the frontier are "efficient." Those below it are suboptimal.
+
+**Key Inputs:**
+- Expected return of each asset
+- Standard deviation (volatility) of each asset
+- Correlation between each pair of assets
+
+**Sharpe-Optimal Portfolio:**
+The point on the efficient frontier with the highest Sharpe ratio — the best risk-adjusted return.
+
+**Diversification Benefit:**
+If assets are not perfectly correlated (+1), combining them reduces total portfolio volatility. This is the mathematical foundation for diversification.
+
+**Key Criticism / Limitations:**
+- Relies on expected returns being estimable (they're not reliably)
+- Historical correlations are unstable — they often spike during crises
+- Doesn't account for fat tails, skewness, or liquidity
+- Ignores investor behavioral factors
+
+**In SSB:**
+The Portfolio Health panel (Pro+) reflects MPT principles: sector diversification, correlation analysis (Institutional+), and concentration warnings.`,
+    },
+    relatedTopics: ['correlation_analysis', 'portfolio_health', 'risk_analytics', 'drawdown', 'volatility'],
+  },
+
+  dollar_cost_averaging: {
+    id: 'dollar_cost_averaging',
+    title: 'Dollar Cost Averaging (DCA)',
+    keywords: ['dollar cost averaging', 'dca', 'systematic investing', 'periodic investing'],
+    aliases: ['dollar cost average', 'periodic purchases', 'regular investing'],
+    pageScopes: ['global', 'dashboard', 'learn'],
+    content: {
+      definition: `**Dollar Cost Averaging (DCA)** is the practice of investing a fixed dollar amount at regular intervals, regardless of price — buying more shares when prices are low and fewer when prices are high.
+
+**How It Works:**
+- Example: Invest $500/month in SPY every month
+- Month 1: SPY at $500 → buy 1.0 share
+- Month 2: SPY at $400 → buy 1.25 shares
+- Month 3: SPY at $550 → buy 0.91 shares
+- Average cost per share < arithmetic average of the prices
+
+**Benefits:**
+- Removes the need to time the market
+- Reduces the impact of volatility on average cost basis
+- Instills disciplined, emotion-free investing habit
+- Works well in volatile markets
+
+**Limitations:**
+- In a consistently rising market, lump-sum investing often outperforms DCA
+- Doesn't eliminate risk — a sustained bear market still causes losses
+- Opportunity cost if you hold cash waiting to deploy
+
+**Lump Sum vs. DCA:**
+Research generally shows lump-sum investing outperforms DCA ~2/3 of the time in markets that trend upward long-term. However, DCA reduces the psychological risk of investing at a local peak.
+
+**In SSB:**
+Use the **Backtesting** or **Simulations** tools to model DCA strategies against historical data and compare against lump-sum approaches.`,
+    },
+    relatedTopics: ['backtesting', 'simulations', 'position_sizing', 'portfolio_theory'],
+  },
+
+  position_sizing: {
+    id: 'position_sizing',
+    title: 'Position Sizing',
+    keywords: ['position sizing', 'kelly criterion', 'bet size', 'how much to buy', 'risk management'],
+    aliases: ['kelly formula', 'how much to invest', 'stake size', 'allocation size'],
+    pageScopes: ['global', 'paper', 'backtest', 'risk'],
+    content: {
+      definition: `**Position Sizing** determines how much capital to allocate to a single trade or investment — one of the most important (and overlooked) aspects of risk management.
+
+**Why It Matters:**
+- Poor position sizing can blow up a portfolio even with a high win rate
+- Good position sizing limits drawdown and preserves capital for future opportunities
+
+**Common Methods:**
+
+**Fixed Dollar Amount:**
+- Invest the same dollar value per trade (e.g., always $1,000)
+- Simple but ignores per-trade risk variability
+
+**Fixed Percentage:**
+- Invest X% of total capital per trade (e.g., 2–5% max)
+- Scales with portfolio size; most commonly recommended for beginners
+
+**Volatility-Based Sizing (ATR Method):**
+- Size position so that the expected volatility-based stop loss equals a fixed % of capital
+- More sophisticated; adjusts for how volatile the specific asset is
+
+**Kelly Criterion:**
+A mathematical formula for optimal bet/position sizing based on edge and odds:
+\`\`\`
+Kelly % = W − [(1 − W) / R]
+\`\`\`
+Where W = win rate, R = average win / average loss ratio
+- Full Kelly is often too aggressive in practice
+- "Half Kelly" or "Quarter Kelly" is common for smoother equity curves
+
+**Example (Kelly):**
+- Win rate: 55%, Average win: $200, Average loss: $100 → R = 2.0
+- Kelly % = 0.55 − (0.45 / 2.0) = 0.55 − 0.225 = **32.5%** (very aggressive!)
+- Half Kelly: 16.25% per trade
+
+**Practical Rule of Thumb:**
+Most professional traders risk no more than **1–2% of capital per trade**. This allows for 50+ consecutive losses before a 50% drawdown.
+
+**In SSB:**
+Use the Backtesting tool to analyze position sizing strategies and observe their effect on drawdown and Sharpe ratio in historical simulations.`,
+    },
+    relatedTopics: ['risk_analytics', 'drawdown', 'backtesting', 'dollar_cost_averaging'],
+  },
+
+  risk_reward: {
+    id: 'risk_reward',
+    title: 'Risk/Reward Ratio & Stop Loss / Take Profit',
+    keywords: ['risk reward', 'stop loss', 'take profit', 'r/r', 'risk/reward ratio'],
+    aliases: ['stop loss order', 'take profit order', 'risk reward ratio', 'reward risk'],
+    pageScopes: ['global', 'paper', 'backtest'],
+    content: {
+      definition: `**Risk/Reward Ratio (R/R)** compares the potential profit of a trade to its potential loss.
+
+**Formula:**
+\`\`\`
+Risk/Reward = Distance to Stop Loss / Distance to Take Profit
+\`\`\`
+A 1:2 R/R means you're risking $1 to make $2.
+
+**Why R/R Matters:**
+Even a strategy with a 40% win rate can be profitable with a good R/R:
+- 40 wins × $200 average win = $8,000
+- 60 losses × $100 average loss = $6,000
+- Net: +$2,000
+
+**Stop Loss:**
+A pre-set price level at which you exit a losing trade to limit further losses.
+- **Fixed stop**: Set at a specific price (e.g., 5% below entry)
+- **Volatility stop (ATR-based)**: Stop distance based on recent price swings
+- **Technical stop**: Placed below key support or above resistance
+
+**Take Profit:**
+A pre-set price level at which you exit a profitable trade to lock in gains.
+- **Fixed target**: A specific price (e.g., 10% above entry)
+- **Trailing stop**: Moves up as price rises, locking in gains dynamically
+- **Technical target**: Placed at next resistance or Fibonacci extension level
+
+**Common Minimum Threshold:**
+Most traders look for at least a 1:2 R/R before entering a trade. At 1:1, you need >50% win rate to profit; at 1:2, you only need >33%.
+
+**In SSB Paper Trading:**
+Practice defining stop-loss and take-profit levels before placing orders. Use backtesting to evaluate how different stop/target parameters affect historical strategy performance.`,
+    },
+    relatedTopics: ['paper_trading', 'backtesting', 'position_sizing', 'drawdown'],
+  },
+
+  sector_rotation: {
+    id: 'sector_rotation',
+    title: 'Sector Rotation',
+    keywords: ['sector rotation', 'sectors', 'sector exposure', 'cyclical', 'defensive', 'gics sectors'],
+    aliases: ['sector investing', 'sector allocation', 'defensive sectors', 'cyclical sectors'],
+    pageScopes: ['global', 'risk', 'portfolio', 'dashboard'],
+    content: {
+      definition: `**Sector Rotation** is the movement of investment capital from one industry sector to another, typically as economic conditions and the business cycle evolve.
+
+**The 11 GICS Sectors:**
+1. **Information Technology** — software, hardware, semiconductors
+2. **Healthcare** — pharma, biotech, medical devices
+3. **Financials** — banks, insurance, asset managers
+4. **Consumer Discretionary** — retail, autos, leisure (cyclical)
+5. **Consumer Staples** — food, beverages, household products (defensive)
+6. **Industrials** — aerospace, machinery, transportation
+7. **Energy** — oil, gas, renewables
+8. **Materials** — mining, chemicals, steel
+9. **Utilities** — electric, gas, water utilities (defensive)
+10. **Real Estate** — REITs, property developers
+11. **Communication Services** — telecom, media, internet
+
+**Cyclical vs. Defensive:**
+- **Cyclical**: Consumer Discretionary, Energy, Materials, Industrials, Tech — outperform in expansions
+- **Defensive**: Consumer Staples, Utilities, Healthcare — hold up better in contractions
+
+**Classic Business Cycle Rotation:**
+- Early recovery: Financials, Consumer Discretionary
+- Mid-cycle expansion: Tech, Industrials, Materials
+- Late cycle: Energy, Consumer Staples
+- Recession/contraction: Utilities, Consumer Staples, Healthcare, Bonds
+
+**In SSB:**
+The Portfolio Health panel (Pro+) shows your sector exposure breakdown. Pair with the Regime Analysis to understand which phase of the cycle the market appears to be in.`,
+    },
+    relatedTopics: ['portfolio_health', 'market_regime', 'risk_analytics', 'portfolio_theory'],
+  },
+
+  index_funds: {
+    id: 'index_funds',
+    title: 'Index Funds & Passive vs. Active Investing',
+    keywords: ['index funds', 'passive investing', 'expense ratio', 'active vs passive', 'etf'],
+    aliases: ['passive fund', 'index etf', 'market index', 'active management'],
+    pageScopes: ['global', 'dashboard', 'learn'],
+    content: {
+      definition: `**Index Funds** are investment vehicles that track a market index (e.g., S&P 500, Nasdaq 100) by holding all or a representative sample of the index's components.
+
+**Key Features:**
+- **Low cost**: Expense ratios often 0.03–0.20% vs. 0.5–1.5%+ for active funds
+- **Broad diversification**: One fund can hold 500+ stocks
+- **Tax efficient**: Low turnover = fewer taxable events
+- **Transparent**: Holdings are publicly known and match the index
+
+**Common Index ETFs:**
+- **SPY / VOO / IVV**: S&P 500
+- **QQQ**: Nasdaq 100 (tech-heavy)
+- **IWM**: Russell 2000 (small caps)
+- **VTI**: Total US market
+- **VT**: Total world market
+
+**Expense Ratio:**
+The annual fee deducted from the fund's assets. A 0.03% expense ratio on a $10,000 investment costs $3/year vs. $100/year for a 1.0% actively managed fund.
+
+**Passive vs. Active Investing:**
+- **Passive (index)**: Track the market; accept market return minus fees
+- **Active (fund managers/stock picking)**: Attempt to beat the market through selection
+
+**The Case for Passive:**
+- After fees, ~80–90% of active funds underperform their benchmark over 10+ years (S&P SPIVA reports)
+- Compounding: Small fee differences grow large over decades
+
+**The Case for Active:**
+- Potential for outperformance if you identify a genuine edge
+- Ability to avoid specific sectors or express views
+- Some active strategies (value, quality) have historically added alpha
+
+**In SSB:**
+Use **Backtesting** to compare a buy-and-hold index strategy (SPY) against active strategies. The SPY benchmark overlay on the backtest detail page makes this comparison visual.`,
+    },
+    relatedTopics: ['backtesting', 'dollar_cost_averaging', 'portfolio_theory', 'drawdown'],
+  },
+
+  fixed_income: {
+    id: 'fixed_income',
+    title: 'Fixed Income & Bonds',
+    keywords: ['fixed income', 'bond', 'bonds', 'treasury', 'yield', 'coupon', 'duration'],
+    aliases: ['bond investing', 'fixed income investing', 'treasuries', 'corporate bonds'],
+    pageScopes: ['global', 'dashboard'],
+    content: {
+      definition: `**Fixed Income** refers to investment securities that pay a fixed return (coupon) on a schedule, with principal returned at maturity.
+
+**Key Bond Concepts:**
+
+**Par Value (Face Value):**
+The principal amount returned at maturity (typically $1,000 per bond).
+
+**Coupon Rate:**
+The annual interest payment as a percentage of par. A 5% coupon on a $1,000 bond pays $50/year.
+
+**Yield to Maturity (YTM):**
+The total return anticipated if the bond is held to maturity, accounting for coupon payments and price discount/premium.
+
+**Duration:**
+A measure of a bond's price sensitivity to interest rate changes.
+- **Higher duration = more price risk** when rates move
+- Rule of thumb: A bond with duration 5 loses ~5% in price for each 1% rise in interest rates
+
+**Bond Price / Yield Relationship:**
+Bond prices and yields move in **opposite directions**:
+- Rates rise → existing bond prices fall (newer bonds pay more)
+- Rates fall → existing bond prices rise
+
+**Types of Bonds:**
+- **US Treasuries**: Issued by US government; lowest credit risk; benchmark for risk-free rate
+- **Corporate Bonds**: Issued by companies; higher yield, higher risk
+- **Municipal (Muni) Bonds**: Tax-advantaged income; issued by state/local governments
+- **TIPS (Treasury Inflation-Protected Securities)**: Principal adjusts with CPI inflation
+
+**Yield Curve:**
+A graph of yields across maturities (3-month to 30-year Treasuries).
+- **Normal (upward sloping)**: Longer terms have higher yields — healthy economy
+- **Inverted**: Short-term yields > long-term yields — historically associated with recessions
+- **Flat**: Similar yields across maturities — transitional period
+
+**In SSB:**
+The **Fixed Income** page provides bond screener tools and YTM/YTC calculations. The Regime Analysis page tracks the 10Y-2Y yield curve spread as a macro indicator.`,
+    },
+    relatedTopics: ['risk_analytics', 'market_regime', 'regime_indicators', 'stress_testing'],
+  },
 };
 
 // =============================================================================
@@ -1689,6 +2568,39 @@ export const GLOSSARY: KBGlossaryTerm[] = [
   { term: 'Volatility Percentile', definition: 'In SSB, where current realized volatility ranks relative to its historical distribution (0 = lowest ever, 100 = highest ever)', category: 'analytics' },
   { term: 'Yield', definition: 'Income return on an investment, expressed as a percentage of its price', category: 'analytics' },
   { term: 'Yield Curve', aliases: ['yield curve slope', '10y-2y', 'treasury spread'], definition: 'The spread between long-term (10Y) and short-term (2Y) Treasury yields; positive = normal, negative (inverted) = historically associated with economic slowdowns', category: 'analytics' },
+
+  // New additions
+  { term: 'RSI', aliases: ['relative strength index', 'rsi indicator'], definition: 'Relative Strength Index — a momentum oscillator (0–100) measuring overbought (>70) and oversold (<30) conditions over a 14-period default lookback', category: 'analytics' },
+  { term: 'MACD', aliases: ['moving average convergence divergence'], definition: 'Moving Average Convergence Divergence — a trend-following momentum indicator using two EMAs (12 and 26 period); crossovers of the signal line indicate momentum shifts', category: 'analytics' },
+  { term: 'Bollinger Bands', aliases: ['bb', 'bollinger'], definition: 'Volatility bands plotted 2 standard deviations above and below a 20-period SMA; squeeze signals potential breakout, wide bands signal high volatility', category: 'analytics' },
+  { term: 'ATR', aliases: ['average true range', 'true range'], definition: 'Average True Range — measures average volatility of price swings over N periods; used for stop-loss placement and position sizing', category: 'analytics' },
+  { term: 'Support', aliases: ['support level', 'price floor'], definition: 'A price level where buying interest has historically been strong enough to halt or reverse a decline', category: 'analytics' },
+  { term: 'Resistance', aliases: ['resistance level', 'price ceiling'], definition: 'A price level where selling pressure has historically been strong enough to halt or reverse a rise; broken resistance often becomes support', category: 'analytics' },
+  { term: 'Dollar Cost Averaging', aliases: ['dca', 'dollar cost average'], definition: 'Investing a fixed dollar amount at regular intervals regardless of price; reduces average cost basis in volatile or declining markets', category: 'trading' },
+  { term: 'Kelly Criterion', aliases: ['kelly formula', 'kelly'], definition: 'A formula for optimal position sizing based on win rate and average win/loss ratio: Kelly% = W − (1−W)/R; in practice, half-Kelly is often used', category: 'analytics' },
+  { term: 'Stop Loss', aliases: ['stop-loss', 'stop order'], definition: 'A pre-set exit price to automatically close a losing position and limit further downside', category: 'trading' },
+  { term: 'Take Profit', aliases: ['take-profit', 'tp', 'target price'], definition: 'A pre-set exit price to lock in gains when a position reaches a target level', category: 'trading' },
+  { term: 'Risk/Reward Ratio', aliases: ['r/r', 'reward risk'], definition: 'Ratio of potential profit to potential loss on a trade; a 1:2 R/R means risking $1 to make $2; minimum 1:2 is a common threshold', category: 'risk' },
+  { term: 'P/E Ratio', aliases: ['price to earnings', 'pe'], definition: 'Price-to-Earnings ratio — share price divided by EPS; higher = market expects growth or stock is expensive vs. peers', category: 'analytics' },
+  { term: 'EPS', aliases: ['earnings per share'], definition: 'Earnings Per Share — net income divided by shares outstanding; a key profitability metric for equity analysis', category: 'analytics' },
+  { term: 'Free Cash Flow', aliases: ['fcf', 'cash flow'], definition: 'Operating cash flow minus capital expenditures; considered a cleaner measure of profitability than accounting earnings', category: 'analytics' },
+  { term: 'CAGR', aliases: ['compound annual growth rate'], definition: 'Compound Annual Growth Rate — the steady rate at which an investment would have grown if it grew at the same rate every year; (End Value / Start Value)^(1/n) − 1', category: 'analytics' },
+  { term: 'Expense Ratio', definition: 'Annual fee charged by a fund as a % of assets under management; lower is better for long-term compounding', category: 'trading' },
+  { term: 'Dividend', aliases: ['dividends', 'div'], definition: 'Cash distribution paid by a company to shareholders, typically from earnings; expressed as dividend yield = annual dividend / stock price', category: 'trading' },
+  { term: 'Ex-Dividend Date', aliases: ['ex-div date', 'record date'], definition: 'The cutoff date to be eligible for the next dividend payment; buyers after this date do not receive the dividend', category: 'trading' },
+  { term: 'Market Cap', aliases: ['market capitalization', 'market cap categories'], definition: 'Total market value of all outstanding shares; large-cap >$10B, mid-cap $2B–$10B, small-cap $300M–$2B, micro-cap <$300M', category: 'trading' },
+  { term: 'Sector Rotation', definition: 'Movement of investment capital between industry sectors as the economic cycle evolves; cyclical sectors outperform in expansions, defensive in contractions', category: 'analytics' },
+  { term: 'Efficient Frontier', definition: 'In MPT, the set of optimal portfolios offering the highest expected return for each level of risk; portfolios below the frontier are suboptimal', category: 'analytics' },
+  { term: 'Monte Carlo Simulation', aliases: ['monte carlo'], definition: 'A technique that runs thousands of randomized scenarios to model a range of possible outcomes; used in SSB\'s Simulations feature for portfolio projections', category: 'analytics' },
+  { term: 'Trailing Stop', aliases: ['trailing stop loss'], definition: 'A dynamic stop-loss that moves up as price rises, locking in profits while allowing further upside', category: 'trading' },
+  { term: 'Volume', aliases: ['trading volume'], definition: 'The number of shares (or contracts) traded in a given period; high volume confirms price moves, low volume signals weak conviction', category: 'trading' },
+  { term: 'Open Interest', aliases: ['oi'], definition: 'Total number of outstanding options (or futures) contracts that haven\'t been closed or settled; rising OI with rising price suggests new money entering the trend', category: 'trading' },
+  { term: 'Intrinsic Value', definition: 'The calculated "true" value of an asset based on fundamentals (earnings, cash flow, assets); if market price is below intrinsic value, the asset may be undervalued', category: 'analytics' },
+  { term: 'Duration', aliases: ['bond duration', 'modified duration'], definition: 'A bond\'s price sensitivity to interest rate changes; a duration of 5 means ~5% price decline for each 1% rise in rates', category: 'risk' },
+  { term: 'Coupon', aliases: ['coupon rate', 'bond coupon'], definition: 'The annual interest payment on a bond, expressed as a % of par value; a 5% coupon on a $1,000 bond pays $50/year', category: 'trading' },
+  { term: 'YTM', aliases: ['yield to maturity'], definition: 'Yield to Maturity — the total return expected on a bond if held to maturity, accounting for coupon payments and any price premium or discount', category: 'analytics' },
+  { term: 'Demo Mode', aliases: ['demo session', 'try it free'], definition: 'SSB\'s no-account-required 30-minute exploration mode; uses a pre-seeded free-tier account with sample data', category: 'platform' },
+  { term: 'SPY Benchmark', aliases: ['spy overlay', 'benchmark overlay'], definition: 'In SSB backtesting, a dashed overlay showing SPY buy-and-hold performance over the same date range as your backtest for direct comparison', category: 'platform' },
 ];
 
 // =============================================================================
@@ -1818,6 +2730,36 @@ export const PAGE_PROMPTS: Record<PageScope, string[]> = {
     'What scopes are available?',
     'What are the rate limits?',
     'How do webhooks work?',
+  ],
+  simulations: [
+    'How do simulations work?',
+    'What is Monte Carlo simulation?',
+    'How to read the outcome chart?',
+    'What time horizons are available?',
+  ],
+  signals: [
+    'What is the Signal Feed?',
+    'How are signals generated?',
+    'What is RSI?',
+    'What is a momentum breakout?',
+  ],
+  community: [
+    'How do I post a trade idea?',
+    'What is the community feed?',
+    'Can I comment on ideas?',
+    'Are ideas verified?',
+  ],
+  crypto: [
+    'How is crypto different from stocks?',
+    'What assets are supported?',
+    'Why is crypto so volatile?',
+    'How do I analyze crypto risk?',
+  ],
+  news: [
+    'Where does the news data come from?',
+    'How current is the news?',
+    'What are top movers?',
+    'How do I interpret the market summary?',
   ],
 };
 
