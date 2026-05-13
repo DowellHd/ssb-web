@@ -834,7 +834,7 @@ function MarketIndicatorsWidget({
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div
               className={cn('h-full rounded-full transition-all', breadthBar)}
-              style={{ width: `${Math.max(0, breadth * 100)}%` }}
+              style={{ width: `${Math.abs(breadth) * 100}%` }}
             />
           </div>
         </div>
