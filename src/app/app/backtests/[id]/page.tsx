@@ -11,6 +11,7 @@ import {
   BarChart2,
   AlertTriangle,
   Clock,
+  Download,
   Trash2,
 } from 'lucide-react';
 import {
@@ -22,13 +23,17 @@ import {
   CartesianGrid,
   Tooltip,
   ReferenceLine,
+  Legend,
 } from 'recharts';
 import {
   getBacktest,
   getEquityCurve,
   getBacktestTrades,
+  getBacktestBenchmark,
   deleteBacktest,
+  exportBacktestCSV,
   type BacktestDetails,
+  type BenchmarkPoint,
   type EquityCurvePoint,
   type BacktestTrade,
 } from '@/lib/api/backtests';
@@ -86,6 +91,7 @@ export default function BacktestDetailPage() {
   const [backtest, setBacktest] = useState<BacktestDetails | null>(null);
   const [curve, setCurve] = useState<EquityCurvePoint[]>([]);
   const [trades, setTrades] = useState<BacktestTrade[]>([]);
+  const [benchmark, setBenchmark] = useState<BenchmarkPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -98,12 +104,14 @@ export default function BacktestDetailPage() {
         const bt = await getBacktest(id);
         setBacktest(bt);
         if (bt.status === 'completed') {
-          const [curveData, tradesData] = await Promise.allSettled([
+          const [curveData, tradesData, benchData] = await Promise.allSettled([
             getEquityCurve(id),
             getBacktestTrades(id),
+            getBacktestBenchmark(id, 'SPY'),
           ]);
           if (curveData.status === 'fulfilled') setCurve(curveData.value.curve);
           if (tradesData.status === 'fulfilled') setTrades(tradesData.value.trades);
+          if (benchData.status === 'fulfilled') setBenchmark(benchData.value.points);
         }
       } catch {
         setError('Failed to load backtest');
@@ -152,12 +160,16 @@ export default function BacktestDetailPage() {
       ? ((backtest.winning_trades ?? 0) / backtest.total_trades) * 100
       : null;
 
-  // Chart data — cumulative return as percentage
+  // Chart data — merge equity curve with SPY benchmark by date
+  const benchByDate = Object.fromEntries(
+    benchmark.map((b) => [b.date, parseFloat(safeToFixed(b.cumulative_return * 100, 2))]),
+  );
   const chartData = curve.map((pt) => ({
     date: formatChartDate(pt.date),
     equity: pt.equity,
     return_pct: parseFloat(safeToFixed(pt.cumulative_return * 100, 2)),
     drawdown_pct: parseFloat(safeToFixed(pt.drawdown * 100, 2)),
+    spy_pct: benchByDate[pt.date] ?? null,
   }));
 
   const statusBadge = {
@@ -202,6 +214,15 @@ export default function BacktestDetailPage() {
                 <Clock className="h-3.5 w-3.5" />
                 Ran in {(backtest.execution_time_ms / 1000).toFixed(1)}s
               </div>
+            )}
+            {backtest.status === 'completed' && curve.length > 0 && (
+              <button
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => exportBacktestCSV(backtest, trades, curve)}
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export CSV
+              </button>
             )}
             {confirmDelete ? (
               <div className="flex items-center gap-2 text-sm">
@@ -308,6 +329,10 @@ export default function BacktestDetailPage() {
                         <stop offset="5%" stopColor={isPositive ? '#22c55e' : '#ef4444'} stopOpacity={0.3} />
                         <stop offset="95%" stopColor={isPositive ? '#22c55e' : '#ef4444'} stopOpacity={0} />
                       </linearGradient>
+                      <linearGradient id="spyGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.12} />
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis
@@ -324,8 +349,16 @@ export default function BacktestDetailPage() {
                       width={52}
                     />
                     <Tooltip
-                      formatter={(v: number) => [`${v.toFixed(2)}%`, 'Return']}
+                      formatter={(v: number, name: string) => [
+                        `${v?.toFixed(2)}%`,
+                        name === 'return_pct' ? 'Strategy' : 'SPY',
+                      ]}
                       labelStyle={{ fontWeight: 600 }}
+                    />
+                    <Legend
+                      formatter={(value) => (value === 'return_pct' ? 'Strategy' : 'SPY')}
+                      iconType="line"
+                      wrapperStyle={{ fontSize: 11 }}
                     />
                     <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 2" />
                     <Area
@@ -335,7 +368,21 @@ export default function BacktestDetailPage() {
                       strokeWidth={2}
                       fill="url(#returnGrad)"
                       dot={false}
+                      name="return_pct"
                     />
+                    {benchmark.length > 0 && (
+                      <Area
+                        type="monotone"
+                        dataKey="spy_pct"
+                        stroke="#6366f1"
+                        strokeWidth={1.5}
+                        strokeDasharray="5 3"
+                        fill="url(#spyGrad)"
+                        dot={false}
+                        name="spy_pct"
+                        connectNulls
+                      />
+                    )}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

@@ -147,3 +147,44 @@ export async function getRegimeModelInfo(): Promise<ModelInfo> {
   const response = await apiClient.get('/intelligence/v2/regime/model-info');
   return response.data;
 }
+
+// ============================================================================
+// Simulation types and function
+// ============================================================================
+
+export interface SimulationResult {
+  percentile_5: number;
+  percentile_25: number;
+  percentile_50: number;
+  percentile_75: number;
+  percentile_95: number;
+  mean_value: number;
+  probability_of_loss: number;
+  expected_shortfall: number;
+}
+
+export interface SimulationResponse {
+  analysis_date: string;
+  horizon_days: number;
+  simulations_run: number;
+  initial_value: number;
+  results: SimulationResult;
+  simulation_limit: number;
+  insights: string[];
+  plan_tier: string;
+}
+
+export interface RunSimulationRequest {
+  holdings: PortfolioHolding[];
+  horizon_days?: number;
+  num_simulations?: number;
+  initial_value?: number;
+}
+
+/**
+ * Run an outcome simulation (analytical log-normal percentiles).
+ */
+export async function runSimulation(req: RunSimulationRequest): Promise<SimulationResponse> {
+  const response = await apiClient.post('/intelligence/simulation', req);
+  return response.data;
+}

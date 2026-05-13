@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createBacktest, runBacktest } from '@/lib/api/backtests';
+import { UpgradeModal } from '@/components/upgrade-modal';
 
 // ============================================================================
 // Strategy Definitions
@@ -144,6 +145,7 @@ const TODAY = new Date().toISOString().split('T')[0];
 export default function NewBacktestPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const [selectedStrategyId, setSelectedStrategyId] = useState<string>('buy_and_hold');
 
@@ -256,7 +258,11 @@ export default function NewBacktestPage() {
         : typeof raw === 'string'
           ? raw
           : JSON.stringify(raw);
-      toast.error(detail);
+      if (detail.toLowerCase().includes('monthly backtest limit')) {
+        setShowUpgrade(true);
+      } else {
+        toast.error(detail);
+      }
     } finally {
       setLoading(false);
     }
@@ -264,6 +270,17 @@ export default function NewBacktestPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
+      <UpgradeModal
+        open={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        title="Monthly backtest limit reached"
+        description="You have used all backtests available on your current plan this month."
+        benefits={[
+          'Unlimited backtests per month',
+          'Up to 5-year date ranges',
+          'Stocks, ETFs, and crypto',
+        ]}
+      />
       {/* Header */}
       <div>
         <Link

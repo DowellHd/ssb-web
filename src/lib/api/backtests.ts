@@ -196,3 +196,93 @@ export async function getEquityCurve(backtestId: string): Promise<EquityCurveRes
 export async function deleteBacktest(backtestId: string): Promise<void> {
   await apiClient.delete(`/backtests/${backtestId}`);
 }
+
+export interface BenchmarkPoint {
+  date: string;
+  cumulative_return: number;
+}
+
+export interface BacktestBenchmarkResponse {
+  symbol: string;
+  points: BenchmarkPoint[];
+}
+
+/**
+ * Get benchmark comparison data (e.g. SPY) for a completed backtest.
+ */
+export async function getBacktestBenchmark(
+  backtestId: string,
+  symbol = 'SPY',
+): Promise<BacktestBenchmarkResponse> {
+  const response = await apiClient.get(`/backtests/${backtestId}/benchmark`, {
+    params: { symbol },
+  });
+  return response.data;
+}
+
+/**
+ * Export backtest results to CSV (client-side, no server round-trip).
+ */
+export function exportBacktestCSV(
+  backtest: BacktestDetails,
+  trades: BacktestTrade[],
+  curve: EquityCurvePoint[],
+): void {
+  const lines: string[] = [];
+
+  // Metadata header
+  lines.push(`# Backtest: ${backtest.name}`);
+  lines.push(`# Strategy: ${backtest.strategy_type}`);
+  lines.push(`# Period: ${backtest.start_date} to ${backtest.end_date}`);
+  lines.push(`# Total Return: ${backtest.total_return_pct?.toFixed(2) ?? 'N/A'}%`);
+  lines.push('');
+
+  // Equity curve section
+  lines.push('## Equity Curve');
+  lines.push('date,equity,cash,positions_value,daily_return_pct,cumulative_return_pct,drawdown_pct');
+  curve.forEach((pt) => {
+    lines.push(
+      [
+        pt.date,
+        pt.equity.toFixed(2),
+        pt.cash.toFixed(2),
+        pt.positions_value.toFixed(2),
+        (pt.daily_return * 100).toFixed(4),
+        (pt.cumulative_return * 100).toFixed(4),
+        (pt.drawdown * 100).toFixed(4),
+      ].join(','),
+    );
+  });
+  lines.push('');
+
+  // Trades section
+  lines.push('## Trades');
+  lines.push('date,symbol,side,quantity,fill_price,fill_value,realized_pnl,commission,slippage');
+  trades.forEach((t) => {
+    lines.push(
+      [
+        t.bar_date,
+        t.symbol,
+        t.side,
+        t.quantity,
+        t.fill_price.toFixed(4),
+        t.fill_value.toFixed(2),
+        t.realized_pnl.toFixed(2),
+        t.commission_cost.toFixed(2),
+        t.slippage_cost.toFixed(2),
+      ].join(','),
+    );
+  });
+
+  const csv = lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = backtest.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  a.href = url;
+  a.download = `backtest_${safeName}_${backtest.start_date}_${backtest.end_date}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
