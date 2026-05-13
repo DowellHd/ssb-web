@@ -22,7 +22,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Community feed & trade ideas',
     'Learning hub (4 free modules)',
     'Crypto watchlist',
-    'Community support',
   ],
   starter: [
     'Reduced data delay',
@@ -32,7 +31,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Crypto portfolio tracker',
     'Basic fixed income & FX tools',
     'All learning modules & paths',
-    'Email support',
   ],
   pro: [
     'Real-time regime data',
@@ -44,7 +42,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Alternative investments tracker',
     'Algo strategies (up to 5)',
     'Webhooks (up to 20)',
-    'Priority support',
   ],
   institutional: [
     'Real-time + priority data',
@@ -58,7 +55,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'API keys + webhooks (unlimited)',
     'Unlimited algo strategies',
     'Compliance & audit reports',
-    'Dedicated support',
   ],
 };
 
@@ -173,7 +169,6 @@ const COMPARISON_SECTIONS: ComparisonSection[] = [
       { label: 'API Access', free: false, starter: 'Limited', pro: 'Full', institutional: 'Priority' },
       { label: 'Data Export', free: false, starter: 'Basic', pro: 'Standard', institutional: 'Full' },
       { label: 'Audit Log', free: true, starter: true, pro: true, institutional: true },
-      { label: 'Support', free: 'Community', starter: 'Email', pro: 'Priority', institutional: 'Dedicated' },
     ],
   },
 ];

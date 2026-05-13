@@ -300,7 +300,6 @@ export function generateMockPlans() {
         'Premium analytics',
         'Real-time alerts',
         'Backtesting tools',
-        'Priority support',
       ],
     },
   ];
