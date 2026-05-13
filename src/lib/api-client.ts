@@ -114,6 +114,15 @@ class APIClient {
           } catch {
             sessionStorage.removeItem('access_token');
             if (typeof window !== 'undefined') {
+              // If this was a demo session, redirect to landing with expiry notice
+              const isDemo = localStorage.getItem('is_demo_session') === 'true';
+              if (isDemo) {
+                localStorage.removeItem('is_demo_session');
+                localStorage.removeItem('demo_start_time');
+                document.cookie = 'ssb_logged_in=; path=/; SameSite=Lax; Max-Age=0';
+                window.location.href = '/?demo_expired=true';
+                return Promise.reject(error);
+              }
               // Clear the UX session cookie so middleware redirects to login.
               document.cookie = 'ssb_logged_in=; path=/; SameSite=Lax; Max-Age=0';
               window.location.href = '/auth/login';

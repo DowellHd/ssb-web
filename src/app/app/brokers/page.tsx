@@ -18,6 +18,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DemoRestricted } from '@/components/demo-restricted';
 import { cn } from '@/lib/utils';
 import {
   listBrokerConnections,
@@ -305,7 +306,9 @@ export default function BrokersPage() {
             Connect your real brokerage accounts via Plaid to view holdings and balances in SSB.
           </p>
         </div>
-        <PlaidConnectButton onSuccess={loadConnections} />
+        <DemoRestricted action="connect your brokerage account">
+          <PlaidConnectButton onSuccess={loadConnections} />
+        </DemoRestricted>
       </div>
 
       {/* Security banner */}
@@ -340,7 +343,9 @@ export default function BrokersPage() {
               You&apos;ll be able to search 12,000+ institutions including Robinhood, Fidelity, Schwab, and more.
             </p>
           </div>
-          <PlaidConnectButton onSuccess={loadConnections} />
+          <DemoRestricted action="connect your brokerage account">
+            <PlaidConnectButton onSuccess={loadConnections} />
+          </DemoRestricted>
         </div>
       ) : (
         <div className="space-y-3">

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { TrendingUp, Shield, LineChart, Lock } from 'lucide-react';
 import { BrandName, BRAND_NAME } from '@/components/ui/brand-name';
+import { DemoCTA } from '@/components/demo-cta';
+import { DemoExpiredBanner } from '@/components/demo-expired-banner';
 
 export default function Home() {
   return (
@@ -34,6 +36,9 @@ export default function Home() {
       {/* Hero */}
       <div className="flex flex-col items-center justify-center px-4 py-16 sm:py-24">
         <div className="max-w-5xl w-full">
+          {/* Demo expired notification */}
+          <DemoExpiredBanner />
+
           <div className="text-center space-y-8">
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
               <BrandName first />
@@ -43,19 +48,25 @@ export default function Home() {
               regime detection, and strategy backtesting with explainable insights.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-              <Link
-                href="/auth/signup"
-                className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Get Started Free
-              </Link>
-              <Link
-                href="/auth/login"
-                className="inline-flex items-center justify-center rounded-md border border-input bg-card px-8 py-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                Sign In
-              </Link>
+            {/* CTA hierarchy: primary → demo → sign in */}
+            <div className="flex flex-col items-center gap-4 mt-8">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/auth/signup"
+                  className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Get Started Free
+                </Link>
+                <Link
+                  href="/auth/login"
+                  className="inline-flex items-center justify-center rounded-md border border-input bg-card px-8 py-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  Sign In
+                </Link>
+              </div>
+
+              {/* Secondary CTA: one-click demo */}
+              <DemoCTA />
             </div>
           </div>
 

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { DemoRestricted } from '@/components/demo-restricted';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import {
   getCommunityEntitlements,
@@ -451,12 +452,14 @@ export default function CommunityPage() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{ideas.length} trade ideas</p>
             {entitlements?.can_create_trade_ideas && (
-              <Link href="/app/community/ideas/new">
-                <Button size="sm" variant="outline" className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  New Idea
-                </Button>
-              </Link>
+              <DemoRestricted action="post trade ideas">
+                <Link href="/app/community/ideas/new">
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    New Idea
+                  </Button>
+                </Link>
+              </DemoRestricted>
             )}
           </div>
           {ideas.length === 0 ? (
@@ -476,12 +479,14 @@ export default function CommunityPage() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{posts.length} posts</p>
             {entitlements?.can_post && (
-              <Link href="/app/community/posts/new">
-                <Button size="sm" variant="outline" className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  New Post
-                </Button>
-              </Link>
+              <DemoRestricted action="post to the community">
+                <Link href="/app/community/posts/new">
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    New Post
+                  </Button>
+                </Link>
+              </DemoRestricted>
             )}
           </div>
           {posts.length === 0 ? (
