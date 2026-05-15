@@ -1,5 +1,5 @@
 // SSB Service Worker — cache-first for static assets, network-first for pages
-const CACHE_NAME = 'ssb-v1';
+const CACHE_NAME = 'ssb-v2';
 const OFFLINE_URL = '/offline';
 
 // Static assets to pre-cache on install
