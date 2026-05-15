@@ -461,11 +461,17 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo + collapse toggle */}
-      <div className={cn(
-        'flex h-16 items-center border-b',
-        collapsed ? 'justify-center px-2' : 'justify-between px-4',
-      )}>
+      {/* Logo + collapse toggle — height grows to clear the Dynamic Island */}
+      <div
+        className={cn(
+          'flex items-center border-b',
+          collapsed ? 'justify-center px-2' : 'justify-between px-4',
+        )}
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          height: 'calc(4rem + env(safe-area-inset-top, 0px))',
+        }}
+      >
         {!collapsed && (
           <Link href="/app" className="flex items-center gap-2" onClick={onClose}>
             <img src="/icon.png" alt="SSB logo" className="h-7 w-7 rounded-md shrink-0" />
@@ -821,28 +827,42 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <div className={cn('transition-all duration-200', sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64')}>
-        {/* Mobile top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/90 backdrop-blur-md elevation-1 px-4 lg:hidden">
-          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
-            <Menu className="h-5 w-5" />
-          </Button>
-          <span className="font-bold flex-1">{BRAND_NAME_TM}</span>
-          <Button variant="ghost" size="icon" onClick={() => togglePalette()} aria-label="Search">
-            <Search className="h-4 w-4" />
-          </Button>
+        {/* Mobile top bar — padding-top clears the Dynamic Island */}
+        <header
+          className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-md elevation-1 lg:hidden"
+          style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        >
+          <div className="flex h-16 items-center gap-4 px-4">
+            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+              <Menu className="h-5 w-5" />
+            </Button>
+            <span className="font-bold flex-1">{BRAND_NAME_TM}</span>
+            <Button variant="ghost" size="icon" onClick={() => togglePalette()} aria-label="Search">
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
         </header>
 
         {IS_DEMO_MODE && (
-          <div className="sticky top-16 lg:top-0 z-20 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-xs font-semibold text-amber-950">
+          <div
+            className="sticky lg:top-0 z-20 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-xs font-semibold text-amber-950"
+            style={{ top: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
+          >
             <span>DEMO MODE — all data is simulated. No real trades or accounts.</span>
           </div>
         )}
         {IS_BETA_MODE && !IS_DEMO_MODE && (
-          <div className="sticky top-16 lg:top-0 z-20">
+          <div
+            className="sticky lg:top-0 z-20"
+            style={{ top: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
+          >
             <BetaBanner />
           </div>
         )}
-        <div className="sticky top-16 lg:top-0 z-20">
+        <div
+          className="sticky lg:top-0 z-20"
+          style={{ top: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
+        >
           <DemoBanner />
         </div>
         <main className="p-6 pb-safe-bottom lg:pb-6">{children}</main>
