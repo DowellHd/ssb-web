@@ -48,6 +48,7 @@ import { ChatBubble } from '@/components/assistant';
 import { BetaBanner } from '@/components/beta-banner';
 import { DemoBanner } from '@/components/demo-banner';
 import { CommandPalette } from '@/components/command-palette';
+import { MobileNav } from '@/components/mobile-nav';
 import { BRAND_NAME_TM } from '@/components/ui/brand-name';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
@@ -844,9 +845,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="sticky top-16 lg:top-0 z-20">
           <DemoBanner />
         </div>
-        <main className="p-6">{children}</main>
+        <main className="p-6 pb-safe-bottom lg:pb-6">{children}</main>
       </div>
 
+      <MobileNav onMenuOpen={() => setSidebarOpen(true)} />
       <ChatBubble />
     </div>
   );
