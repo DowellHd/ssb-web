@@ -16,6 +16,20 @@ const nextConfig = {
   swcMinify: true,
   output: 'standalone', // Required for Docker production builds
 
+  // ── Bundle optimisation ───────────────────────────────────────────────────
+  experimental: {
+    // Tree-shake these packages so only the symbols actually imported get
+    // bundled. lucide-react alone ships 1400+ icons — without this every
+    // icon ships even if only 36 are used, adding ~200KB to the JS bundle.
+    optimizePackageImports: [
+      'lucide-react',
+      'recharts',
+      'date-fns',
+      '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-slot',
+    ],
+  },
+
   // ── Image optimisation ───────────────────────────────────────────────────
   images: {
     // Serve images in modern formats when the browser supports them

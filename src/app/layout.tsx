@@ -6,7 +6,7 @@ import { Providers } from './providers';
 import { SWRegister } from '@/components/sw-register';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 const siteUrl = 'https://www.smartstrategiesbuilder.ai';
 
