@@ -83,7 +83,7 @@ export const metadata: Metadata = {
       { url: '/icon.png', type: 'image/png' },
     ],
     apple: [
-      { url: '/icons/icon-180x180.png', sizes: '180x180', type: 'image/png' },
+      { url: '/icons/icon-180x180-v2.png', sizes: '180x180', type: 'image/png' },
       { url: '/apple-icon-v2.png', type: 'image/png' },
     ],
     shortcut: '/icons/icon-192x192.png',
@@ -133,6 +133,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="apple-mobile-web-app-title" content="SSB" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
