@@ -1,13 +1,13 @@
 // SSB Service Worker — cache-first for static assets, network-first for pages
-const CACHE_NAME = 'ssb-v2';
+const CACHE_NAME = 'ssb-v3';
 const OFFLINE_URL = '/offline';
 
 // Static assets to pre-cache on install
 const PRECACHE_URLS = [
   OFFLINE_URL,
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
+  '/icons/icon-192x192-v2.png',
+  '/icons/icon-512x512-v2.png',
 ];
 
 self.addEventListener('install', (event) => {
