@@ -54,7 +54,10 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row">
       {/* Left side - Hero/Branding (stacked on mobile, side-by-side on desktop) */}
-      <div className="lg:w-1/2 bg-gradient-to-br from-primary/10 via-primary/5 to-background flex flex-col justify-between p-6 lg:p-8">
+      <div
+        className="lg:w-1/2 bg-gradient-to-br from-primary/10 via-primary/5 to-background flex flex-col justify-between p-6 lg:p-8"
+        style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top, 0px))' }}
+      >
         <Link href="/" className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
             <TrendingUp className="h-6 w-6 text-primary-foreground" />
