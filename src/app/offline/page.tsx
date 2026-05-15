@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { RetryButton } from './_retry-button';
 
 export const metadata: Metadata = {
   title: 'Offline',
@@ -34,12 +35,7 @@ export default function OfflinePage() {
       </div>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
-        <button
-          onClick={() => window.location.reload()}
-          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-        >
-          Try again
-        </button>
+        <RetryButton className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors" />
         <Link
           href="/app"
           className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
