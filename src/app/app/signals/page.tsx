@@ -277,7 +277,7 @@ export default function SignalsPage() {
 
           {!loading && !error && signals.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
-              <SearchX className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
+              <SearchX className="h-10 w-10 text-muted-foreground/70" aria-hidden="true" />
               <div>
                 <p className="font-medium">
                   {tickerSearch ? `No signals found for "${tickerSearch}"` : 'No signals available right now'}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { X, Share, PlusSquare } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -81,8 +82,7 @@ export function PWAInstallPrompt() {
     >
       <div className="rounded-2xl border border-border bg-card shadow-xl p-4">
         <div className="flex items-start gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/icon-72x72.png" alt="SSB" className="h-12 w-12 rounded-xl shrink-0" />
+          <Image src="/icons/icon-72x72.png" alt="SSB" width={48} height={48} className="rounded-xl shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold">Install SSB</p>
             <p className="text-xs text-muted-foreground mt-0.5">

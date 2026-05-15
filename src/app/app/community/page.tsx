@@ -105,7 +105,7 @@ function ReportButton({
         onClick={() => setOpen((v) => !v)}
         aria-label="Report content"
         title="Report this content"
-        className="p-1 rounded text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted transition-colors"
+        className="p-1 rounded text-muted-foreground/70 hover:text-muted-foreground hover:bg-muted transition-colors"
       >
         <Flag className="h-3.5 w-3.5" />
       </button>
