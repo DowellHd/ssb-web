@@ -18,11 +18,10 @@ const nextConfig = {
 
   // ── Bundle optimisation ───────────────────────────────────────────────────
   experimental: {
-    // Tree-shake these packages so only the symbols actually imported get
-    // bundled. lucide-react alone ships 1400+ icons — without this every
-    // icon ships even if only 36 are used, adding ~200KB to the JS bundle.
+    // Tree-shake dashboard-only packages. lucide-react is intentionally
+    // excluded — it's used above-the-fold on the landing page and app shell,
+    // where optimizePackageImports can delay icon rendering.
     optimizePackageImports: [
-      'lucide-react',
       'recharts',
       'date-fns',
       '@radix-ui/react-alert-dialog',
