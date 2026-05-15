@@ -148,7 +148,7 @@ export default function SignalDetailPage() {
   if (error || !signal) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
-        <AlertTriangle className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
+        <AlertTriangle className="h-10 w-10 text-muted-foreground/70" aria-hidden="true" />
         <p className="font-medium">{error ?? 'Signal not found'}</p>
         <Button variant="outline" onClick={() => router.push('/app/signals')}>
           Back to Signal Feed

@@ -35,7 +35,7 @@ export default function AppError({
           needs a refresh.
         </p>
         {error.digest && (
-          <p className="text-xs text-muted-foreground/60">
+          <p className="text-xs text-muted-foreground/75">
             Error ID: {error.digest}
           </p>
         )}

@@ -583,7 +583,7 @@ export default function PrivacyDataPage() {
                       New features, platform announcements, and financial market insights from the SSB team.
                       You can withdraw this consent at any time.
                     </p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-1">Legal basis: Consent · Can be withdrawn any time</p>
+                    <p className="text-[10px] text-muted-foreground/75 mt-1">Legal basis: Consent · Can be withdrawn any time</p>
                   </div>
                 </div>
                 <Toggle
@@ -606,7 +606,7 @@ export default function PrivacyDataPage() {
                       Allow SSB to collect anonymized usage data to improve product performance and prioritize features.
                       No financial data is shared with analytics providers.
                     </p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-1">Legal basis: Consent · Third party: Sentry (error monitoring, anonymized)</p>
+                    <p className="text-[10px] text-muted-foreground/75 mt-1">Legal basis: Consent · Third party: Sentry (error monitoring, anonymized)</p>
                   </div>
                 </div>
                 <Toggle
@@ -629,7 +629,7 @@ export default function PrivacyDataPage() {
                       System alerts, security notices, and account-related communications. Disabling this will
                       suppress non-critical alerts but you will still receive security and billing emails.
                     </p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-1">Legal basis: Contract · Security/billing emails always sent regardless of this setting</p>
+                    <p className="text-[10px] text-muted-foreground/75 mt-1">Legal basis: Contract · Security/billing emails always sent regardless of this setting</p>
                   </div>
                 </div>
                 <Toggle
@@ -651,7 +651,7 @@ export default function PrivacyDataPage() {
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Email receipts for paper trade executions and live order fills. Useful for auditing your activity.
                     </p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-1">Legal basis: Contract · Requires email notifications to be enabled</p>
+                    <p className="text-[10px] text-muted-foreground/75 mt-1">Legal basis: Contract · Requires email notifications to be enabled</p>
                   </div>
                 </div>
                 <Toggle
