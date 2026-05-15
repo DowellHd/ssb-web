@@ -507,3 +507,32 @@
     @apply text-xs text-muted-foreground;
   }
 }
+
+/* ============================================================================
+   PWA / Mobile — safe area insets, overscroll, scrollbar hiding
+   ============================================================================ */
+@layer utilities {
+  /* Bottom padding that accounts for the mobile nav + device safe area */
+  .pb-safe-bottom {
+    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));
+  }
+
+  /* Hide scrollbars while keeping scroll functionality */
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Prevent over-scroll bounce on iOS (pull-to-refresh) at the app level */
+html {
+  overscroll-behavior: none;
+}
+
+/* Allow natural scroll inside content areas */
+main, [data-scroll-container] {
+  overscroll-behavior-y: contain;
+}

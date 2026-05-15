@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
 import { Providers } from './providers';
+import { SWRegister } from '@/components/sw-register';
+import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -75,19 +77,31 @@ export const metadata: Metadata = {
     canonical: siteUrl,
   },
   icons: {
-    icon: [{ url: '/icon.png', type: 'image/png' }],
-    apple: [{ url: '/apple-icon.png', type: 'image/png' }],
-    shortcut: '/icon.png',
+    icon: [
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/icon-180x180.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-icon.png', type: 'image/png' },
+    ],
+    shortcut: '/icons/icon-192x192.png',
+  },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'SSB',
   },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  minimumScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#060d1b',
 };
 
 const jsonLd = {
@@ -126,7 +140,11 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <PWAInstallPrompt />
+        </Providers>
+        <SWRegister />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
