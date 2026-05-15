@@ -469,7 +469,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         )}
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)',
-          height: 'calc(4rem + env(safe-area-inset-top, 0px))',
+          height: 'calc(2.75rem + env(safe-area-inset-top, 0px))',
         }}
       >
         {!collapsed && (
@@ -832,7 +832,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-md elevation-1 lg:hidden"
           style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
         >
-          <div className="flex h-16 items-center gap-4 px-4">
+          <div className="flex h-11 items-center gap-4 px-4">
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
               <Menu className="h-5 w-5" />
             </Button>
@@ -846,7 +846,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {IS_DEMO_MODE && (
           <div
             className="sticky lg:top-0 z-20 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-xs font-semibold text-amber-950"
-            style={{ top: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
+            style={{ top: 'calc(2.75rem + env(safe-area-inset-top, 0px))' }}
           >
             <span>DEMO MODE — all data is simulated. No real trades or accounts.</span>
           </div>
@@ -854,14 +854,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {IS_BETA_MODE && !IS_DEMO_MODE && (
           <div
             className="sticky lg:top-0 z-20"
-            style={{ top: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
+            style={{ top: 'calc(2.75rem + env(safe-area-inset-top, 0px))' }}
           >
             <BetaBanner />
           </div>
         )}
         <div
           className="sticky lg:top-0 z-20"
-          style={{ top: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
+          style={{ top: 'calc(2.75rem + env(safe-area-inset-top, 0px))' }}
         >
           <DemoBanner />
         </div>
