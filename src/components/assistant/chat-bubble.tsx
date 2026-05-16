@@ -2,9 +2,10 @@
 
 import { MessageCircle } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAssistantStore } from '@/stores/assistant-store';
 import { useAssistantSettingsStore } from '@/stores/assistant-settings-store';
+import { getCookieConsent } from '@/lib/cookie-consent';
 import { cn } from '@/lib/utils';
 import { AssistantHint } from './assistant-hint';
 import { ChatPanel } from './chat-panel';
@@ -16,23 +17,45 @@ const BUBBLE_SIZES = {
   lg: { button: 'h-16 w-16', image: 64, icon: 'h-8 w-8' },
 } as const;
 
+function useCookieBannerVisible() {
+  const [bannerVisible, setBannerVisible] = useState(false);
+
+  useEffect(() => {
+    setBannerVisible(getCookieConsent() === null);
+
+    const handler = () => setBannerVisible(getCookieConsent() === null);
+    window.addEventListener('ssb:consent-changed', handler);
+    return () => window.removeEventListener('ssb:consent-changed', handler);
+  }, []);
+
+  return bannerVisible;
+}
+
 export function ChatBubble() {
   const { isOpen, toggle, open } = useAssistantStore();
   const { bubbleSize, reducedMotion } = useAssistantSettingsStore();
   const [imageError, setImageError] = useState(false);
+  const bannerVisible = useCookieBannerVisible();
 
   const sizeConfig = BUBBLE_SIZES[bubbleSize];
+
+  // Shift bubble above the cookie banner when it's showing.
+  // bottom-32 on mobile (banner stacks vertically), sm:bottom-20 on desktop.
+  const bottomClass = bannerVisible
+    ? 'bottom-32 sm:bottom-20'
+    : 'bottom-6';
 
   return (
     <>
       {/* First-time hint (only shows when panel is closed) */}
-      {!isOpen && <AssistantHint onOpenAssistant={open} />}
+      {!isOpen && <AssistantHint onOpenAssistant={open} bannerVisible={bannerVisible} />}
 
       {/* Floating bubble button */}
       <button
         onClick={toggle}
         className={cn(
-          'fixed bottom-6 right-6 z-50',
+          'fixed right-6 z-50',
+          bottomClass,
           sizeConfig.button,
           'rounded-full',
           'bg-primary text-primary-foreground',

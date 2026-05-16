@@ -15,9 +15,11 @@ const FADE_OUT_DURATION = 400;
 interface AssistantHintProps {
   /** Called when user clicks the hint body to open assistant */
   onOpenAssistant?: () => void;
+  /** Whether the cookie consent banner is currently visible */
+  bannerVisible?: boolean;
 }
 
-export function AssistantHint({ onOpenAssistant }: AssistantHintProps) {
+export function AssistantHint({ onOpenAssistant, bannerVisible }: AssistantHintProps) {
   const [shouldShow, setShouldShow] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -93,8 +95,10 @@ export function AssistantHint({ onOpenAssistant }: AssistantHintProps) {
       aria-label="SSB Assistant introduction"
       onClick={handleClick}
       className={cn(
-        // Positioning: above and to the left of the bubble button
-        'fixed bottom-[calc(1.5rem+4rem+0.75rem)] right-6 z-50',
+        // Positioning: above the bubble button, shifted up further when cookie banner is showing
+        bannerVisible
+          ? 'fixed bottom-[calc(8rem+4rem+0.75rem)] sm:bottom-[calc(5rem+4rem+0.75rem)] right-6 z-50'
+          : 'fixed bottom-[calc(1.5rem+4rem+0.75rem)] right-6 z-50',
         // Sizing
         'max-w-[260px] w-max',
         // Appearance
