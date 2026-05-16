@@ -18,6 +18,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    subsystem: 'Portfolio Management',
+    version: '1.1.0',
+    date: '2026-05-15',
+    changes: [
+      'Added period filter (1D / 1W / 1M / 3M / YTD / All) to My Portfolio tab — switches P&L and Return metrics to the selected window',
+      'Period P&L uses Alpaca historical prices fetched concurrently for all holdings; falls back to all-time cost-basis when Alpaca data is unavailable',
+      'Stat card labels update dynamically with the selected period (e.g. "1-Day P&L", "1-Month Return")',
+      'Cost Basis card hidden for period views where it is not meaningful',
+      'Registered Portfolio Management in the Quick Access search palette — now findable by "portfolio", "p&l", "holdings", "rebalance", "attribution", and more',
+    ],
+  },
+  {
     subsystem: 'AI Strategy Insights',
     version: '1.0.0',
     date: '2026-04-23',
