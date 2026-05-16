@@ -90,6 +90,11 @@ export const SUBSYSTEM_VERSIONS = {
     lastUpdated: '2026-04-23',
     description: 'AI Strategy Insights: LLM portfolio analysis, risk profiling, diversification scoring, educational themes',
   },
+  portfolioManagement: {
+    version: '1.1.0',
+    lastUpdated: '2026-05-15',
+    description: 'Portfolio Management: period P&L filter (1D/1W/1M/3M/YTD/All) and search registration',
+  },
 } as const satisfies Record<string, SubsystemVersion>;
 
 export type SubsystemKey = keyof typeof SUBSYSTEM_VERSIONS;

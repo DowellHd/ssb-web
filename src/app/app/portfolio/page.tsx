@@ -44,6 +44,7 @@ import {
   type HoldingInput,
   type PlaidHolding,
   type PortfolioSummary,
+  type PortfolioPeriod,
   type WashSaleScanResult,
   type RealVsPaperResult,
 } from '@/lib/api/portfolio';
@@ -462,30 +463,68 @@ function ToolsTab() {
   );
 }
 
+// ── Period filter ─────────────────────────────────────────────────────────────
+
+const PERIODS: { value: PortfolioPeriod; label: string }[] = [
+  { value: '1d',  label: '1D' },
+  { value: '1w',  label: '1W' },
+  { value: '1m',  label: '1M' },
+  { value: '3m',  label: '3M' },
+  { value: 'ytd', label: 'YTD' },
+  { value: 'all', label: 'All' },
+];
+
+const PERIOD_PL_LABEL: Record<PortfolioPeriod, string> = {
+  '1d':  '1-Day P&L',
+  '1w':  '1-Week P&L',
+  '1m':  '1-Month P&L',
+  '3m':  '3-Month P&L',
+  'ytd': 'YTD P&L',
+  'all': 'Unrealized P&L',
+};
+
+const PERIOD_RETURN_LABEL: Record<PortfolioPeriod, string> = {
+  '1d':  '1-Day Return',
+  '1w':  '1-Week Return',
+  '1m':  '1-Month Return',
+  '3m':  '3-Month Return',
+  'ytd': 'YTD Return',
+  'all': 'Total Return',
+};
+
 // ── My Portfolio Tab ──────────────────────────────────────────────────────────
 
 function MyPortfolioTab() {
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [periodLoading, setPeriodLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<PortfolioPeriod>('all');
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (p: PortfolioPeriod = period, isInitial = false) => {
+    if (isInitial) setLoading(true);
+    else setPeriodLoading(true);
     setError(null);
     try {
-      const data = await getPortfolioSummary();
+      const data = await getPortfolioSummary(p);
       setSummary(data);
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to load portfolio');
     } finally {
       setLoading(false);
+      setPeriodLoading(false);
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(period, true); }, []);
+
+  const handlePeriodChange = (p: PortfolioPeriod) => {
+    setPeriod(p);
+    load(p, false);
+  };
 
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
-  if (error) return <div className="flex flex-col items-center gap-3 py-12 text-center"><AlertCircle className="h-8 w-8 text-destructive" /><p className="text-sm text-destructive">{error}</p><Button size="sm" variant="outline" onClick={load}>Retry</Button></div>;
+  if (error) return <div className="flex flex-col items-center gap-3 py-12 text-center"><AlertCircle className="h-8 w-8 text-destructive" /><p className="text-sm text-destructive">{error}</p><Button size="sm" variant="outline" onClick={() => load(period, true)}>Retry</Button></div>;
 
   if (!summary || summary.holding_count === 0) {
     return (
@@ -500,16 +539,37 @@ function MyPortfolioTab() {
 
   const isProfit = summary.unrealized_pl >= 0;
   const plColor = isProfit ? 'text-green-600' : 'text-red-500';
+  const activePeriod = summary.period ?? period;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
           {summary.holding_count} Holdings · {summary.connections.length} Connection{summary.connections.length !== 1 ? 's' : ''}
         </h2>
-        <Button size="sm" variant="ghost" onClick={load} className="gap-1.5">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Period filter */}
+          <div className="flex items-center rounded-lg border bg-muted p-0.5 gap-0.5">
+            {PERIODS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => handlePeriodChange(value)}
+                disabled={periodLoading}
+                className={cn(
+                  'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+                  activePeriod === value
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <Button size="sm" variant="ghost" onClick={() => load(period, true)} className="gap-1.5" disabled={periodLoading || loading}>
+            <RefreshCw className={cn('h-3.5 w-3.5', (periodLoading || loading) && 'animate-spin')} /> Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -518,21 +578,23 @@ function MyPortfolioTab() {
           label="Total Value"
           value={`$${summary.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
         />
-        {summary.total_cost_basis > 0 && (
+        {summary.total_cost_basis > 0 && activePeriod === 'all' && (
+          <StatCard
+            label="Cost Basis"
+            value={`$${summary.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          />
+        )}
+        {(summary.total_cost_basis > 0 || activePeriod !== 'all') && (
           <>
             <StatCard
-              label="Cost Basis"
-              value={`$${summary.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              label={PERIOD_PL_LABEL[activePeriod]}
+              value={periodLoading ? '—' : `${isProfit ? '+' : ''}$${Math.abs(summary.unrealized_pl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              accent={periodLoading ? undefined : plColor}
             />
             <StatCard
-              label="Unrealized P&L"
-              value={`${isProfit ? '+' : ''}$${Math.abs(summary.unrealized_pl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-              accent={plColor}
-            />
-            <StatCard
-              label="Return"
-              value={`${isProfit ? '+' : ''}${summary.unrealized_pl_pct.toFixed(2)}%`}
-              accent={plColor}
+              label={PERIOD_RETURN_LABEL[activePeriod]}
+              value={periodLoading ? '—' : `${isProfit ? '+' : ''}${summary.unrealized_pl_pct.toFixed(2)}%`}
+              accent={periodLoading ? undefined : plColor}
             />
           </>
         )}

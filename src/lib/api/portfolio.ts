@@ -340,19 +340,22 @@ export interface ConnectionSummary {
   last_sync_at: string | null;
 }
 
+export type PortfolioPeriod = 'all' | '1d' | '1w' | '1m' | '3m' | 'ytd';
+
 export interface PortfolioSummary {
   total_value: number;
   total_cost_basis: number;
   unrealized_pl: number;
   unrealized_pl_pct: number;
+  period: PortfolioPeriod;
   sector_allocation: SectorAllocation[];
   connections: ConnectionSummary[];
   holding_count: number;
   disclaimer: string;
 }
 
-export async function getPortfolioSummary(): Promise<PortfolioSummary> {
-  const res = await apiClient.get('/brokers/portfolio-summary');
+export async function getPortfolioSummary(period: PortfolioPeriod = 'all'): Promise<PortfolioSummary> {
+  const res = await apiClient.get('/brokers/portfolio-summary', { params: { period } });
   return res.data;
 }
 

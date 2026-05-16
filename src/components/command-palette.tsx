@@ -22,6 +22,7 @@ import {
   Map,
   MessageSquare,
   Newspaper,
+  PieChart,
   Search,
   Settings,
   Shield,
@@ -204,6 +205,17 @@ export const ALL_FEATURES: PaletteItem[] = [
     category: 'Analysis',
     tier: 'free',
     keywords: ['screen', 'filter', 'stocks', 'scan'],
+  },
+  {
+    id: 'portfolio-management',
+    label: 'Portfolio Management',
+    description: 'Real portfolio analytics, P&L, attribution, rebalancing, and wash-sale scanner',
+    href: '/app/portfolio',
+    icon: PieChart,
+    category: 'Analysis',
+    tier: 'free',
+    isNew: true,
+    keywords: ['portfolio', 'p&l', 'unrealized', 'rebalance', 'attribution', 'sector', 'broker', 'holdings', 'cost basis', 'wash sale', 'benchmark'],
   },
 
   // ── Intelligence ────────────────────────────────────────────────────────
