@@ -10,7 +10,6 @@ import {
 } from '@/lib/assistant-hint';
 
 const HINT_DELAY_MS = 2500; // Delay before showing hint to let user orient
-const DISPLAY_DURATION = 5000; // How long the hint stays visible
 const FADE_OUT_DURATION = 400;
 
 interface AssistantHintProps {
@@ -63,16 +62,6 @@ export function AssistantHint({ onOpenAssistant }: AssistantHintProps) {
     return () => clearTimeout(showTimer);
   }, []);
 
-  // Auto-hide after display duration
-  useEffect(() => {
-    if (!isVisible || isFadingOut) return;
-
-    const hideTimer = setTimeout(() => {
-      startFadeOut();
-    }, DISPLAY_DURATION);
-
-    return () => clearTimeout(hideTimer);
-  }, [isVisible, isFadingOut]);
 
   const startFadeOut = useCallback(() => {
     if (isFadingOut) return;
