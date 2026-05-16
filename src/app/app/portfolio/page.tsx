@@ -572,32 +572,28 @@ function MyPortfolioTab() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats — always 4 cards when cost basis is available */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
           label="Total Value"
           value={`$${summary.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
         />
-        {summary.total_cost_basis > 0 && activePeriod === 'all' && (
+        {summary.total_cost_basis > 0 && (
           <StatCard
             label="Cost Basis"
             value={`$${summary.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           />
         )}
-        {(summary.total_cost_basis > 0 || activePeriod !== 'all') && (
-          <>
-            <StatCard
-              label={PERIOD_PL_LABEL[activePeriod]}
-              value={periodLoading ? '—' : `${isProfit ? '+' : ''}$${Math.abs(summary.unrealized_pl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-              accent={periodLoading ? undefined : plColor}
-            />
-            <StatCard
-              label={PERIOD_RETURN_LABEL[activePeriod]}
-              value={periodLoading ? '—' : `${isProfit ? '+' : ''}${summary.unrealized_pl_pct.toFixed(2)}%`}
-              accent={periodLoading ? undefined : plColor}
-            />
-          </>
-        )}
+        <StatCard
+          label={PERIOD_PL_LABEL[activePeriod]}
+          value={periodLoading ? '—' : `${isProfit ? '+' : ''}$${Math.abs(summary.unrealized_pl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          accent={periodLoading ? undefined : plColor}
+        />
+        <StatCard
+          label={PERIOD_RETURN_LABEL[activePeriod]}
+          value={periodLoading ? '—' : `${isProfit ? '+' : ''}${summary.unrealized_pl_pct.toFixed(2)}%`}
+          accent={periodLoading ? undefined : plColor}
+        />
       </div>
 
       {/* Sector allocation */}
