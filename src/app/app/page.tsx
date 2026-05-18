@@ -35,6 +35,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Gift,
   Sparkles,
   TrendingUp,
   UserCheck,
@@ -152,6 +153,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
       { label: 'Social Feed',          description: 'Ideas and market discussion',          href: '/app/community',             icon: MessageSquare },
       { label: 'Share Idea',           description: 'Post your market thesis',              href: '/app/community/ideas/new',   icon: TrendingUp },
       { label: 'Compliance Tools',     description: 'Wash sale, journal & 13F prep',        href: '/app/investment-compliance', icon: ShieldCheck },
+      { label: 'Refer Friends',        description: 'Invite friends and track referrals',   href: '/app/referral',              icon: Gift, isNew: true },
     ],
   },
   {

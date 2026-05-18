@@ -22,6 +22,7 @@ import {
   Crown,
   FileText,
   Globe,
+  Gift,
   History,
   Newspaper,
   LayoutDashboard,
@@ -131,6 +132,7 @@ const USER_MENU_ITEMS = [
 
 // Secondary / utility links — collapsed under "More"
 const MORE_CHILDREN = [
+  { href: '/app/referral',              label: 'Refer Friends',      icon: Gift,        badge: 'NEW' },
   { href: '/app/billing',               label: 'Billing & Plans',    icon: CreditCard },
   { href: '/app/settings/privacy',      label: 'Privacy & Data',     icon: ShieldCheck, badge: 'NEW' },
   { href: '/app/investment-compliance', label: 'Compliance Tools',   icon: ShieldCheck },
