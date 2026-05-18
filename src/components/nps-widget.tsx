@@ -1,154 +1,239 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
-import { toast } from 'sonner';
-import { getNpsStatus, submitNps } from '@/lib/api/nps';
+import { useCallback, useEffect, useState } from 'react';
+import { ChevronRight, X } from 'lucide-react';
+import posthog from 'posthog-js';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { apiClient } from '@/lib/api-client';
 
-const NPS_DISMISSED_KEY = 'nps-dismissed';
+type NPSStage = 'score' | 'feedback' | 'thankyou' | 'hidden';
 
-function scoreColor(score: number): string {
-  if (score <= 6) return 'bg-red-500 hover:bg-red-600 text-white';
-  if (score <= 8) return 'bg-yellow-500 hover:bg-yellow-600 text-white';
-  return 'bg-green-500 hover:bg-green-600 text-white';
-}
+const FOLLOW_UP_PROMPTS: Record<string, string> = {
+  promoter: "We're glad you love SSB! What's your favorite feature?",
+  passive: "Thanks! What could we improve to make SSB a 10 for you?",
+  detractor: "We're sorry to hear that. What's not working for you?",
+};
 
-function scoreSelectedColor(score: number): string {
-  if (score <= 6) return 'ring-2 ring-red-400 bg-red-500 text-white';
-  if (score <= 8) return 'ring-2 ring-yellow-400 bg-yellow-500 text-white';
-  return 'ring-2 ring-green-400 bg-green-500 text-white';
-}
-
-function scoreIdleColor(score: number): string {
-  if (score <= 6) return 'bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/40 dark:hover:bg-red-800/60 dark:text-red-300';
-  if (score <= 8) return 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900/40 dark:hover:bg-yellow-800/60 dark:text-yellow-300';
-  return 'bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/40 dark:hover:bg-green-800/60 dark:text-green-300';
+function getCategory(score: number): string {
+  if (score >= 9) return 'promoter';
+  if (score >= 7) return 'passive';
+  return 'detractor';
 }
 
 export function NpsWidget() {
-  const [visible, setVisible] = useState(false);
-  const [selectedScore, setSelectedScore] = useState<number | null>(null);
-  const [comment, setComment] = useState('');
+  const [stage, setStage] = useState<NPSStage>('hidden');
+  const [score, setScore] = useState<number | null>(null);
+  const [category, setCategory] = useState<string>('');
+  const [feedback, setFeedback] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [hoveredScore, setHoveredScore] = useState<number | null>(null);
 
-  useEffect(() => {
-    // Skip if already dismissed
-    if (typeof window !== 'undefined' && localStorage.getItem(NPS_DISMISSED_KEY)) {
-      return;
+  const checkEligibility = useCallback(async () => {
+    try {
+      const res = await apiClient.get('/feedback/nps/eligibility');
+      if (res.data?.eligible) {
+        setTimeout(() => setStage('score'), 8000);
+      }
+    } catch {
+      // NPS must never break the app
     }
-
-    getNpsStatus()
-      .then((status) => {
-        if (status.should_show) {
-          setVisible(true);
-        }
-      })
-      .catch(() => {
-        // Silently ignore — NPS is non-critical
-      });
   }, []);
 
-  const handleDismiss = () => {
-    localStorage.setItem(NPS_DISMISSED_KEY, '1');
-    setVisible(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('nps_dismissed_session')) {
+      return;
+    }
+    checkEligibility();
+  }, [checkEligibility]);
+
+  const handleScore = (s: number) => {
+    setScore(s);
+    setCategory(getCategory(s));
+    setStage('feedback');
   };
 
   const handleSubmit = async () => {
-    if (selectedScore === null) return;
+    if (score === null) return;
     setSubmitting(true);
     try {
-      await submitNps(selectedScore, comment.trim() || undefined);
-      setSubmitted(true);
-      toast.success('Thanks for your feedback!');
-      setTimeout(() => setVisible(false), 1500);
+      await apiClient.post('/feedback/nps', {
+        score,
+        feedback: feedback.trim() || undefined,
+        dismissed: false,
+      });
+
+      posthog.capture('nps_submitted', {
+        score,
+        category,
+        has_feedback: feedback.trim().length > 0,
+        feedback_length: feedback.trim().length,
+      });
+
+      setStage('thankyou');
+      setTimeout(() => setStage('hidden'), 3000);
     } catch {
-      toast.error('Failed to submit. Please try again.');
+      // Show thankyou anyway — don't punish the user for a network error
+      setStage('thankyou');
+      setTimeout(() => setStage('hidden'), 3000);
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (!visible) return null;
+  const handleDismiss = async () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('nps_dismissed_session', 'true');
+    }
+    setStage('hidden');
+
+    posthog.capture('nps_dismissed', {
+      at_stage: stage,
+      score_given: score,
+    });
+
+    try {
+      await apiClient.post('/feedback/nps', { score: 0, dismissed: true });
+    } catch {
+      // Silently ignore
+    }
+  };
+
+  if (stage === 'hidden') return null;
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 w-80 rounded-xl border bg-card shadow-lg"
       role="dialog"
-      aria-label="Feedback survey"
+      aria-label="Quick feedback survey"
+      className={cn(
+        'fixed bottom-24 right-4 z-50 w-80 max-w-[calc(100vw-2rem)]',
+        'rounded-2xl border border-border/60 bg-card shadow-2xl shadow-black/40',
+        'animate-in slide-in-from-bottom-4 fade-in duration-300',
+      )}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-2 p-4 pb-3">
-        <p className="text-sm font-semibold leading-snug">
-          How likely are you to recommend SSB?
-        </p>
+      <div className="flex items-center justify-between border-b border-border/30 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-5 w-5 items-center justify-center rounded bg-[#1A2478]">
+            <span className="text-[9px] font-bold text-[#C9A84C]">S</span>
+          </div>
+          <span className="text-xs font-semibold text-foreground">Quick feedback</span>
+        </div>
         <button
           onClick={handleDismiss}
-          aria-label="Dismiss survey"
-          className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Dismiss"
+          className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
 
-      {submitted ? (
-        <div className="px-4 pb-4 text-sm text-muted-foreground">
-          Your response has been recorded. Thank you!
-        </div>
-      ) : (
-        <div className="px-4 pb-4 space-y-3">
-          {/* Score buttons */}
-          <div className="flex gap-1">
+      {/* Stage: score */}
+      {stage === 'score' && (
+        <div className="p-4">
+          <p className="mb-0.5 text-sm font-medium text-foreground">
+            How likely are you to recommend SSB to a friend?
+          </p>
+          <p className="mb-4 text-xs text-muted-foreground">0 = Not at all · 10 = Definitely</p>
+
+          <div className="mb-3 flex gap-1">
             {Array.from({ length: 11 }, (_, i) => (
               <button
                 key={i}
-                onClick={() => setSelectedScore(i)}
+                onClick={() => handleScore(i)}
+                onMouseEnter={() => setHoveredScore(i)}
+                onMouseLeave={() => setHoveredScore(null)}
                 aria-label={`Score ${i}`}
-                className={[
-                  'flex-1 rounded text-xs font-medium py-1.5 transition-all',
-                  selectedScore === i
-                    ? scoreSelectedColor(i)
-                    : scoreIdleColor(i),
-                ].join(' ')}
+                className={cn(
+                  'h-8 flex-1 rounded-md border text-xs font-semibold transition-all',
+                  hoveredScore !== null && i <= hoveredScore
+                    ? i >= 9
+                      ? 'border-green-500/50 bg-green-500/20 text-green-400'
+                      : i >= 7
+                        ? 'border-yellow-500/50 bg-yellow-500/20 text-yellow-400'
+                        : 'border-red-500/50 bg-red-500/20 text-red-400'
+                    : 'border-border/50 bg-muted/50 text-muted-foreground hover:border-border',
+                )}
               >
                 {i}
               </button>
             ))}
           </div>
 
-          {/* Labels */}
-          <div className="flex justify-between text-[11px] text-muted-foreground px-0.5">
+          <div className="flex justify-between text-[10px] text-muted-foreground">
             <span>Not likely</span>
             <span>Very likely</span>
           </div>
+        </div>
+      )}
 
-          {/* Comment textarea — shown after selecting a score */}
-          {selectedScore !== null && (
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="What could we improve? (optional)"
-              rows={2}
-              className="w-full resize-none rounded-md border bg-background px-3 py-2 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center gap-2 pt-1">
-            <button
-              onClick={handleSubmit}
-              disabled={selectedScore === null || submitting}
-              className="flex-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+      {/* Stage: feedback */}
+      {stage === 'feedback' && (
+        <div className="p-4">
+          <div className="mb-3 flex items-start gap-2">
+            <div
+              className={cn(
+                'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold',
+                score !== null && score >= 9
+                  ? 'bg-green-500/20 text-green-400'
+                  : score !== null && score >= 7
+                    ? 'bg-yellow-500/20 text-yellow-400'
+                    : 'bg-red-500/20 text-red-400',
+              )}
             >
-              {submitting ? 'Submitting…' : 'Submit'}
-            </button>
-            <button
-              onClick={handleDismiss}
-              className="rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Dismiss
-            </button>
+              {score}
+            </div>
+            <p className="text-sm text-foreground leading-snug">
+              {category && FOLLOW_UP_PROMPTS[category]}
+            </p>
           </div>
+
+          <textarea
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            placeholder="Share your thoughts… (optional)"
+            rows={3}
+            maxLength={2000}
+            className={cn(
+              'mb-3 w-full resize-none rounded-md border bg-background',
+              'px-3 py-2 text-xs placeholder:text-muted-foreground',
+              'focus:outline-none focus:ring-2 focus:ring-ring',
+            )}
+          />
+
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDismiss}
+              className="flex-1 text-xs text-muted-foreground"
+            >
+              Skip
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="flex-1 bg-[#C9A84C] text-black hover:bg-[#C9A84C]/90 text-xs font-semibold"
+            >
+              {submitting ? (
+                'Sending…'
+              ) : (
+                <>
+                  Submit <ChevronRight className="ml-1 h-3 w-3" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Stage: thank you */}
+      {stage === 'thankyou' && (
+        <div className="p-6 text-center">
+          <div className="mb-2 text-2xl">🙏</div>
+          <p className="mb-1 text-sm font-semibold text-foreground">Thank you for your feedback!</p>
+          <p className="text-xs text-muted-foreground">It helps us build a better SSB.</p>
         </div>
       )}
     </div>
