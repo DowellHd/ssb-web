@@ -197,6 +197,30 @@ export async function deleteBacktest(backtestId: string): Promise<void> {
   await apiClient.delete(`/backtests/${backtestId}`);
 }
 
+export interface BacktestMetrics {
+  total_return_pct: number | null;
+  max_drawdown: number | null;
+  sharpe_ratio: number | null;
+  sortino_ratio: number | null;
+  volatility: number | null;
+  total_trades: number | null;
+  winning_trades: number | null;
+  losing_trades: number | null;
+  final_equity: number | null;
+  initial_capital: number;
+}
+
+export interface BacktestPublicData {
+  id: string;
+  name: string;
+  strategy_type: string;
+  status: string;
+  start_date: string;
+  end_date: string;
+  metrics: BacktestMetrics;
+  equity_curve: EquityCurvePoint[];
+}
+
 export interface BenchmarkPoint {
   date: string;
   cumulative_return: number;
@@ -217,6 +241,24 @@ export async function getBacktestBenchmark(
   const response = await apiClient.get(`/backtests/${backtestId}/benchmark`, {
     params: { symbol },
   });
+  return response.data;
+}
+
+/**
+ * Generate a shareable link token for a backtest.
+ */
+export async function shareBacktest(
+  backtestId: string,
+): Promise<{ share_token: string; share_url: string }> {
+  const response = await apiClient.post(`/backtests/${backtestId}/share`);
+  return response.data;
+}
+
+/**
+ * Fetch public backtest data by share token (no auth required).
+ */
+export async function getSharedBacktest(token: string): Promise<BacktestPublicData> {
+  const response = await apiClient.get(`/backtests/shared/${token}`);
   return response.data;
 }
 

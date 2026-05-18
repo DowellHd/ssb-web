@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Clock,
   Download,
+  Share2,
   Trash2,
 } from 'lucide-react';
 import {
@@ -32,11 +33,13 @@ import {
   getBacktestBenchmark,
   deleteBacktest,
   exportBacktestCSV,
+  shareBacktest,
   type BacktestDetails,
   type BenchmarkPoint,
   type EquityCurvePoint,
   type BacktestTrade,
 } from '@/lib/api/backtests';
+import { toast } from 'sonner';
 import { safeToFixed } from '@/lib/utils';
 
 const STRATEGY_LABELS: Record<string, string> = {
@@ -96,6 +99,7 @@ export default function BacktestDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -120,6 +124,21 @@ export default function BacktestDetailPage() {
       }
     })();
   }, [id]);
+
+  const handleShare = async () => {
+    if (!backtest) return;
+    setSharing(true);
+    try {
+      const { share_url } = await shareBacktest(backtest.id);
+      const fullUrl = window.location.origin + share_url;
+      await navigator.clipboard.writeText(fullUrl);
+      toast.success('Share link copied to clipboard!');
+    } catch {
+      toast.error('Failed to generate share link');
+    } finally {
+      setSharing(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!backtest) return;
@@ -214,6 +233,16 @@ export default function BacktestDetailPage() {
                 <Clock className="h-3.5 w-3.5" />
                 Ran in {(backtest.execution_time_ms / 1000).toFixed(1)}s
               </div>
+            )}
+            {backtest.status === 'completed' && (
+              <button
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                onClick={handleShare}
+                disabled={sharing}
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                {sharing ? 'Copying…' : 'Share'}
+              </button>
             )}
             {backtest.status === 'completed' && curve.length > 0 && (
               <button

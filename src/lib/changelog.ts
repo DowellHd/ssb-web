@@ -18,6 +18,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    subsystem: 'Backtests',
+    version: '1.2.0',
+    date: '2026-05-18',
+    changes: [
+      'Shareable backtest links — generate a public read-only URL for any completed backtest and share it with anyone',
+      'Public backtest view shows metrics, equity curve, and a CTA to sign up',
+    ],
+  },
+  {
     subsystem: 'Portfolio Management',
     version: '1.2.0',
     date: '2026-05-18',
