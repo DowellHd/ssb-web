@@ -91,9 +91,9 @@ export const SUBSYSTEM_VERSIONS = {
     description: 'AI Strategy Insights: LLM portfolio analysis, risk profiling, diversification scoring, educational themes',
   },
   portfolioManagement: {
-    version: '1.1.0',
-    lastUpdated: '2026-05-15',
-    description: 'Portfolio Management: period P&L filter (1D/1W/1M/3M/YTD/All) and search registration',
+    version: '1.2.0',
+    lastUpdated: '2026-05-18',
+    description: 'Portfolio Management: manual positions CRUD, risk profile DB persistence, real Monte Carlo simulation',
   },
 } as const satisfies Record<string, SubsystemVersion>;
 

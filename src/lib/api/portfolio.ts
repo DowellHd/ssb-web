@@ -493,3 +493,54 @@ export async function createJournalEntry(data: {
 export async function deleteJournalEntry(id: string): Promise<void> {
   await apiClient.delete(`/investment-compliance/journal/${id}`);
 }
+
+// ── Manual Positions ──────────────────────────────────────────────────────────
+
+export interface ManualPosition {
+  id: string;
+  user_id: string;
+  symbol: string;
+  quantity: number;
+  avg_cost: number;
+  asset_type: 'stock' | 'etf' | 'crypto' | 'other';
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ManualPositionCreate {
+  symbol: string;
+  quantity: number;
+  avg_cost: number;
+  asset_type?: 'stock' | 'etf' | 'crypto' | 'other';
+  notes?: string;
+}
+
+export interface ManualPositionUpdate {
+  quantity?: number;
+  avg_cost?: number;
+  asset_type?: 'stock' | 'etf' | 'crypto' | 'other';
+  notes?: string;
+}
+
+export async function listManualPositions(): Promise<ManualPosition[]> {
+  const res = await apiClient.get<ManualPosition[]>('/portfolio/manual');
+  return res.data;
+}
+
+export async function createManualPosition(data: ManualPositionCreate): Promise<ManualPosition> {
+  const res = await apiClient.post<ManualPosition>('/portfolio/manual', data);
+  return res.data;
+}
+
+export async function updateManualPosition(
+  id: string,
+  data: ManualPositionUpdate
+): Promise<ManualPosition> {
+  const res = await apiClient.put<ManualPosition>(`/portfolio/manual/${id}`, data);
+  return res.data;
+}
+
+export async function deleteManualPosition(id: string): Promise<void> {
+  await apiClient.delete(`/portfolio/manual/${id}`);
+}

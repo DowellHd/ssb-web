@@ -52,3 +52,9 @@ export async function updateNotificationPreferences(
   );
   return res.data;
 }
+
+export async function updateRiskProfile(
+  risk_profile: 'conservative' | 'moderate' | 'growth' | 'income'
+): Promise<void> {
+  await apiClient.patch('/settings/profile', { risk_profile });
+}

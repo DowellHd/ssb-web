@@ -14,6 +14,7 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { updateRiskProfile } from '@/lib/api/notifications';
 
 // ============================================================================
 // Questionnaire data
@@ -286,6 +287,9 @@ export default function OnboardingPage() {
       } catch {
         // ignore
       }
+      updateRiskProfile(result.id as 'conservative' | 'moderate' | 'growth' | 'income').catch(
+        () => {}
+      );
     }
   };
 
