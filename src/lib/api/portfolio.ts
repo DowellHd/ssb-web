@@ -420,6 +420,8 @@ export interface RealVsPaperResult {
   };
   paper_portfolio: {
     total_equity: number;
+    positions_value: number;
+    cash_balance: number;
     total_cost_basis: number;
     unrealized_pl: number;
     unrealized_pl_pct: number;
