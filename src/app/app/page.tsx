@@ -124,7 +124,7 @@ const CAPABILITY_MAP: FeatureSection[] = [
     color: 'text-emerald-500',
     features: [
       { label: 'Paper Trading',        description: 'Simulated order management',           href: '/app/paper',      icon: CandlestickChart },
-      { label: 'Backtests',            description: 'Historical strategy testing',          href: '/app/backtests',  icon: LineChart,      tier: 'starter' as const },
+      { label: 'Backtests',            description: 'Historical strategy testing + shareable links', href: '/app/backtests',  icon: LineChart,      tier: 'starter' as const, isNew: true },
       { label: 'Order Preparation',    description: 'TCA, order tickets & broker links',    href: '/app/order-prep', icon: ClipboardList },
       { label: 'Broker Connections',   description: 'Read-only multi-broker dashboard',     href: '/app/brokers',    icon: Wifi,           isNew: true },
       { label: 'Signal Feed',           description: 'Live signals + pre-trade intelligence',href: '/app/signals',     icon: Zap,            isNew: true, tier: 'starter' as const },
