@@ -723,7 +723,7 @@ function VsPaperTab() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Unrealized P&L</span>
                     <span className={cn('font-semibold tabular-nums', realPl >= 0 ? 'text-green-600' : 'text-red-500')}>
-                      {realPl >= 0 ? '+' : ''}${Math.abs(realPl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({real.unrealized_pl_pct.toFixed(2)}%)
+                      {realPl >= 0 ? '+' : '-'}${Math.abs(realPl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({realPl >= 0 ? '+' : '-'}{Math.abs(real.unrealized_pl_pct).toFixed(2)}%)
                     </span>
                   </div>
                 </>
@@ -750,8 +750,16 @@ function VsPaperTab() {
           ) : (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Equity</span>
+                <span className="text-muted-foreground">Total Value</span>
                 <span className="font-semibold tabular-nums">${paper.total_equity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Positions Value</span>
+                <span className="tabular-nums">${(paper.positions_value ?? paper.total_equity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Cash Available</span>
+                <span className="tabular-nums">${(paper.cash_balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               {paper.total_cost_basis > 0 && (
                 <>
@@ -762,14 +770,14 @@ function VsPaperTab() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Unrealized P&L</span>
                     <span className={cn('font-semibold tabular-nums', paperPl >= 0 ? 'text-green-600' : 'text-red-500')}>
-                      {paperPl >= 0 ? '+' : ''}${Math.abs(paperPl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({paper.unrealized_pl_pct.toFixed(2)}%)
+                      {paperPl >= 0 ? '+' : '-'}${Math.abs(paperPl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({paperPl >= 0 ? '+' : '-'}{Math.abs(paper.unrealized_pl_pct).toFixed(2)}%)
                     </span>
                   </div>
                 </>
               )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Positions</span>
-                <span className="tabular-nums">{paper.position_count} ({paper.account_count} accounts)</span>
+                <span className="tabular-nums">{paper.position_count} ({paper.account_count} account{paper.account_count !== 1 ? 's' : ''})</span>
               </div>
             </div>
           )}
