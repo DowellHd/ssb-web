@@ -19,6 +19,18 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     subsystem: 'Portfolio Management',
+    version: '1.2.0',
+    date: '2026-05-18',
+    changes: [
+      'Added Manual Positions tab — track holdings from accounts not connected via Plaid (stocks, ETFs, crypto, other)',
+      'CRUD operations: add, edit, and delete manual positions with symbol, quantity, avg cost, and optional notes',
+      'Risk profile from onboarding quiz is now saved to the database via PATCH /settings/profile',
+      'Monte Carlo simulation endpoint now runs real correlated GBM paths using Cholesky decomposition instead of analytical estimates',
+      'Simulation tier limits enforced: free = 100 paths, pro = 5,000 paths',
+    ],
+  },
+  {
+    subsystem: 'Portfolio Management',
     version: '1.1.0',
     date: '2026-05-15',
     changes: [

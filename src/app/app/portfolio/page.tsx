@@ -12,6 +12,7 @@ import {
   Leaf,
   Loader2,
   PieChart,
+  Plus,
   RefreshCw,
   Shield,
   Shuffle,
@@ -47,7 +48,13 @@ import {
   type PortfolioPeriod,
   type WashSaleScanResult,
   type RealVsPaperResult,
+  listManualPositions,
+  createManualPosition,
+  updateManualPosition,
+  deleteManualPosition,
+  type ManualPosition,
 } from '@/lib/api/portfolio';
+import { ManualPositionForm } from '@/components/portfolio/manual-position-form';
 
 // ── Demo fallback helpers ──────────────────────────────────────────────────────
 // Used only when no broker account is connected.
@@ -94,6 +101,7 @@ function plaidToHoldings(plaid: PlaidHolding[]): { holdings: HoldingInput[]; pos
 
 const TABS = [
   { id: 'portfolio',  label: 'My Portfolio', icon: PieChart },
+  { id: 'manual',     label: 'Manual',       icon: Plus },
   { id: 'vs-paper',   label: 'vs Paper',     icon: BarChart3 },
   { id: 'wash-sales', label: 'Wash Sales',   icon: Leaf },
   { id: 'benchmarks', label: 'Benchmarks',   icon: Shield },
@@ -908,6 +916,141 @@ function WashSalesTab() {
   );
 }
 
+// ── Manual Positions Tab ──────────────────────────────────────────────────────
+
+function ManualTab() {
+  const [positions, setPositions] = useState<ManualPosition[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<ManualPosition | undefined>();
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  useEffect(() => {
+    listManualPositions()
+      .then(setPositions)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSaved = (pos: ManualPosition) => {
+    setPositions((prev) => {
+      const idx = prev.findIndex((p) => p.id === pos.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = pos;
+        return next;
+      }
+      return [pos, ...prev];
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeleting(id);
+    try {
+      await deleteManualPosition(id);
+      setPositions((prev) => prev.filter((p) => p.id !== id));
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const totalValue = positions.reduce((s, p) => s + p.quantity * p.avg_cost, 0);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-base font-semibold">Manual Positions</h3>
+          <p className="text-sm text-muted-foreground">
+            Track holdings not connected via a broker.
+          </p>
+        </div>
+        <Button size="sm" onClick={() => { setEditing(undefined); setFormOpen(true); }}>
+          <Plus className="mr-1.5 h-3.5 w-3.5" /> Add Position
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="flex h-32 items-center justify-center">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : positions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-12 text-center">
+          <PieChart className="mb-3 h-8 w-8 text-muted-foreground" />
+          <p className="font-medium">No positions yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Add holdings from accounts you can't connect via Plaid.
+          </p>
+          <Button size="sm" className="mt-4" onClick={() => { setEditing(undefined); setFormOpen(true); }}>
+            Add your first position
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className="rounded-xl border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="px-4 py-2.5 font-medium">Symbol</th>
+                  <th className="px-4 py-2.5 font-medium">Type</th>
+                  <th className="px-4 py-2.5 font-medium text-right">Qty</th>
+                  <th className="px-4 py-2.5 font-medium text-right">Avg Cost</th>
+                  <th className="px-4 py-2.5 font-medium text-right">Market Value</th>
+                  <th className="px-4 py-2.5" />
+                </tr>
+              </thead>
+              <tbody>
+                {positions.map((p) => (
+                  <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30">
+                    <td className="px-4 py-3 font-semibold">{p.symbol}</td>
+                    <td className="px-4 py-3 capitalize text-muted-foreground">{p.asset_type}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{p.quantity}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">${p.avg_cost.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      ${(p.quantity * p.avg_cost).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => { setEditing(p); setFormOpen(true); }}
+                          className="text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id)}
+                          disabled={deleting === p.id}
+                          className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
+                        >
+                          {deleting === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Delete'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Total estimated value:{' '}
+            <span className="font-semibold text-foreground">
+              ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </span>{' '}
+            (at avg cost — live prices not available for manual positions)
+          </p>
+        </>
+      )}
+
+      <ManualPositionForm
+        isOpen={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSaved={handleSaved}
+        editing={editing}
+      />
+    </div>
+  );
+}
+
+
 // ── Benchmarks Tab ────────────────────────────────────────────────────────────
 
 function BenchmarksTab() {
@@ -1074,6 +1217,7 @@ export default function PortfolioPage() {
       {/* Tab content */}
       {activeTab === 'tools'      && <ToolsTab />}
       {activeTab === 'portfolio'  && <MyPortfolioTab />}
+      {activeTab === 'manual'     && <ManualTab />}
       {activeTab === 'vs-paper'   && <VsPaperTab />}
       {activeTab === 'wash-sales' && <WashSalesTab />}
       {activeTab === 'benchmarks' && <BenchmarksTab />}
