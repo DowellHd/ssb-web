@@ -233,7 +233,7 @@ export const ALL_FEATURES: PaletteItem[] = [
     id: 'simulations',
     label: 'Scenario Simulations',
     description: 'Macro scenario and stress simulation engine',
-    href: '/app/simulations',
+    href: '/app/intelligence/simulations',
     icon: Sparkles,
     category: 'Intelligence',
     tier: 'pro',
