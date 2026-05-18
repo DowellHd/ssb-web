@@ -70,6 +70,12 @@ const nextConfig = {
         destination: '/auth/reset-password',
         permanent: true,
       },
+      // Redirect legacy /intelligence/* routes to /app/intelligence/*
+      { source: '/intelligence', destination: '/app/intelligence', permanent: true },
+      { source: '/intelligence/regime', destination: '/app/intelligence/regime', permanent: true },
+      { source: '/intelligence/risk', destination: '/app/intelligence/risk', permanent: true },
+      { source: '/intelligence/stress', destination: '/app/intelligence/stress', permanent: true },
+      { source: '/intelligence/simulations', destination: '/app/intelligence/simulations', permanent: true },
     ];
   },
 
