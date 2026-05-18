@@ -18,6 +18,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    subsystem: 'Growth',
+    version: '1.0.0',
+    date: '2026-05-18',
+    changes: [
+      'Referral program launched — share your unique link and track how many friends you have invited',
+      'Referral stats: total referrals, converted signups, and pending',
+      'Refer Friends page at /app/referral with one-click copy, Twitter/LinkedIn share buttons',
+    ],
+  },
+  {
     subsystem: 'Backtests',
     version: '1.2.0',
     date: '2026-05-18',
