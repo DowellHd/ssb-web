@@ -91,7 +91,8 @@ class APIClient {
         // If 401 and not already retried, try to refresh token.
         // Use a shared promise so concurrent 401s all await the same single
         // refresh call instead of each racing to invalidate the refresh token.
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        const isAuthEndpoint = originalRequest?.url?.match(/\/auth\/(login|register|mfa\/verify|demo-login)/);
+        if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
           originalRequest._retry = true;
 
           if (!this.refreshPromise) {
