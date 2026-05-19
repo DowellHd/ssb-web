@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Copy, Gift, Linkedin, Twitter, Users } from 'lucide-react';
+import { Copy, Gift, Linkedin, Lock, Star, Twitter, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { getMyReferralCode, type ReferralStats } from '@/lib/api/referrals';
 
@@ -150,9 +150,63 @@ export default function ReferralPage() {
         </ol>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Reward details and incentive tiers are coming soon.
-      </p>
+      {/* Rewards section */}
+      <div className="rounded-lg border bg-card p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold flex items-center gap-2">
+            <Star className="h-4 w-4 text-amber-400" />
+            Rewards &amp; Incentive Tiers
+          </h2>
+          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-400">
+            Coming Soon
+          </span>
+        </div>
+
+        <p className="text-sm text-muted-foreground">
+          Refer more friends to unlock exclusive perks. The more you share, the more you earn.
+        </p>
+
+        <div className="space-y-2">
+          {[
+            {
+              referrals: 1,
+              label: 'First Referral',
+              reward: '1-month Pro trial for you and your friend',
+              color: 'text-amber-600 bg-amber-500/10 border-amber-500/20',
+            },
+            {
+              referrals: 5,
+              label: '5 Referrals',
+              reward: '20% discount on your next billing cycle',
+              color: 'text-slate-400 bg-slate-500/10 border-slate-500/20',
+            },
+            {
+              referrals: 10,
+              label: '10 Referrals',
+              reward: '3 months free + early access to new features',
+              color: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
+            },
+          ].map(({ referrals, label, reward, color }) => (
+            <div
+              key={referrals}
+              className="flex items-center gap-4 rounded-lg border border-border/50 bg-muted/20 px-4 py-3 opacity-60"
+            >
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-xs font-bold ${color}`}>
+                {referrals}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{label}</p>
+                <p className="text-xs text-muted-foreground truncate">{reward}</p>
+              </div>
+              <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+            </div>
+          ))}
+        </div>
+
+        <p className="text-[11px] text-muted-foreground">
+          Reward details will be announced when the program launches.
+        </p>
+      </div>
     </div>
   );
 }
