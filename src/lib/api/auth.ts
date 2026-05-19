@@ -40,6 +40,9 @@ export interface LoginResponse {
 }
 
 export interface SignupResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
   user: User;
   message: string;
 }
@@ -83,6 +86,11 @@ export interface SessionListResponse {
 
 export async function signup(data: SignupData): Promise<SignupResponse> {
   const response = await apiClient.post('/auth/register', data);
+  // Store token immediately so the user can enter the app without verifying email first
+  if (response.data.access_token) {
+    sessionStorage.setItem('access_token', response.data.access_token);
+    document.cookie = 'ssb_logged_in=1; path=/; SameSite=Lax; Max-Age=604800';
+  }
   return response.data;
 }
 

@@ -39,8 +39,8 @@ export default function SignupPage() {
         full_name: formData.full_name || undefined,
       });
 
-      toast.success('Account created successfully! Please check your email to verify your account.');
-      router.push(`/auth/verify-email-sent?email=${encodeURIComponent(formData.email)}`);
+      toast.success('Welcome to SSB! Check your email to verify your account.');
+      router.push('/app/dashboard');
     } catch (error: any) {
       // Handle specific error codes
       const status = error?.response?.status;
