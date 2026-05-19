@@ -371,7 +371,7 @@ export default function AppDashboardPage() {
       await resendVerification(dashboard.email);
       setVerificationSent(true);
       setVerificationCooldown(30);
-      toast.success('Verification email sent! Check your inbox.');
+      toast.success('Verification email sent! Check your inbox (and spam folder).');
     } catch (err: any) {
       const msg = err?.response?.data?.detail || 'Failed to send verification email';
       setVerificationError(msg);
@@ -453,7 +453,7 @@ export default function AppDashboardPage() {
           <div className="flex-1 text-sm">
             <p className="font-medium text-yellow-800 dark:text-yellow-400">Email not verified</p>
             <p className="text-yellow-700 dark:text-yellow-500 text-xs mt-0.5">
-              Verify your email to unlock all features.
+              Verify your email to unlock all features. Check your spam folder if you don&apos;t see it.
             </p>
           </div>
           <button
