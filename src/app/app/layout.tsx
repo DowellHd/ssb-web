@@ -47,6 +47,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { ChatBubble } from '@/components/assistant';
+import { EmailVerificationBanner } from '@/components/email-verification-banner';
 import { NpsWidget } from '@/components/nps-widget';
 import { BetaBanner } from '@/components/beta-banner';
 import { DemoBanner } from '@/components/demo-banner';
@@ -869,6 +870,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         >
           <DemoBanner />
         </div>
+        <EmailVerificationBanner />
         <main className="p-6 pb-safe-bottom lg:pb-6">{children}</main>
       </div>
 
