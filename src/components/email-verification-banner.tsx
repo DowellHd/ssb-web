@@ -51,7 +51,8 @@ export function EmailVerificationBanner() {
             <>
               <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-400" />
               <p className="text-sm text-foreground">
-                Verification email sent! Check your inbox.
+                Verification email sent! Check your inbox{' '}
+                <span className="text-foreground/60">(and spam folder)</span>.
               </p>
             </>
           ) : (
@@ -59,7 +60,8 @@ export function EmailVerificationBanner() {
               <Mail className="h-4 w-4 flex-shrink-0 text-amber-400" />
               <p className="truncate text-sm text-foreground/90">
                 <span className="font-medium text-amber-400">Verify your email</span>
-                {' '}to unlock community posting, signal alerts, and billing.
+                {' '}to unlock community posting, signal alerts, and billing.{' '}
+                <span className="text-foreground/50">Check your spam folder if you don&apos;t see it.</span>
               </p>
             </>
           )}
