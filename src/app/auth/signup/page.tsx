@@ -40,7 +40,7 @@ export default function SignupPage() {
       });
 
       toast.success('Welcome to SSB! Check your email to verify your account.');
-      router.push('/app/dashboard');
+      router.push('/app');
     } catch (error: any) {
       // Handle specific error codes
       const status = error?.response?.status;
