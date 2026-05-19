@@ -2,6 +2,7 @@
  * Authentication API hooks and functions.
  */
 import { apiClient } from '../api-client';
+import { clearDemoSession } from '../demo-auth';
 
 export interface SignupData {
   email: string;
@@ -86,8 +87,8 @@ export interface SessionListResponse {
 
 export async function signup(data: SignupData): Promise<SignupResponse> {
   const response = await apiClient.post('/auth/register', data);
-  // Store token immediately so the user can enter the app without verifying email first
   if (response.data.access_token) {
+    clearDemoSession();
     sessionStorage.setItem('access_token', response.data.access_token);
     document.cookie = 'ssb_logged_in=1; path=/; SameSite=Lax; Max-Age=604800';
   }
@@ -97,11 +98,9 @@ export async function signup(data: SignupData): Promise<SignupResponse> {
 export async function login(data: LoginData): Promise<LoginResponse> {
   const response = await apiClient.post('/auth/login', data);
 
-  // Store access token in sessionStorage
   if (response.data.access_token) {
+    clearDemoSession();
     sessionStorage.setItem('access_token', response.data.access_token);
-    // Set a non-httpOnly cookie so Next.js Edge Middleware can gate /app/* routes.
-    // This is a UX signal only — actual auth is enforced by the backend on every request.
     document.cookie = 'ssb_logged_in=1; path=/; SameSite=Lax; Max-Age=604800';
   }
 
