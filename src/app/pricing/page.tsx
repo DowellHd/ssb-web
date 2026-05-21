@@ -21,7 +21,7 @@ const PLANS = [
     priceYearly: 0,
     description: 'Learn the basics. No credit card required.',
     cta: 'Get Started Free',
-    ctaHref: '/auth/register',
+    ctaHref: '/auth/signup',
     highlight: false,
     features: [
       'Delayed regime data',
@@ -39,7 +39,7 @@ const PLANS = [
     priceYearly: 90,
     description: 'Level up with real analytics and full paper trading.',
     cta: 'Start Starter',
-    ctaHref: '/auth/register',
+    ctaHref: '/auth/signup',
     highlight: false,
     features: [
       'Reduced data delay',
@@ -57,7 +57,7 @@ const PLANS = [
     priceYearly: 290,
     description: 'Advanced tools for serious learners and active paper traders.',
     cta: 'Start Pro',
-    ctaHref: '/auth/register',
+    ctaHref: '/auth/signup',
     highlight: true,
     badge: 'Most Popular',
     features: [
@@ -79,7 +79,7 @@ const PLANS = [
     priceYearly: 1990,
     description: 'Full platform access for professionals and institutions.',
     cta: 'Start Institutional',
-    ctaHref: '/auth/register',
+    ctaHref: '/auth/signup',
     highlight: false,
     features: [
       'Real-time + priority data',
@@ -193,7 +193,7 @@ export default function PricingPage() {
           <Link href="/privacy" className="text-muted-foreground hover:text-foreground">Privacy</Link>
           <Link href="/disclaimer" className="text-muted-foreground hover:text-foreground">Disclaimer</Link>
           <Link href="/auth/login" className="text-muted-foreground hover:text-foreground">Sign in</Link>
-          <Link href="/auth/register" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+          <Link href="/auth/signup" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
             Get Started
           </Link>
         </div>
@@ -434,7 +434,7 @@ export default function PricingPage() {
           <h2 className="text-2xl font-bold">Ready to get started?</h2>
           <p className="text-muted-foreground">Free to join. No credit card required.</p>
           <Link
-            href="/auth/register"
+            href="/auth/signup"
             className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
           >
             Create Free Account
