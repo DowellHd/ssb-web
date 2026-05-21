@@ -23,21 +23,28 @@ const PLANS = [
   {
     name: 'Free',
     price: '$0',
-    description: 'Core analytics, paper trading, learn hub',
+    description: 'Delayed data, basic risk analytics, paper trading, learn hub',
     cta: 'Get started free',
     highlight: false,
   },
   {
+    name: 'Starter',
+    price: '$9/mo',
+    description: 'Reduced data delay, standard analytics, options chain viewer',
+    cta: 'Start Starter',
+    highlight: false,
+  },
+  {
     name: 'Pro',
-    price: '$79/mo',
-    description: 'All intelligence engines, AI insights, unlimited backtests',
-    cta: 'Start 14-day trial',
+    price: '$29/mo',
+    description: 'Real-time data, advanced analytics, backtesting, Monte Carlo',
+    cta: 'Start Pro',
     highlight: true,
   },
   {
     name: 'Institutional',
-    price: '$299/mo',
-    description: 'Advisor CRM, API access, compliance tools',
+    price: '$199/mo',
+    description: 'Advisor CRM, API access, unlimited strategies, compliance tools',
     cta: 'Get started',
     highlight: false,
   },
@@ -187,7 +194,7 @@ export default function Home() {
           <div className="mt-16 text-center">
             <h2 className="text-2xl font-bold mb-2">Simple, transparent pricing</h2>
             <p className="text-muted-foreground mb-8">Start free. Upgrade when you&apos;re ready.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
               {PLANS.map((plan) => (
                 <div
                   key={plan.name}
