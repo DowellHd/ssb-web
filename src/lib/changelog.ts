@@ -22,7 +22,6 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '1.3.0',
     date: '2026-05-20',
     changes: [
-      'Dark/light mode toggle added to sidebar and mobile header — persists across sessions via next-themes',
       'Options payoff diagram on the paper options page — shows at-expiry P&L curve for all open positions grouped by symbol',
       'Learning path completion certificates — printable/PDF certificate appears when all modules in a path are marked complete',
       'Earnings Calendar page at /app/earnings — upcoming and recent earnings events with EPS estimates, revenue, and beat/miss flags',

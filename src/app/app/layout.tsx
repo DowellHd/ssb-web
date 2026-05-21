@@ -48,7 +48,6 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { ChatBubble } from '@/components/assistant';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { EmailVerificationBanner } from '@/components/email-verification-banner';
 import { NpsWidget } from '@/components/nps-widget';
 import { BetaBanner } from '@/components/beta-banner';
@@ -676,14 +675,9 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         </ul>
       </nav>
 
-      {/* Theme toggle + Legal footer */}
-      {collapsed ? (
-        <div className="border-t flex justify-center py-2">
-          <ThemeToggle iconOnly />
-        </div>
-      ) : (
-        <div className="border-t px-4 py-3 space-y-2">
-          <ThemeToggle />
+      {/* Legal footer — hidden when collapsed */}
+      {!collapsed && (
+        <div className="border-t px-4 py-3">
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <a href="/terms"      target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
               <FileText className="h-3 w-3" /> Terms
@@ -851,7 +845,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Menu className="h-5 w-5" />
             </Button>
             <span className="font-bold flex-1">{BRAND_NAME_TM}</span>
-            <ThemeToggle iconOnly />
             <Button variant="ghost" size="icon" onClick={() => togglePalette()} aria-label="Search">
               <Search className="h-4 w-4" />
             </Button>
