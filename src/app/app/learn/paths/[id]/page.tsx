@@ -13,6 +13,7 @@ import {
   BookOpen,
   Info,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { useCatalogPath, useCatalog } from '@/lib/learn/use-catalog';
 import {
@@ -25,6 +26,8 @@ import {
   useModuleCompletion,
   getPathProgress,
 } from '@/lib/learn/use-learn-progress';
+import { CompletionCertificate } from '@/components/learn/completion-certificate';
+import { getCurrentUser } from '@/lib/api/auth';
 
 // ============================================================================
 // Page
@@ -38,6 +41,7 @@ export default function PathDetailPage() {
   const { path: catalogPath, pathModules, isLoading } = useCatalogPath(pathId);
   const { paths } = useCatalog();
   const { isComplete, completedIds } = useModuleCompletion();
+  const { data: currentUser } = useQuery({ queryKey: ['me'], queryFn: getCurrentUser, staleTime: 5 * 60 * 1000 });
 
   // Record visit unconditionally; skips write when title is empty (not found)
   useRecordLearnVisit('path', pathId, catalogPath?.title ?? '');
@@ -247,6 +251,19 @@ export default function PathDetailPage() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </Link>
+        </div>
+      )}
+
+      {/* Completion certificate */}
+      {isFullyComplete && currentUser && (
+        <div className="space-y-2">
+          <h2 className="font-semibold">Your Certificate</h2>
+          <CompletionCertificate
+            pathTitle={catalogPath.title}
+            moduleCount={pathModules.length}
+            completedAt={new Date().toISOString()}
+            userName={currentUser.full_name || currentUser.email}
+          />
         </div>
       )}
     </div>

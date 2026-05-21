@@ -13,6 +13,7 @@ import {
   Brain,
   Building2,
   Calculator,
+  CalendarDays,
   CandlestickChart,
   ChevronDown,
   ChevronsLeft,
@@ -47,6 +48,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { ChatBubble } from '@/components/assistant';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { EmailVerificationBanner } from '@/components/email-verification-banner';
 import { NpsWidget } from '@/components/nps-widget';
 import { BetaBanner } from '@/components/beta-banner';
@@ -83,13 +85,14 @@ const ANALYSIS_CHILDREN = [
 ];
 
 const TRADING_CHILDREN = [
-  { href: '/app/paper',      label: 'Paper Trading', icon: CandlestickChart },
-  { href: '/app/backtests',    label: 'Backtests',     icon: LineChart },
-  { href: '/app/simulations',  label: 'Simulations',   icon: Activity,    badge: 'NEW' },
-  { href: '/app/options',      label: 'Options',       icon: Layers },
-  { href: '/app/crypto',     label: 'Crypto',        icon: Bitcoin },
-  { href: '/app/order-prep', label: 'Order Prep',    icon: ClipboardList, badge: 'NEW' },
-  { href: '/app/brokers',    label: 'Broker Connections', icon: Wifi, badge: 'NEW' },
+  { href: '/app/paper',             label: 'Paper Trading',      icon: CandlestickChart },
+  { href: '/app/paper/leaderboard', label: 'Leaderboard',        icon: Crown,            badge: 'NEW' },
+  { href: '/app/backtests',         label: 'Backtests',          icon: LineChart },
+  { href: '/app/simulations',       label: 'Simulations',        icon: Activity,         badge: 'NEW' },
+  { href: '/app/options',           label: 'Options',            icon: Layers },
+  { href: '/app/crypto',            label: 'Crypto',             icon: Bitcoin },
+  { href: '/app/order-prep',        label: 'Order Prep',         icon: ClipboardList,    badge: 'NEW' },
+  { href: '/app/brokers',           label: 'Broker Connections', icon: Wifi,             badge: 'NEW' },
 ];
 
 const LEARN_CHILDREN = [
@@ -104,10 +107,11 @@ const COMMUNITY_CHILDREN = [
 ];
 
 const MARKETS_CHILDREN = [
-  { href: '/app/news',           label: 'Market News',      icon: Newspaper },
-  { href: '/app/global-markets', label: 'Global Markets',   icon: Globe,      badge: 'NEW' },
-  { href: '/app/fixed-income',   label: 'Fixed Income',     icon: BarChart3,  badge: 'NEW' },
-  { href: '/app/alternatives',   label: 'Alternatives',     icon: TrendingUp, badge: 'NEW' },
+  { href: '/app/news',           label: 'Market News',       icon: Newspaper },
+  { href: '/app/earnings',       label: 'Earnings Calendar', icon: CalendarDays, badge: 'NEW' },
+  { href: '/app/global-markets', label: 'Global Markets',    icon: Globe,        badge: 'NEW' },
+  { href: '/app/fixed-income',   label: 'Fixed Income',      icon: BarChart3,    badge: 'NEW' },
+  { href: '/app/alternatives',   label: 'Alternatives',      icon: TrendingUp,   badge: 'NEW' },
 ];
 
 const ENTERPRISE_CHILDREN = [
@@ -672,9 +676,14 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
         </ul>
       </nav>
 
-      {/* Legal footer — hidden when collapsed */}
-      {!collapsed && (
-        <div className="border-t px-4 py-3">
+      {/* Theme toggle + Legal footer */}
+      {collapsed ? (
+        <div className="border-t flex justify-center py-2">
+          <ThemeToggle iconOnly />
+        </div>
+      ) : (
+        <div className="border-t px-4 py-3 space-y-2">
+          <ThemeToggle />
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <a href="/terms"      target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
               <FileText className="h-3 w-3" /> Terms
@@ -842,6 +851,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Menu className="h-5 w-5" />
             </Button>
             <span className="font-bold flex-1">{BRAND_NAME_TM}</span>
+            <ThemeToggle iconOnly />
             <Button variant="ghost" size="icon" onClick={() => togglePalette()} aria-label="Search">
               <Search className="h-4 w-4" />
             </Button>

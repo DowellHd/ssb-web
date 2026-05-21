@@ -10,7 +10,10 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "generate-icons": "node scripts/generate-icons.mjs",
-    "pwa:build": "npm run generate-icons && npm run build"
+    "pwa:build": "npm run generate-icons && npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
