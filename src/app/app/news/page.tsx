@@ -188,15 +188,6 @@ export default function NewsPage() {
         </Button>
       </div>
 
-      {/* Seeded-data notice — only shown when live feed is unavailable */}
-      {dataSource === 'seeded' && !loading && (
-        <div className="rounded-lg bg-yellow-50 border border-yellow-300 p-3 text-sm text-yellow-900 flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-600" />
-          <span>
-            <strong>Demo content:</strong> Live market news feed is not connected. Articles below are sample data only.
-          </span>
-        </div>
-      )}
 
       {/* Market Summary Card */}
       {!summaryLoading && summary && (

@@ -494,7 +494,7 @@ export default function AlternativesPage() {
               );
             })}
 
-          <p className="text-[10px] text-muted-foreground">Metrics are illustrative simulated data. Actual REIT financials vary. Not a recommendation.</p>
+          <p className="text-[10px] text-muted-foreground">Figures are for illustrative purposes. Actual REIT financials vary. Not a recommendation.</p>
         </div>
       )}
 
