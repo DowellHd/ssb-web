@@ -20,6 +20,8 @@ const subsystemLabels: Record<SubsystemKey, string> = {
   advisorCrm: 'Advisor CRM',
   strategyInsights: 'AI Strategy Insights',
   portfolioManagement: 'Portfolio Management',
+  earningsCalendar: 'Earnings Calendar',
+  paperLeaderboard: 'Paper Leaderboard',
 };
 
 function formatDate(iso: string): string {

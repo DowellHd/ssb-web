@@ -46,14 +46,14 @@ export const SUBSYSTEM_VERSIONS = {
     description: 'Global short-term/long-term view mode toggle',
   },
   learn: {
-    version: '1.0.0',
-    lastUpdated: '2026-02-20',
-    description: '14 educational modules, 4 learning paths, 38-term glossary',
+    version: '1.1.0',
+    lastUpdated: '2026-05-20',
+    description: '14 educational modules, 4 learning paths, 38-term glossary; completion certificates on path finish',
   },
   options: {
-    version: '1.1.0',
-    lastUpdated: '2026-03-08',
-    description: 'Options chain viewer with Black-Scholes simulated data and paper trading',
+    version: '1.2.0',
+    lastUpdated: '2026-05-20',
+    description: 'Options chain viewer with Black-Scholes simulated data, paper trading, and at-expiry payoff diagram',
   },
   tradeIdeas: {
     version: '1.0.0',
@@ -94,6 +94,16 @@ export const SUBSYSTEM_VERSIONS = {
     version: '1.2.0',
     lastUpdated: '2026-05-18',
     description: 'Portfolio Management: manual positions CRUD, risk profile DB persistence, real Monte Carlo simulation',
+  },
+  earningsCalendar: {
+    version: '1.0.0',
+    lastUpdated: '2026-05-20',
+    description: 'Earnings calendar with upcoming/recent events, EPS/revenue estimates, beat/miss flags — simulated data',
+  },
+  paperLeaderboard: {
+    version: '1.0.0',
+    lastUpdated: '2026-05-20',
+    description: 'Paper trading leaderboard: top 25 accounts by return %, privacy-preserving handles',
   },
 } as const satisfies Record<string, SubsystemVersion>;
 

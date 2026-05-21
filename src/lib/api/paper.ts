@@ -249,3 +249,30 @@ export async function importRealPortfolio(): Promise<ImportPortfolioResult> {
   return response.data;
 }
 
+// ============================================================================
+// Leaderboard
+// ============================================================================
+
+export interface LeaderboardEntry {
+  rank: number;
+  handle: string;
+  account_name: string;
+  starting_balance: number;
+  current_cash: number;
+  gain_loss: number;
+  return_pct: number;
+  is_you: boolean;
+  created_at: string;
+}
+
+export interface LeaderboardResponse {
+  leaderboard: LeaderboardEntry[];
+  total: number;
+  disclaimer: string;
+}
+
+export async function getLeaderboard(limit = 25): Promise<LeaderboardResponse> {
+  const response = await apiClient.get('/paper/leaderboard', { params: { limit } });
+  return response.data;
+}
+

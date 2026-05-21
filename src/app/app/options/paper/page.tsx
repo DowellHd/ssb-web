@@ -12,6 +12,7 @@ import {
 import { OptionsPositionsTable } from '@/components/options/paper/options-positions-table';
 import { OptionsOrdersList } from '@/components/options/paper/options-orders-list';
 import { OptionsDisclaimer } from '@/components/options/options-disclaimer';
+import { PayoffDiagram } from '@/components/options/payoff-diagram';
 import { SimulatedDataBadge } from '@/components/options/chain/simulated-data-badge';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
@@ -214,6 +215,22 @@ export default function OptionsPaperPage() {
           </>
         )}
       </div>
+
+      {/* Payoff diagram — shown when there are open positions */}
+      {tab === 'open' && !posLoading && positionsData && positionsData.total > 0 && (() => {
+        const symbols = [...new Set(positionsData.positions.map((p) => p.symbol))];
+        return (
+          <div className="space-y-4">
+            {symbols.map((sym) => (
+              <PayoffDiagram
+                key={sym}
+                symbol={sym}
+                positions={positionsData.positions.filter((p) => p.symbol === sym)}
+              />
+            ))}
+          </div>
+        );
+      })()}
 
       {/* How to open a position note */}
       <div className="rounded-lg border bg-card px-5 py-4">
