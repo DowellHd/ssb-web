@@ -90,8 +90,11 @@ export default function Home() {
           <DemoExpiredBanner />
 
           <div className="text-center space-y-6">
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
-              Know what the market is doing — before you act.
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] [text-wrap:balance]">
+              Know what the market is doing{' '}
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                — before you act.
+              </span>
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               SSB combines regime intelligence, AI risk analytics, and strategy backtesting
