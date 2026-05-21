@@ -4,19 +4,19 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BarChart3,
-  BookOpen,
   CandlestickChart,
   LayoutDashboard,
   Menu,
+  PieChart,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS: { href: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
-  { href: '/app',        label: 'Home',     icon: LayoutDashboard, exact: true },
-  { href: '/app/regime', label: 'Analysis', icon: BarChart3 },
-  { href: '/app/paper',  label: 'Trading',  icon: CandlestickChart },
-  { href: '/app/learn',  label: 'Learn',    icon: BookOpen },
+  { href: '/app',           label: 'Home',      icon: LayoutDashboard, exact: true },
+  { href: '/app/signals',   label: 'Signals',   icon: Zap },
+  { href: '/app/portfolio', label: 'Portfolio', icon: PieChart },
+  { href: '/app/paper',     label: 'Trading',   icon: CandlestickChart },
 ];
 
 interface MobileNavProps {
