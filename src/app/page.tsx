@@ -39,7 +39,7 @@ const PLANS = [
     price: '$29/mo',
     description: 'Real-time data, advanced analytics, backtesting, Monte Carlo',
     cta: 'Start Pro',
-    highlight: true,
+    highlight: false,
   },
   {
     name: 'Institutional',
