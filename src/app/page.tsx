@@ -36,14 +36,14 @@ const PLANS = [
   },
   {
     name: 'Pro',
-    price: '$29/mo',
+    price: '$79/mo',
     description: 'Real-time data, advanced analytics, backtesting, Monte Carlo',
     cta: 'Start Pro',
     highlight: false,
   },
   {
     name: 'Institutional',
-    price: '$199/mo',
+    price: '$299/mo',
     description: 'Advisor CRM, API access, unlimited strategies, compliance tools',
     cta: 'Get started',
     highlight: false,

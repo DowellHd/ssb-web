@@ -53,8 +53,8 @@ const PLANS = [
   {
     key: 'pro',
     name: 'Pro',
-    price: 29,
-    priceYearly: 290,
+    price: 79,
+    priceYearly: 790,
     description: 'Advanced tools for serious learners and active paper traders.',
     cta: 'Start Pro',
     ctaHref: '/auth/signup',
@@ -75,8 +75,8 @@ const PLANS = [
   {
     key: 'institutional',
     name: 'Institutional',
-    price: 199,
-    priceYearly: 1990,
+    price: 299,
+    priceYearly: 2990,
     description: 'Full platform access for professionals and institutions.',
     cta: 'Start Institutional',
     ctaHref: '/auth/signup',
