@@ -874,59 +874,75 @@ export default function SettingsPage() {
                       label: 'Security alerts',
                       description: 'New sign-ins, password changes, suspicious activity',
                       locked: true,
+                      comingSoon: false,
                     },
                     {
                       key: 'email_billing' as const,
                       label: 'Billing & subscription',
                       description: 'Payment confirmations and subscription changes',
                       locked: true,
+                      comingSoon: false,
                     },
                     {
                       key: 'email_portfolio_summary' as const,
                       label: 'Weekly portfolio summary',
                       description: 'A digest of your portfolio performance every week',
                       locked: false,
+                      comingSoon: true,
                     },
                     {
                       key: 'email_signal_alerts' as const,
                       label: 'Signal alerts',
                       description: 'Email when new trading signals fire for your watchlist',
                       locked: false,
+                      comingSoon: true,
                     },
                     {
                       key: 'email_price_alerts' as const,
                       label: 'Price threshold alerts',
                       description: 'Email when a stock hits your configured price target',
                       locked: false,
+                      comingSoon: true,
                     },
                     {
                       key: 'email_news_digest' as const,
                       label: 'Daily market news digest',
                       description: 'Morning summary of key market events and news',
                       locked: false,
+                      comingSoon: true,
                     },
                     {
                       key: 'email_paper_trade_fills' as const,
                       label: 'Paper trade confirmations',
                       description: 'Email when paper orders are filled or rejected',
                       locked: false,
+                      comingSoon: true,
                     },
                     {
                       key: 'email_product_updates' as const,
                       label: 'Product updates',
                       description: 'New features, improvements, and platform news',
                       locked: false,
+                      comingSoon: false,
                     },
                   ] satisfies Array<{
                     key: keyof NotificationPreferences;
                     label: string;
                     description: string;
                     locked: boolean;
+                    comingSoon: boolean;
                   }>
-                ).map(({ key, label, description, locked }) => (
+                ).map(({ key, label, description, locked, comingSoon }) => (
                   <div key={key} className="flex items-start justify-between py-2 border-b last:border-0">
                     <div className="flex-1 min-w-0 pr-4">
-                      <p className="text-sm font-medium">{label}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{label}</p>
+                        {comingSoon && (
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/60">
+                            Coming soon
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
                       {locked && (
                         <p className="text-xs text-muted-foreground mt-0.5 italic">
@@ -936,9 +952,9 @@ export default function SettingsPage() {
                     </div>
                     <button
                       type="button"
-                      disabled={locked || savingNotif}
+                      disabled={locked || comingSoon || savingNotif}
                       onClick={() =>
-                        !locked && handleNotifToggle(key, !notifPrefs[key])
+                        !locked && !comingSoon && handleNotifToggle(key, !notifPrefs[key])
                       }
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                         notifPrefs[key] ? 'bg-primary' : 'bg-input'
@@ -968,37 +984,49 @@ export default function SettingsPage() {
                     key: 'push_signal_alerts' as const,
                     label: 'Signal alerts',
                     description: 'In-app banner when signals fire for your watchlist',
+                    comingSoon: true,
                   },
                   {
                     key: 'push_portfolio_alerts' as const,
                     label: 'Portfolio risk warnings',
                     description: 'Drawdown and concentration alerts inside the app',
+                    comingSoon: true,
                   },
                   {
                     key: 'push_paper_trade_fills' as const,
                     label: 'Paper trade fills',
                     description: 'In-app notification when paper orders execute',
+                    comingSoon: true,
                   },
                   {
                     key: 'push_earnings_reminders' as const,
                     label: 'Earnings reminders',
                     description: 'Reminder before earnings for stocks you follow',
+                    comingSoon: true,
                   },
                   {
                     key: 'push_community_activity' as const,
                     label: 'Community activity',
                     description: 'Likes, comments, and mentions on your posts',
+                    comingSoon: false,
                   },
-                ] as const).map(({ key, label, description }) => (
+                ] as const).map(({ key, label, description, comingSoon }) => (
                   <div key={key} className="flex items-start justify-between py-2 border-b last:border-0">
                     <div className="flex-1 min-w-0 pr-4">
-                      <p className="text-sm font-medium">{label}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{label}</p>
+                        {comingSoon && (
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/60">
+                            Coming soon
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
                     </div>
                     <button
                       type="button"
-                      disabled={savingNotif}
-                      onClick={() => handleNotifToggle(key, !notifPrefs[key])}
+                      disabled={comingSoon || savingNotif}
+                      onClick={() => !comingSoon && handleNotifToggle(key, !notifPrefs[key])}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                         notifPrefs[key] ? 'bg-primary' : 'bg-input'
                       }`}

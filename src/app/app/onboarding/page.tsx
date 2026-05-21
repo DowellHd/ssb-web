@@ -6,12 +6,14 @@ import {
   ArrowRight,
   CheckCircle,
   BarChart3,
+  ChevronRight,
   Shield,
   TrendingUp,
   Wallet,
   RefreshCcw,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { updateRiskProfile } from '@/lib/api/notifications';
@@ -255,11 +257,102 @@ function scoreToProfile(totalScore: number, answers: Record<string, number>): Ri
 // Component
 // ============================================================================
 
+// ============================================================================
+// Recommendation data
+// ============================================================================
+
+const RECOMMENDATIONS: Record<string, { headline: string; features: { name: string; href: string; reason: string }[] }> = {
+  conservative: {
+    headline: 'Your Conservative Profile is ready',
+    features: [
+      { name: 'Fixed Income Tools',      href: '/app/fixed-income', reason: 'Bond screener and YTM analysis for stable returns' },
+      { name: 'Portfolio Risk Analysis', href: '/app/risk',         reason: 'Monitor your downside risk and portfolio VaR' },
+      { name: 'Learning Hub',            href: '/app/learn',        reason: 'Start with our Income Investing learning path' },
+    ],
+  },
+  moderate: {
+    headline: 'Your Balanced Profile is ready',
+    features: [
+      { name: 'Signal Feed',         href: '/app/signals',   reason: 'Balanced signals filtered for your risk level' },
+      { name: 'Portfolio Optimizer', href: '/app/analytics', reason: 'Efficient frontier analysis for your allocation' },
+      { name: 'Backtesting',         href: '/app/backtests', reason: 'Test balanced strategies before committing' },
+    ],
+  },
+  growth: {
+    headline: 'Your Growth Profile is ready',
+    features: [
+      { name: 'Momentum Signals', href: '/app/signals', reason: 'High-confidence breakout and momentum setups' },
+      { name: 'Market Regime',    href: '/app/regime',  reason: 'Know when to be aggressive vs defensive' },
+      { name: 'Paper Trading',    href: '/app/paper',   reason: 'Practice high-conviction trading risk-free' },
+    ],
+  },
+  income: {
+    headline: 'Your Income Profile is ready',
+    features: [
+      { name: 'Fixed Income Tools',  href: '/app/fixed-income', reason: 'Bond ladder and yield analysis tools' },
+      { name: 'Dividend Screener',   href: '/app/screening',    reason: 'Filter for high-yield, stable dividend payers' },
+      { name: 'Portfolio Risk',      href: '/app/risk',         reason: 'Ensure your income stream stays protected' },
+    ],
+  },
+};
+
+// ============================================================================
+// Recommendation screen
+// ============================================================================
+
+function RecommendationScreen({ profile, onReset }: { profile: RiskProfile; onReset: () => void }) {
+  const router = useRouter();
+  const rec = RECOMMENDATIONS[profile.id] ?? RECOMMENDATIONS.moderate;
+
+  return (
+    <div className="max-w-lg mx-auto text-center py-8 px-4 space-y-6">
+      <div className="text-4xl">✅</div>
+      <div>
+        <h2 className="text-xl font-bold mb-2">{rec.headline}</h2>
+        <p className="text-sm text-muted-foreground">
+          Based on your responses, here are your best starting points:
+        </p>
+      </div>
+
+      <div className="space-y-3 text-left">
+        {rec.features.map((f) => (
+          <Link
+            key={f.href}
+            href={f.href}
+            className="flex items-center justify-between rounded-lg border border-border/70 bg-card p-4 hover:border-primary/40 hover:bg-accent/30 transition-colors group"
+          >
+            <div>
+              <p className="font-medium text-sm">{f.name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{f.reason}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
+          </Link>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <Button onClick={() => router.push('/app')} className="w-full gap-2">
+          Go to my dashboard
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" onClick={onReset} size="sm" className="gap-1.5 text-muted-foreground">
+          <RefreshCcw className="h-3.5 w-3.5" />
+          Retake quiz
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Component
+// ============================================================================
+
 export default function OnboardingPage() {
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<RiskProfile | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
 
   const question = QUESTIONS[currentQ];
   const selected = answers[question.id];
@@ -283,13 +376,11 @@ export default function OnboardingPage() {
     if (result) {
       try {
         localStorage.setItem('ssb:risk-profile', result.id);
-        setSaved(true);
       } catch {
         // ignore
       }
-      updateRiskProfile(result.id as 'conservative' | 'moderate' | 'growth' | 'income').catch(
-        () => {}
-      );
+      updateRiskProfile(result.id as 'conservative' | 'moderate' | 'growth' | 'income').catch(() => {});
+      setShowRecommendations(true);
     }
   };
 
@@ -297,11 +388,15 @@ export default function OnboardingPage() {
     setCurrentQ(0);
     setAnswers({});
     setResult(null);
-    setSaved(false);
+    setShowRecommendations(false);
   };
 
+  if (result && showRecommendations) {
+    return <RecommendationScreen profile={result} onReset={handleReset} />;
+  }
+
   if (result) {
-    return <ResultsScreen profile={result} onReset={handleReset} onSave={handleSave} saved={saved} />;
+    return <ResultsScreen profile={result} onReset={handleReset} onSave={handleSave} />;
   }
 
   return (
@@ -398,12 +493,10 @@ function ResultsScreen({
   profile,
   onReset,
   onSave,
-  saved,
 }: {
   profile: RiskProfile;
   onReset: () => void;
   onSave: () => void;
-  saved: boolean;
 }) {
   const Icon = profile.icon;
 
@@ -454,17 +547,10 @@ function ResultsScreen({
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3">
-        {!saved ? (
-          <Button onClick={onSave} className="gap-2 flex-1">
-            <CheckCircle className="h-4 w-4" />
-            Save My Profile
-          </Button>
-        ) : (
-          <Button variant="outline" disabled className="gap-2 flex-1">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            Profile Saved
-          </Button>
-        )}
+        <Button onClick={onSave} className="gap-2 flex-1">
+          <CheckCircle className="h-4 w-4" />
+          Save My Profile
+        </Button>
         <Button variant="outline" asChild className="flex-1">
           <Link href="/app/learn">
             Explore Learn Modules
