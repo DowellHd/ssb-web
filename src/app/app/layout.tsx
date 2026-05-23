@@ -679,7 +679,7 @@ function Sidebar({ user, pathname, onClose, onLogout, collapsed, onToggleCollaps
       {!collapsed && (
         <div className="border-t px-4 py-3">
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <a href="/about" className="flex items-center gap-1 hover:text-foreground transition-colors">
+            <a href="/about" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
               <Users className="h-3 w-3" /> About
             </a>
             <a href="/terms"      target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
