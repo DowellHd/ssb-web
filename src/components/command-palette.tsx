@@ -15,6 +15,7 @@ import {
   CreditCard,
   FileText,
   History,
+  Info,
   Leaf,
   Layers,
   LineChart,
@@ -488,6 +489,16 @@ export const ALL_FEATURES: PaletteItem[] = [
     category: 'Account',
     tier: 'free',
     keywords: ['privacy', 'data', 'gdpr', 'ccpa', 'delete', 'export', 'download', 'consent', 'plaid'],
+  },
+  {
+    id: 'about',
+    label: 'About SSB',
+    description: 'Founder story, mission, and what\'s under the hood',
+    href: '/about',
+    icon: Info,
+    category: 'Account',
+    tier: 'free',
+    keywords: ['about', 'founder', 'mission', 'company', 'team', 'story', 'dowell'],
   },
 ];
 
