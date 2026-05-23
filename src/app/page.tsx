@@ -260,7 +260,7 @@ export default function Home() {
                 Disclaimer
               </a>
               <a
-                href="https://linkedin.com/company/smart-strategies-builder"
+                href="https://www.linkedin.com/in/dowellstandley"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
