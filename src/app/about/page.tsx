@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   TrendingUp,
@@ -128,8 +129,14 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row items-start gap-8">
             {/* Avatar */}
             <div className="shrink-0">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-primary-foreground text-2xl font-bold select-none">
-                DJ
+              <div className="relative h-24 w-24 rounded-2xl overflow-hidden ring-2 ring-border">
+                <Image
+                  src="/founder.png"
+                  alt="Dowell Standley Jr."
+                  fill
+                  className="object-cover object-top"
+                  priority
+                />
               </div>
             </div>
 
@@ -172,7 +179,7 @@ export default function AboutPage() {
 
               <div className="flex items-center gap-4 pt-2">
                 <a
-                  href="https://linkedin.com/company/smart-strategies-builder"
+                  href="https://www.linkedin.com/in/dowellstandley"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
