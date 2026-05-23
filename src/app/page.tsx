@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Eye, Lock, Server, Shield, LineChart, TrendingUp } from 'lucide-react';
+import { Eye, Linkedin, Lock, Server, Shield, LineChart, TrendingUp } from 'lucide-react';
 import { BrandName, BRAND_NAME } from '@/components/ui/brand-name';
 import { DemoCTA } from '@/components/demo-cta';
 import { DemoExpiredBanner } from '@/components/demo-expired-banner';
@@ -258,6 +258,15 @@ export default function Home() {
               </a>
               <a href="/disclaimer" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 Disclaimer
+              </a>
+              <a
+                href="https://linkedin.com/company/smart-strategies-builder"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                <Linkedin className="h-3.5 w-3.5" />
+                LinkedIn
               </a>
               <a href="mailto:standleydowell@gmail.com" className="text-muted-foreground hover:text-foreground transition-colors">
                 Contact
