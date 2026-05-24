@@ -406,7 +406,14 @@ export default function AppDashboardPage() {
 
   return (
     <div className="space-y-8 max-w-6xl">
-      {!isDemo && <WelcomeBackBanner userName={dashboard?.full_name} />}
+      {!isDemo && (
+        <WelcomeBackBanner
+          userName={dashboard?.full_name}
+          regime={regimeData}
+          marketSummary={marketSummary}
+          portfolioSummary={portfolioSummary}
+        />
+      )}
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
