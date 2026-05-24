@@ -3,6 +3,7 @@
 import { ArrowRight, Clock, TrendingDown, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { PaperTradeButton } from '@/components/signals/paper-trade-button';
 import { cn } from '@/lib/utils';
 import type { SignalFeedItem } from '@/lib/api/signals';
 
@@ -108,12 +109,15 @@ export function SignalCard({ signal }: SignalCardProps) {
         This is SSB analysis, not financial advice.
       </p>
 
-      {/* CTA */}
-      <Button asChild size="sm" variant="outline" className="mt-auto w-full">
-        <Link href={`/app/signals/${signal.id}`}>
-          View Full Analysis <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
-        </Link>
-      </Button>
+      {/* CTAs */}
+      <div className="mt-auto flex gap-2">
+        <PaperTradeButton ticker={signal.ticker} trendBias={signal.trend_bias} className="flex-1" />
+        <Button asChild size="sm" variant="outline" className="flex-1">
+          <Link href={`/app/signals/${signal.id}`}>
+            Analysis <ArrowRight className="ml-1 h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

@@ -45,6 +45,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DashboardSkeleton } from '@/components/skeletons/dashboard-skeleton';
+import { WelcomeBackBanner } from '@/components/dashboard/welcome-back-banner';
 import { getDashboardSummary, getCapabilities, type DashboardSummary, type Capabilities } from '@/lib/api/meta';
 import { CHANGELOG } from '@/lib/changelog';
 import { getIntelligenceEntitlements, getRegimeAnalysis, type EntitlementsInfo, type RegimeResult } from '@/lib/api/intelligence';
@@ -386,14 +388,7 @@ export default function AppDashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <span className="text-muted-foreground">Loading dashboard...</span>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error) {
@@ -411,6 +406,14 @@ export default function AppDashboardPage() {
 
   return (
     <div className="space-y-8 max-w-6xl">
+      {!isDemo && (
+        <WelcomeBackBanner
+          userName={dashboard?.full_name}
+          regime={regimeData}
+          marketSummary={marketSummary}
+          portfolioSummary={portfolioSummary}
+        />
+      )}
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
