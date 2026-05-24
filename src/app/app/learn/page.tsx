@@ -29,6 +29,8 @@ import {
 import {
   useLastVisited,
   useClearLastVisited,
+  useModuleCompletion,
+  getPathProgress,
   type LearnTab,
 } from '@/lib/learn/use-learn-progress';
 import { useLearnVideoAccess } from '@/lib/learn/learn-video-entitlements';
@@ -111,6 +113,7 @@ export default function LearnPage() {
   const lastVisited = useLastVisited();
   const clearLastVisited = useClearLastVisited();
   const { canAccessTier } = useLearnVideoAccess();
+  const { completedIds } = useModuleCompletion();
 
   const isSearching = globalSearch.trim().length > 0;
   const searchResults = isSearching ? runSearch(globalSearch, modules, paths, glossary) : null;
@@ -186,6 +189,7 @@ export default function LearnPage() {
           totalCount={totalSearchResults}
           query={globalSearch}
           canAccessTier={canAccessTier}
+          completedIds={completedIds}
         />
       ) : (
         <>
@@ -215,7 +219,7 @@ export default function LearnPage() {
           </div>
 
           {activeTab === 'modules' && <ModulesTab modules={modules} canAccessTier={canAccessTier} />}
-          {activeTab === 'paths' && <PathsTab paths={paths} canAccessTier={canAccessTier} />}
+          {activeTab === 'paths' && <PathsTab paths={paths} canAccessTier={canAccessTier} completedIds={completedIds} />}
           {activeTab === 'glossary' && <GlossaryTab glossary={glossary} />}
         </>
       )}
@@ -284,11 +288,13 @@ function SearchResultsView({
   totalCount,
   query,
   canAccessTier,
+  completedIds,
 }: {
   results: SearchResults;
   totalCount: number;
   query: string;
   canAccessTier: (tierRequired: TierRequired) => boolean;
+  completedIds: Set<string>;
 }) {
   if (totalCount === 0) {
     return (
@@ -326,7 +332,7 @@ function SearchResultsView({
           </h3>
           <div className="space-y-4">
             {results.paths.map((p) => (
-              <PathCard key={p.id} path={p} canAccessTier={canAccessTier} />
+              <PathCard key={p.id} path={p} canAccessTier={canAccessTier} completedIds={completedIds} />
             ))}
           </div>
         </div>
@@ -543,9 +549,11 @@ function ModuleCard({
 function PathsTab({
   paths,
   canAccessTier,
+  completedIds,
 }: {
   paths: CatalogPath[];
   canAccessTier: (tierRequired: TierRequired) => boolean;
+  completedIds: Set<string>;
 }) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<ContentDifficulty | ''>('');
 
@@ -593,7 +601,7 @@ function PathsTab({
       ) : (
         <div className="space-y-4">
           {filtered.map((p) => (
-            <PathCard key={p.id} path={p} canAccessTier={canAccessTier} />
+            <PathCard key={p.id} path={p} canAccessTier={canAccessTier} completedIds={completedIds} />
           ))}
         </div>
       )}
@@ -608,12 +616,17 @@ function PathsTab({
 function PathCard({
   path: p,
   canAccessTier,
+  completedIds,
 }: {
   path: CatalogPath;
   canAccessTier: (tierRequired: TierRequired) => boolean;
+  completedIds: Set<string>;
 }) {
   const difficulty = DIFFICULTY_CONFIG[p.level];
   const locked = p.tierRequired !== 'free' && !canAccessTier(p.tierRequired);
+  const progress = getPathProgress(p.moduleIds, completedIds);
+  const completedCount = p.moduleIds.filter((id) => completedIds.has(id)).length;
+  const isComplete = progress === 100 && p.moduleIds.length > 0;
 
   return (
     <Link
@@ -627,12 +640,19 @@ function PathCard({
             {difficulty.label}
           </span>
         </div>
-        {locked && (
-          <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded flex items-center gap-1">
-            <Lock className="h-3 w-3" />
-            {p.tierRequired === 'pro' ? 'Pro' : 'Starter+'}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {isComplete && (
+            <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded flex items-center gap-1">
+              ✓ Complete
+            </span>
+          )}
+          {locked && (
+            <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded flex items-center gap-1">
+              <Lock className="h-3 w-3" />
+              {p.tierRequired === 'pro' ? 'Pro' : 'Starter+'}
+            </span>
+          )}
+        </div>
       </div>
 
       <h3 className="text-lg font-semibold mb-2">{p.title}</h3>
@@ -644,8 +664,24 @@ function PathCard({
         <span>{p.estimatedHours} hr{p.estimatedHours !== 1 ? 's' : ''}</span>
       </div>
 
+      {/* Progress bar */}
+      {completedCount > 0 && (
+        <div className="mt-4 space-y-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{completedCount}/{p.moduleIds.length} modules complete</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${isComplete ? 'bg-green-500' : 'bg-primary'}`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="mt-4 flex items-center text-sm text-primary">
-        Start Learning Path
+        {completedCount > 0 && !isComplete ? 'Continue Path' : isComplete ? 'Review Path' : 'Start Learning Path'}
         <ChevronRight className="h-4 w-4 ml-1" />
       </div>
     </Link>

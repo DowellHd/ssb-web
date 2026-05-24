@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DisclaimerBanner } from '@/components/signals/disclaimer-banner';
+import { PaperTradeButton } from '@/components/signals/paper-trade-button';
 import {
   getSignalDetail,
   logTrade,
@@ -202,6 +203,7 @@ export default function SignalDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <PaperTradeButton ticker={signal.ticker} trendBias={signal.trend_bias} />
             {logSuccess ? (
               <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
                 Trade logged ✓

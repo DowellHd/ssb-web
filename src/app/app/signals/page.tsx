@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { SignalCard } from '@/components/signals/signal-card';
 import { DisclaimerBanner } from '@/components/signals/disclaimer-banner';
 import { SignalsOnboardingModal } from '@/components/signals/onboarding-modal';
+import { SignalsSkeleton } from '@/components/skeletons/signals-skeleton';
 import {
   getSignalFeed,
   getDisclaimerStatus,
@@ -260,11 +261,7 @@ export default function SignalsPage() {
           </div>
 
           {/* Content */}
-          {loading && (
-            <div className="flex items-center justify-center py-24">
-              <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-            </div>
-          )}
+          {loading && <SignalsSkeleton />}
 
           {!loading && error && (
             <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
