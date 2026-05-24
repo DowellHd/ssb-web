@@ -203,7 +203,16 @@ export default function SignalDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <PaperTradeButton ticker={signal.ticker} trendBias={signal.trend_bias} />
+            <PaperTradeButton
+              ticker={signal.ticker}
+              trendBias={signal.trend_bias}
+              entryZoneLow={signal.entry_zone_low}
+              entryZoneHigh={signal.entry_zone_high}
+              stopLoss={signal.stop_loss}
+              takeProfit={signal.take_profit}
+              signalPrice={(signal.supporting_data?.current_price as number | undefined) ?? null}
+              timeHorizon={signal.time_horizon}
+            />
             {logSuccess ? (
               <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
                 Trade logged ✓
