@@ -16,6 +16,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { BRAND_NAME } from '@/components/ui/brand-name';
+import { AboutHeader } from './about-header';
 
 export const metadata: Metadata = {
   title: `About — ${BRAND_NAME}`,
@@ -78,37 +79,7 @@ const FEATURES = [
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="w-full py-6 px-4 border-b border-border/30" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top, 0px))' }}>
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <TrendingUp className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">SSB</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/pricing"
-              className="hidden sm:inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium hover:text-primary transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/auth/login"
-              className="inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium hover:text-primary transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </header>
+      <AboutHeader />
 
       <div className="max-w-5xl mx-auto px-4 py-16 space-y-24">
 
