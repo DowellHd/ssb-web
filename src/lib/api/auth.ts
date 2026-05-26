@@ -89,7 +89,7 @@ export async function signup(data: SignupData): Promise<SignupResponse> {
   const response = await apiClient.post('/auth/register', data);
   if (response.data.access_token) {
     clearDemoSession();
-    sessionStorage.setItem('access_token', response.data.access_token);
+    localStorage.setItem('access_token', response.data.access_token);
     document.cookie = 'ssb_logged_in=1; path=/; SameSite=Lax; Max-Age=604800';
   }
   return response.data;
@@ -100,7 +100,7 @@ export async function login(data: LoginData): Promise<LoginResponse> {
 
   if (response.data.access_token) {
     clearDemoSession();
-    sessionStorage.setItem('access_token', response.data.access_token);
+    localStorage.setItem('access_token', response.data.access_token);
     document.cookie = 'ssb_logged_in=1; path=/; SameSite=Lax; Max-Age=604800';
   }
 
@@ -113,7 +113,7 @@ export async function verifyMFA(email: string, mfa_code: string): Promise<LoginR
   });
 
   if (response.data.access_token) {
-    sessionStorage.setItem('access_token', response.data.access_token);
+    localStorage.setItem('access_token', response.data.access_token);
     document.cookie = 'ssb_logged_in=1; path=/; SameSite=Lax; Max-Age=604800';
   }
 
@@ -122,7 +122,7 @@ export async function verifyMFA(email: string, mfa_code: string): Promise<LoginR
 
 export async function logout(): Promise<MessageResponse> {
   const response = await apiClient.post('/auth/logout');
-  sessionStorage.removeItem('access_token');
+  localStorage.removeItem('access_token');
   // Clear the UX session cookie used by Next.js middleware.
   document.cookie = 'ssb_logged_in=; path=/; SameSite=Lax; Max-Age=0';
   return response.data;
@@ -131,7 +131,7 @@ export async function logout(): Promise<MessageResponse> {
 export async function refreshToken(): Promise<{ access_token: string; expires_in: number }> {
   const response = await apiClient.post('/auth/refresh');
   if (response.data.access_token) {
-    sessionStorage.setItem('access_token', response.data.access_token);
+    localStorage.setItem('access_token', response.data.access_token);
   }
   return response.data;
 }

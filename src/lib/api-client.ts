@@ -66,8 +66,8 @@ class APIClient {
           }
         }
 
-        // Production mode: add access token from sessionStorage
-        const accessToken = sessionStorage.getItem('access_token');
+        // Production mode: add access token from localStorage
+        const accessToken = localStorage.getItem('access_token');
         if (accessToken) {
           config.headers.Authorization = `Bearer ${accessToken}`;
         }
@@ -100,7 +100,7 @@ class APIClient {
               .post(`${API_URL}${API_PREFIX}/auth/refresh`, {}, { withCredentials: true })
               .then((r) => {
                 const token: string = r.data.access_token;
-                sessionStorage.setItem('access_token', token);
+                localStorage.setItem('access_token', token);
                 return token;
               })
               .finally(() => {
@@ -113,7 +113,7 @@ class APIClient {
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
             return this.client(originalRequest);
           } catch {
-            sessionStorage.removeItem('access_token');
+            localStorage.removeItem('access_token');
             if (typeof window !== 'undefined') {
               // If this was a demo session, redirect to landing with expiry notice
               const isDemo = localStorage.getItem('is_demo_session') === 'true';
