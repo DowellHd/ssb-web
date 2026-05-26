@@ -94,6 +94,11 @@ export default function AuthLayout({
               Privacy Policy
             </Link>
           </p>
+          <p className="mt-2 text-xs">
+            <Link href="/about" className="underline hover:text-foreground">
+              About Smart Strategies Builder
+            </Link>
+          </p>
           <p className="lg:hidden text-xs mt-2">
             &copy; {new Date().getFullYear()} Smart Strategies Builder. For educational purposes only.
           </p>
