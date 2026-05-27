@@ -61,9 +61,9 @@ export const SUBSYSTEM_VERSIONS = {
     description: 'Signal-based trade idea generation across 5 strategy types',
   },
   signals: {
-    version: '1.0.0',
-    lastUpdated: '2026-04-23',
-    description: 'Assisted Trading: live signal feed, pre-trade intelligence, trade logging, performance tracking',
+    version: '1.1.0',
+    lastUpdated: '2026-05-27',
+    description: 'Assisted Trading: live signal feed, pre-trade intelligence, intraday entry refinement, trade logging, performance tracking',
   },
   globalMarkets: {
     version: '2.0.0',

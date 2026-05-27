@@ -18,6 +18,29 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    subsystem: 'Signal Feed (Assisted Trading)',
+    version: '1.1.0',
+    date: '2026-05-27',
+    changes: [
+      'Added Intraday Entry Refinement card to the signal detail page — narrows the daily ATR-based entry zone to the nearest intraday support/resistance level',
+      'Refinement fetches 20 × 30-min bars and detects swing highs/lows, clusters nearby levels, computes session VWAP, and measures 5-bar momentum',
+      'Shows refined entry zone, momentum badge (trending up/down/consolidating), nearest support and resistance, VWAP position, and a plain-English note',
+      'Loads independently after the main signal renders (skeleton while loading, collapses silently if intraday data is unavailable)',
+      'New backend endpoint: GET /api/v1/signals/{id}/intraday-refinement',
+    ],
+  },
+  {
+    subsystem: 'Platform',
+    version: '1.4.0',
+    date: '2026-05-27',
+    changes: [
+      'Fixed mobile session persistence — access token moved from sessionStorage to localStorage so iOS Safari no longer clears it when a background tab is reloaded',
+      'About page header is now auth-aware — logged-in users see a Back to App button instead of Sign In / Get Started',
+      'Fixed Dynamic Island / notch overlap on the About page header on iPhone',
+      'About page opens in the same tab from the sidebar and command palette; Back to App handles return navigation',
+    ],
+  },
+  {
     subsystem: 'Platform',
     version: '1.3.0',
     date: '2026-05-20',
