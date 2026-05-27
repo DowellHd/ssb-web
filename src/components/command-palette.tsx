@@ -55,7 +55,6 @@ export interface PaletteItem {
   tier: FeatureTier;   // Minimum tier required
   isNew?: boolean;     // Show "NEW" badge
   keywords?: string[]; // Extra search terms
-  newTab?: boolean;    // Open in new tab (public pages outside /app/)
 }
 
 export const ALL_FEATURES: PaletteItem[] = [
@@ -500,7 +499,6 @@ export const ALL_FEATURES: PaletteItem[] = [
     category: 'Account',
     tier: 'free',
     keywords: ['about', 'founder', 'mission', 'company', 'team', 'story', 'dowell'],
-    newTab: true,
   },
 ];
 
@@ -608,11 +606,7 @@ export function CommandPalette() {
 
   const navigate = (item: PaletteItem) => {
     closePalette();
-    if (item.newTab) {
-      window.open(item.href, '_blank', 'noopener,noreferrer');
-    } else {
-      router.push(item.href);
-    }
+    router.push(item.href);
   };
 
   if (!open) return null;
