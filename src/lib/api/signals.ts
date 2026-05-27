@@ -114,6 +114,26 @@ export async function getSignalPerformance(): Promise<TradePerformanceResponse> 
   return res.data;
 }
 
+export interface IntradayRefinement {
+  ticker: string;
+  refined_entry_low: number;
+  refined_entry_high: number;
+  nearest_support: number | null;
+  nearest_resistance: number | null;
+  intraday_momentum: 'trending_up' | 'trending_down' | 'consolidating';
+  vwap: number | null;
+  vwap_position: 'above' | 'below' | 'at' | null;
+  current_price: number;
+  bars_used: number;
+  timeframe: string;
+  note: string;
+}
+
+export async function getIntradayRefinement(signalId: string): Promise<IntradayRefinement> {
+  const res = await apiClient.get(`/signals/${signalId}/intraday-refinement`);
+  return res.data;
+}
+
 export async function getTradingPreferences(): Promise<TradingPreferences> {
   const res = await apiClient.get('/user/trading-preferences');
   return res.data;
