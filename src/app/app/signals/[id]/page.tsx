@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DisclaimerBanner } from '@/components/signals/disclaimer-banner';
+import { IntradayRefinementCard } from '@/components/signals/intraday-refinement';
 import { PaperTradeButton } from '@/components/signals/paper-trade-button';
 import {
   getSignalDetail,
@@ -381,6 +382,9 @@ export default function SignalDetailPage() {
             </div>
           )}
         </section>
+
+        {/* Intraday entry refinement — loads independently */}
+        <IntradayRefinementCard signalId={id} />
 
         {/* Bottom disclaimer — non-dismissible */}
         <DisclaimerBanner />
