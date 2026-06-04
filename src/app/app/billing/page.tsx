@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, X, Check, FlaskConical, PartyPopper } from 'lucide-react';
+import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, X, Check, FlaskConical, PartyPopper, Gift } from 'lucide-react';
 
 const IS_BETA_MODE = process.env.NEXT_PUBLIC_BETA_MODE === 'true';
 import { Button } from '@/components/ui/button';
@@ -313,8 +313,11 @@ export default function BillingPage() {
 
   const billingEnabled = capabilities?.billing_enabled;
   const hasActiveSubscription = subscription?.subscription?.status === 'active';
+  const isTrialing = subscription?.subscription?.status === 'trialing';
   // Use store's normalized plan for UI consistency across app
   const currentPlanName = normalizedPlan.plan;
+  // User is trial-eligible if they have never had a trial (trial_end unset) and are on the free plan
+  const trialEligible = !subscription?.subscription?.trial_end && currentPlanName === 'free';
 
   return (
     <div className="space-y-6">
@@ -361,6 +364,21 @@ export default function BillingPage() {
           </div>
         </div>
       </div>
+
+      {/* Trial Active Banner */}
+      {isTrialing && subscription?.subscription?.trial_end && (
+        <div className="rounded-xl border-2 border-green-400 dark:border-green-600 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/40 dark:to-emerald-950/40 px-6 py-4 flex items-center gap-4">
+          <div className="rounded-lg bg-green-100 dark:bg-green-900/50 p-2 shrink-0">
+            <Gift className="h-5 w-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div>
+            <p className="font-semibold text-green-900 dark:text-green-100">Your free trial is active</p>
+            <p className="text-sm text-green-800 dark:text-green-200">
+              Trial ends on <strong>{new Date(subscription.subscription.trial_end).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</strong>. You won&apos;t be charged until then. Cancel any time before that date and pay nothing.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Success Message */}
       {successMessage && (
@@ -635,6 +653,14 @@ export default function BillingPage() {
                     </p>
                   )}
 
+                  {/* Trial badge */}
+                  {trialEligible && ['starter', 'pro'].includes(plan.name.toLowerCase()) && (
+                    <p className="text-xs text-green-700 dark:text-green-400 font-medium mb-2 flex items-center gap-1">
+                      <Gift className="h-3 w-3" />
+                      14-day free trial
+                    </p>
+                  )}
+
                   {plan.description && (
                     <p className="text-xs text-muted-foreground mb-3">{plan.description}</p>
                   )}
@@ -676,10 +702,12 @@ export default function BillingPage() {
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                             Loading...
                           </>
-                        ) : billingEnabled ? (
-                          'Upgrade'
-                        ) : (
+                        ) : !billingEnabled ? (
                           'Coming Soon'
+                        ) : trialEligible && ['starter', 'pro'].includes(plan.name.toLowerCase()) ? (
+                          'Start Free Trial'
+                        ) : (
+                          'Upgrade'
                         )}
                       </Button>
                     ) : (

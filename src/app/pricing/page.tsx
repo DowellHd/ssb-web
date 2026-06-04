@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Check, X, FlaskConical, Zap, Building, Star } from 'lucide-react';
+import { Check, X, FlaskConical, Zap, Building, Star, Gift } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Pricing — SSB Trading Platform Plans',
@@ -23,6 +23,7 @@ const PLANS = [
     cta: 'Get Started Free',
     ctaHref: '/auth/signup',
     highlight: false,
+    trial: false,
     features: [
       'Delayed regime data',
       'Basic risk analytics',
@@ -38,9 +39,10 @@ const PLANS = [
     price: 9,
     priceYearly: 90,
     description: 'Level up with real analytics and full paper trading.',
-    cta: 'Start Starter',
+    cta: 'Try Free for 14 Days',
     ctaHref: '/auth/signup',
     highlight: false,
+    trial: true,
     features: [
       'Reduced data delay',
       'Standard risk analytics',
@@ -56,10 +58,11 @@ const PLANS = [
     price: 79,
     priceYearly: 790,
     description: 'Advanced tools for serious learners and active paper traders.',
-    cta: 'Start Pro',
+    cta: 'Try Free for 14 Days',
     ctaHref: '/auth/signup',
     highlight: true,
     badge: 'Most Popular',
+    trial: true,
     features: [
       'Real-time regime data',
       'Advanced risk analytics',
@@ -78,9 +81,10 @@ const PLANS = [
     price: 299,
     priceYearly: 2990,
     description: 'Full platform access for professionals and institutions.',
-    cta: 'Start Institutional',
+    cta: 'Contact Sales',
     ctaHref: '/auth/signup',
     highlight: false,
+    trial: false,
     features: [
       'Real-time + priority data',
       'Full risk analytics suite',
@@ -207,6 +211,10 @@ export default function PricingPage() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Start free. Upgrade when you&apos;re ready. Cancel anytime — no questions asked.
           </p>
+          <div className="inline-flex items-center gap-2 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-2 text-sm font-medium text-green-800 dark:text-green-300">
+            <Gift className="h-4 w-4" />
+            Starter and Pro include a <strong className="mx-1">14-day free trial</strong> — no credit card charged until day 15
+          </div>
         </div>
 
         {/* Early Access Banner */}
@@ -257,6 +265,12 @@ export default function PricingPage() {
                     <p className="text-sm text-muted-foreground mt-1">
                       or ${plan.priceYearly}/yr <span className="text-green-600 dark:text-green-400 font-medium">(save ~17%)</span>
                     </p>
+                    {plan.trial && (
+                      <p className="text-xs text-green-700 dark:text-green-400 font-medium mt-2 flex items-center gap-1">
+                        <Gift className="h-3 w-3" />
+                        14-day free trial included
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -285,8 +299,9 @@ export default function PricingPage() {
         </div>
 
         {/* Annual savings callout */}
-        <div className="text-center text-sm text-muted-foreground">
-          All paid plans include a <strong>~17% discount</strong> when billed annually. Monthly billing available on all plans.
+        <div className="text-center text-sm text-muted-foreground space-y-1">
+          <p>All paid plans include a <strong>~17% discount</strong> when billed annually. Monthly billing available on all plans.</p>
+          <p>Starter and Pro plans include a <strong>14-day free trial</strong>. Your card is only charged after the trial ends. Cancel before day 15 and pay nothing.</p>
         </div>
 
         {/* Full Comparison Table */}
@@ -397,8 +412,12 @@ export default function PricingPage() {
           <div className="space-y-4">
             {[
               {
+                q: 'How does the 14-day free trial work?',
+                a: 'When you subscribe to Starter or Pro, your trial begins immediately. You have full access to all plan features for 14 days. Your card is not charged until the trial ends. Cancel any time before day 15 and you pay nothing.',
+              },
+              {
                 q: 'Do I need a credit card to sign up?',
-                a: 'No. The Free plan requires no payment information whatsoever. Credit card is only required when upgrading to a paid plan.',
+                a: 'No. The Free plan requires no payment information whatsoever. Credit card is only required when upgrading to a paid plan — and even then, you won\'t be charged until after the 14-day trial.',
               },
               {
                 q: 'What happens to my data if I cancel?',
