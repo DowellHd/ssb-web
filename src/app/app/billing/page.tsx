@@ -316,8 +316,8 @@ export default function BillingPage() {
   const isTrialing = subscription?.subscription?.status === 'trialing';
   // Use store's normalized plan for UI consistency across app
   const currentPlanName = normalizedPlan.plan;
-  // User is trial-eligible if they have never had a trial (trial_end unset) and are on the free plan
-  const trialEligible = !subscription?.subscription?.trial_end && currentPlanName === 'free';
+  // User is trial-eligible if they have never had a trial (trial_end unset) and have no active paid sub
+  const trialEligible = !subscription?.subscription?.trial_end && !hasActiveSubscription && !isTrialing;
 
   return (
     <div className="space-y-6">
@@ -653,11 +653,11 @@ export default function BillingPage() {
                     </p>
                   )}
 
-                  {/* Trial badge */}
+                  {/* Trial badge — shown whenever the user hasn't used a trial yet, regardless of Beta mode */}
                   {trialEligible && ['starter', 'pro'].includes(plan.name.toLowerCase()) && (
                     <p className="text-xs text-green-700 dark:text-green-400 font-medium mb-2 flex items-center gap-1">
                       <Gift className="h-3 w-3" />
-                      14-day free trial
+                      14-day free trial — no charge until day 15
                     </p>
                   )}
 
