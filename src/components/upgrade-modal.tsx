@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Zap } from 'lucide-react';
+import { Zap, Gift } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -62,6 +62,11 @@ export function UpgradeModal({
             ))}
           </ul>
         )}
+
+        <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400 font-medium">
+          <Gift className="h-3.5 w-3.5 shrink-0" />
+          Starter and Pro include a 14-day free trial — no charge until day 15
+        </div>
 
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Not now</AlertDialogCancel>
