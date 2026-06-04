@@ -81,7 +81,7 @@ const PLANS = [
     price: 299,
     priceYearly: 2990,
     description: 'Full platform access for professionals and institutions.',
-    cta: 'Contact Sales',
+    cta: 'Get Started',
     ctaHref: '/auth/signup',
     highlight: false,
     trial: false,
