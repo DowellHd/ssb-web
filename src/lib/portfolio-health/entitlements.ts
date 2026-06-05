@@ -66,6 +66,17 @@ const PORTFOLIO_HEALTH_ENTITLEMENTS: Record<PlanKey, PortfolioHealthEntitlements
     enhancedCopy: false,
     tierLabel: 'Pro',
   },
+  founding_pro: {
+    enabled: true,
+    widgetEnabled: true,
+    sectorExposureEnabled: true,
+    concentrationWarningsEnabled: true,
+    riskScoreEnabled: true,
+    correlationAnalysisEnabled: false,
+    granularRiskBreakdown: false,
+    enhancedCopy: false,
+    tierLabel: 'Pro',
+  },
   institutional: {
     enabled: true,
     widgetEnabled: true,

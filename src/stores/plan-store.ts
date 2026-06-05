@@ -76,7 +76,7 @@ function normalizeEntitlements(entitlements: EntitlementsInfo): NormalizedPlan {
     plan = 'full_access';
   } else {
     // Map to known plan keys, default to free
-    const knownPlans: PlanKey[] = ['free', 'starter', 'pro', 'institutional'];
+    const knownPlans: PlanKey[] = ['free', 'starter', 'pro', 'founding_pro', 'institutional'];
     plan = knownPlans.includes(planLower as PlanKey) ? (planLower as PlanKey) : 'free';
   }
 

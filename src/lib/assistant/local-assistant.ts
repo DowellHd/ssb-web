@@ -36,7 +36,7 @@ export interface AssistantContext {
   /** Current account balance */
   accountBalance?: number;
   /** User's subscription tier */
-  tier?: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access';
+  tier?: import('@/lib/plan-config').PlanKey;
   /** Whether Scenario Mode is currently active */
   isScenarioMode?: boolean;
 }
