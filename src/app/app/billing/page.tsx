@@ -633,7 +633,7 @@ export default function BillingPage() {
                     <span className="text-sm text-amber-700 dark:text-amber-300">/mo</span>
                   </div>
                   <p className="text-xs text-amber-700 dark:text-amber-300">or $490/yr (save ~17%)</p>
-                  <p className="text-xs text-amber-700 dark:text-amber-400 line-through">$79/mo after Beta</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400">$79/mo for new subscribers after Beta</p>
                   <p className="text-xs text-green-700 dark:text-green-400 font-medium flex items-center gap-1">
                     <Gift className="h-3 w-3" />
                     14-day free trial included

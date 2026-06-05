@@ -225,8 +225,9 @@ export default function PricingPage() {
                 ⭐ Founding Member — Beta Only
               </div>
               <h2 className="text-2xl font-bold text-amber-900 dark:text-amber-100">
-                Lock in Pro at <span className="line-through text-amber-600/60 text-xl">$79</span> $49/mo forever
+                Lock in Pro at $49/mo forever
               </h2>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">$79/mo for new subscribers after Beta</p>
               <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
                 Subscribe during Beta and your price is permanently locked in. When Beta ends, Pro goes to $79/mo for new subscribers — you never pay more than $49/mo.
               </p>
