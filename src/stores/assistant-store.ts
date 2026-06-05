@@ -8,6 +8,7 @@
  * - No external API calls
  */
 import { create } from 'zustand';
+import type { PlanKey } from '@/lib/plan-config';
 import { persist } from 'zustand/middleware';
 import {
   processMessage,
@@ -43,7 +44,7 @@ interface AssistantState {
   // Context State
   currentPage: string;
   selectedSymbol?: string;
-  userTier?: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access';
+  userTier?: PlanKey;
 
   // Conversation State
   messages: Message[];
@@ -62,7 +63,7 @@ interface AssistantState {
   // Context Actions
   setCurrentPage: (page: string) => void;
   setSelectedSymbol: (symbol: string | undefined) => void;
-  setUserTier: (tier: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access') => void;
+  setUserTier: (tier: PlanKey) => void;
 
   // Prompt Helpers
   getQuickPrompts: () => string[];
@@ -125,7 +126,7 @@ export const useAssistantStore = create<AssistantState>()(
       setSelectedSymbol: (symbol: string | undefined) => set({ selectedSymbol: symbol }),
 
       // Set user tier
-      setUserTier: (tier: 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access') => set({ userTier: tier }),
+      setUserTier: (tier: PlanKey) => set({ userTier: tier }),
 
       // Get quick prompts for current page
       getQuickPrompts: () => {

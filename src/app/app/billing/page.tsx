@@ -13,6 +13,17 @@ import { getPlanConfig, getPlanDisplayName, isFounderPlan, hasUnlimitedAccess } 
 import { isUnlimited, formatLimit } from '@/lib/utils';
 import { usePlanStore } from '@/stores/plan-store';
 
+const FOUNDING_PRO_FEATURES = [
+  'Everything in Pro — forever',
+  'Real-time regime data',
+  'Advanced risk analytics & stress testing',
+  'Advanced paper trading + options analytics',
+  'AI trade signal generation & backtesting',
+  'Alternative investments tracker',
+  'Algo strategies (up to 5) & Webhooks (up to 20)',
+  'Price locked at $49/mo — never increases',
+];
+
 // Feature bullets for each plan (qualitative labels only - no numeric limits)
 const PLAN_FEATURES: Record<string, string[]> = {
   free: [
@@ -594,6 +605,72 @@ export default function BillingPage() {
               </button>
             </div>
           </div>
+
+          {/* Founding Member offer — Beta only */}
+          {IS_BETA_MODE && trialEligible && (
+            <div className="mb-6 rounded-xl border-2 border-amber-400 dark:border-amber-500 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/40 p-5">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                <div className="shrink-0">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white uppercase tracking-wide mb-2">
+                    ⭐ Founding Member — Limited Offer
+                  </div>
+                  <h3 className="text-xl font-bold text-amber-900 dark:text-amber-100">Lock in Pro at $49/mo forever</h3>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 mt-1 max-w-lg">
+                    Subscribe during Beta and your price is locked in permanently. When Beta ends, Pro goes to $79/mo for new subscribers — you keep $49/mo for life.
+                  </p>
+                  <ul className="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-1">
+                    {FOUNDING_PRO_FEATURES.map((f) => (
+                      <li key={f} className="flex items-start gap-1.5 text-xs text-amber-900 dark:text-amber-200">
+                        <CheckCircle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="sm:ml-auto shrink-0 flex flex-col items-start sm:items-end gap-2">
+                  <div>
+                    <span className="text-3xl font-bold text-amber-900 dark:text-amber-100">$49</span>
+                    <span className="text-sm text-amber-700 dark:text-amber-300">/mo</span>
+                  </div>
+                  <p className="text-xs text-amber-700 dark:text-amber-300">or $490/yr (save ~17%)</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 line-through">$79/mo after Beta</p>
+                  <p className="text-xs text-green-700 dark:text-green-400 font-medium flex items-center gap-1">
+                    <Gift className="h-3 w-3" />
+                    14-day free trial included
+                  </p>
+                  <div className="flex gap-2 mt-1">
+                    <Button
+                      size="sm"
+                      disabled={!billingEnabled || checkoutLoading === 'founding_pro'}
+                      className="bg-amber-500 hover:bg-amber-600 text-white border-0"
+                      onClick={() => handleUpgrade('founding_pro')}
+                    >
+                      {checkoutLoading === 'founding_pro' ? (
+                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Loading...</>
+                      ) : billingEnabled ? (
+                        'Lock In $49/mo'
+                      ) : (
+                        'Coming Soon'
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!billingEnabled || checkoutLoading === 'founding_pro_yearly'}
+                      className="border-amber-400 text-amber-800 dark:text-amber-200"
+                      onClick={() => {
+                        const prev = billingCycle;
+                        setBillingCycle('yearly');
+                        handleUpgrade('founding_pro').finally(() => setBillingCycle(prev));
+                      }}
+                    >
+                      Lock In $490/yr
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {plans.plans.map((plan) => {

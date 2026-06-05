@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Check, X, FlaskConical, Zap, Building, Star, Gift } from 'lucide-react';
+import { Check, X, FlaskConical, Zap, Building, Star, Gift, Lock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Pricing — SSB Trading Platform Plans',
@@ -214,6 +214,39 @@ export default function PricingPage() {
           <div className="inline-flex items-center gap-2 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-2 text-sm font-medium text-green-800 dark:text-green-300">
             <Gift className="h-4 w-4" />
             Starter and Pro include a <strong className="mx-1">14-day free trial</strong> — no credit card charged until day 15
+          </div>
+        </div>
+
+        {/* Founding Member Offer */}
+        <div className="rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/40 p-6 max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white uppercase tracking-wide mb-3">
+                ⭐ Founding Member — Beta Only
+              </div>
+              <h2 className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                Lock in Pro at <span className="line-through text-amber-600/60 text-xl">$79</span> $49/mo forever
+              </h2>
+              <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
+                Subscribe during Beta and your price is permanently locked in. When Beta ends, Pro goes to $79/mo for new subscribers — you never pay more than $49/mo.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-3 text-xs text-amber-800 dark:text-amber-300">
+                <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-amber-600" /> All Pro features</span>
+                <span className="flex items-center gap-1"><Gift className="h-3.5 w-3.5 text-amber-600" /> 14-day free trial</span>
+                <span className="flex items-center gap-1"><Lock className="h-3.5 w-3.5 text-amber-600" /> Price locked forever</span>
+                <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-amber-600" /> Cancel anytime</span>
+              </div>
+            </div>
+            <div className="shrink-0 text-center sm:text-right">
+              <p className="text-4xl font-bold text-amber-900 dark:text-amber-100">$49<span className="text-base font-normal text-amber-700 dark:text-amber-300">/mo</span></p>
+              <p className="text-sm text-amber-700 dark:text-amber-300 mt-0.5">or $490/yr (save ~17%)</p>
+              <Link
+                href="/auth/signup"
+                className="inline-block mt-3 px-6 py-2.5 rounded-lg bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors text-sm"
+              >
+                Lock In $49/mo →
+              </Link>
+            </div>
           </div>
         </div>
 

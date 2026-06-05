@@ -3,7 +3,7 @@
  * Single source of truth for plan names, badges, and styling.
  */
 
-export type PlanKey = 'free' | 'starter' | 'pro' | 'institutional' | 'founder' | 'full_access';
+export type PlanKey = 'free' | 'starter' | 'pro' | 'founding_pro' | 'institutional' | 'founder' | 'full_access';
 
 export interface PlanConfig {
   displayName: string;
@@ -34,6 +34,12 @@ export const PLAN_CONFIG: Record<PlanKey, PlanConfig> = {
     badgeLabel: 'Pro',
     badgeClassName: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     iconClassName: 'text-blue-500',
+  },
+  founding_pro: {
+    displayName: 'Founding Member Pro',
+    badgeLabel: 'Founding Member',
+    badgeClassName: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white',
+    iconClassName: 'text-amber-500',
   },
   institutional: {
     displayName: 'Institutional',

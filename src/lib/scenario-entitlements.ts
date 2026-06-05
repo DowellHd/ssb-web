@@ -60,6 +60,16 @@ const SCENARIO_ENTITLEMENTS: Record<PlanKey, ScenarioEntitlements> = {
     labelsEnabled: false,
     tierLabel: 'Plus',
   },
+  founding_pro: {
+    enabled: true,
+    maxActiveOverrides: 3,
+    showBaselineCompare: true,
+    showDeltas: true,
+    presetsEnabled: true,
+    exportEnabled: false,
+    labelsEnabled: false,
+    tierLabel: 'Plus',
+  },
   institutional: {
     enabled: true,
     maxActiveOverrides: 3,
