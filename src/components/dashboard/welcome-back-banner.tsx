@@ -11,7 +11,8 @@ const LAST_VISIT_KEY = 'ssb_last_visit_date';
 const SESSION_DISMISSED_KEY = 'ssb_wb_dismissed';
 
 function getTodayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 // ── Regime helpers ────────────────────────────────────────────────────────────
@@ -71,6 +72,7 @@ interface WelcomeBackBannerProps {
   regime?: RegimeResult | null;
   marketSummary?: MarketSummaryResponse | null;
   portfolioSummary?: PortfolioSummary | null;
+  portfolioReturn1d?: PortfolioSummary | null;
 }
 
 export function WelcomeBackBanner({
@@ -78,6 +80,7 @@ export function WelcomeBackBanner({
   regime,
   marketSummary,
   portfolioSummary,
+  portfolioReturn1d,
 }: WelcomeBackBannerProps) {
   const [show, setShow] = useState(false);
   const [lastVisit, setLastVisit] = useState<string | null>(null);
@@ -167,20 +170,22 @@ export function WelcomeBackBanner({
     );
   }
 
-  if (portfolioSummary && portfolioSummary.holding_count > 0) {
-    const pct = portfolioSummary.unrealized_pl_pct;
+  const pfData = portfolioReturn1d ?? portfolioSummary;
+  if (pfData && pfData.holding_count > 0) {
+    const pct = pfData.unrealized_pl_pct;
     const sign = pct >= 0 ? '+' : '';
     const isUp = pct >= 0;
     const pfColor = isUp ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400';
     const pfBg = isUp
       ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
       : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800';
+    const pfLabel = portfolioReturn1d ? 'Today:' : 'Portfolio:';
 
     chips.push(
       <Chip
         key="portfolio"
         icon={isUp ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-        label="Portfolio:"
+        label={pfLabel}
         value={`${sign}${pct.toFixed(2)}%`}
         colorClass={pfColor}
         bgClass={pfBg}

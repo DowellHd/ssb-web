@@ -276,6 +276,7 @@ export default function AppDashboardPage() {
   const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
   const [marketSummary, setMarketSummary] = useState<MarketSummaryResponse | null>(null);
   const [portfolioSummary, setPortfolioSummary] = useState<PortfolioSummary | null>(null);
+  const [portfolioReturn1d, setPortfolioReturn1d] = useState<PortfolioSummary | null>(null);
   const [regimeData, setRegimeData] = useState<RegimeResult | null>(null);
   const [regimeLastUpdated, setRegimeLastUpdated] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
@@ -309,8 +310,12 @@ export default function AppDashboardPage() {
       }
 
       try {
-        const portfolioData = await getPortfolioSummary();
+        const [portfolioData, portfolio1dData] = await Promise.all([
+          getPortfolioSummary(),
+          getPortfolioSummary('1d'),
+        ]);
         setPortfolioSummary(portfolioData);
+        setPortfolioReturn1d(portfolio1dData);
       } catch {
         // Portfolio summary is optional — shown only if brokers connected
       }
@@ -412,6 +417,7 @@ export default function AppDashboardPage() {
           regime={regimeData}
           marketSummary={marketSummary}
           portfolioSummary={portfolioSummary}
+          portfolioReturn1d={portfolioReturn1d}
         />
       )}
       {/* Header */}
