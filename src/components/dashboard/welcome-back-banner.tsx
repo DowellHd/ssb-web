@@ -110,6 +110,10 @@ export function WelcomeBackBanner({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diffDays = Math.round((today.getTime() - visitDate.getTime()) / 86400000);
+
+  // Suppress banner if stored date is in the future (stale UTC-written value)
+  if (diffDays < 1) return null;
+
   const sinceLabel =
     diffDays === 1 ? 'yesterday' :
     diffDays <= 7 ? `${diffDays} days ago` :
