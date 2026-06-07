@@ -89,7 +89,6 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   appleWebApp: {
-    capable: true,
     statusBarStyle: 'black-translucent',
     title: 'SSB',
   },
