@@ -199,9 +199,9 @@ export default function Home() {
               Start free. Upgrade when you&apos;re ready.
             </p>
             {IS_BETA_MODE && (
-              <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-8">
-                We&apos;re in Beta — every plan is free right now. No card required, no charges until Beta ends.
-              </p>
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-600 dark:text-green-400">
+                🎉 We&apos;re in Beta — every plan is free right now. No card required, no charges until Beta ends.
+              </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
               {PLANS.map((plan) => (
