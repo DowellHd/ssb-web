@@ -267,23 +267,30 @@ export default function PricingPage() {
 
         {/* Plan Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {PLANS.map((plan) => (
+          {PLANS.map((plan) => {
+            const showBetaBadge = IS_BETA_MODE && plan.price > 0;
+            const showBothBadges = plan.badge && showBetaBadge;
+            return (
             <div
               key={plan.key}
               className={`relative rounded-2xl border p-6 flex flex-col ${
+                showBothBadges ? 'pt-10' : ''
+              } ${
                 plan.highlight
                   ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
                   : 'border-border bg-card'
               }`}
             >
-              {(plan.badge || (IS_BETA_MODE && plan.price > 0)) && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
+              {(plan.badge || showBetaBadge) && (
+                <div className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 ${
+                  showBothBadges ? '-top-10' : '-top-3'
+                }`}>
                   {plan.badge && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary text-primary-foreground whitespace-nowrap">
                       <Star className="h-3 w-3" />{plan.badge}
                     </span>
                   )}
-                  {IS_BETA_MODE && plan.price > 0 && (
+                  {showBetaBadge && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-green-500 text-white whitespace-nowrap">
                       Free during Beta
                     </span>
@@ -342,7 +349,8 @@ export default function PricingPage() {
                 {plan.cta}
               </Link>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Annual savings callout */}
