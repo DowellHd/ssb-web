@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Check, X, FlaskConical, Zap, Building, Star, Gift, Lock } from 'lucide-react';
 
+const IS_BETA_MODE = process.env.NEXT_PUBLIC_BETA_MODE === 'true';
+
 export const metadata: Metadata = {
   title: 'Pricing — SSB Trading Platform Plans',
   description: 'Simple, transparent pricing for SSB — the Smart Strategies Builder trading platform. Free to start, no credit card required.',
@@ -251,11 +253,15 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Early Access Banner */}
+        {/* Early Access / Beta Banner */}
         <div className="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-6 py-4 flex items-start gap-3 max-w-3xl mx-auto">
           <FlaskConical className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div className="text-sm text-blue-800 dark:text-blue-200">
-            <strong>Early Access:</strong> SSB is currently in early access. All features are available at no cost and no real charges will occur. Pricing will apply after general availability. You will be notified before any charges begin.
+            {IS_BETA_MODE ? (
+              <><strong>We&apos;re in Beta:</strong> Every plan on this page is free right now. No card required, no charges will occur until Beta ends — and you&apos;ll be notified before any charges begin.</>
+            ) : (
+              <><strong>Early Access:</strong> SSB is currently in early access. All features are available at no cost and no real charges will occur. Pricing will apply after general availability. You will be notified before any charges begin.</>
+            )}
           </div>
         </div>
 
@@ -270,11 +276,18 @@ export default function PricingPage() {
                   : 'border-border bg-card'
               }`}
             >
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary text-primary-foreground">
-                    <Star className="h-3 w-3" />{plan.badge}
-                  </span>
+              {(plan.badge || (IS_BETA_MODE && plan.price > 0)) && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5">
+                  {plan.badge && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary text-primary-foreground whitespace-nowrap">
+                      <Star className="h-3 w-3" />{plan.badge}
+                    </span>
+                  )}
+                  {IS_BETA_MODE && plan.price > 0 && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-green-500 text-white whitespace-nowrap">
+                      Free during Beta
+                    </span>
+                  )}
                 </div>
               )}
 
