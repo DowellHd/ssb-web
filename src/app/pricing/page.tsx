@@ -274,7 +274,7 @@ export default function PricingPage() {
             <div
               key={plan.key}
               className={`relative rounded-2xl border p-6 flex flex-col ${
-                showBothBadges ? 'pt-10' : ''
+                IS_BETA_MODE ? 'pt-10' : ''
               } ${
                 plan.highlight
                   ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
