@@ -4,6 +4,8 @@ import { BrandName, BRAND_NAME } from '@/components/ui/brand-name';
 import { DemoCTA } from '@/components/demo-cta';
 import { DemoExpiredBanner } from '@/components/demo-expired-banner';
 
+const IS_BETA_MODE = process.env.NEXT_PUBLIC_BETA_MODE === 'true';
+
 const TRUST_SIGNALS = [
   { icon: Shield, text: 'Bank-level encryption' },
   { icon: Lock, text: 'Read-only brokerage access via Plaid' },
@@ -193,17 +195,29 @@ export default function Home() {
           {/* Pricing preview */}
           <div className="mt-16 text-center">
             <h2 className="text-2xl font-bold mb-2">Simple, transparent pricing</h2>
-            <p className="text-muted-foreground mb-8">Start free. Upgrade when you&apos;re ready.</p>
+            <p className={`text-muted-foreground ${IS_BETA_MODE ? 'mb-2' : 'mb-8'}`}>
+              Start free. Upgrade when you&apos;re ready.
+            </p>
+            {IS_BETA_MODE && (
+              <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-8">
+                We&apos;re in Beta — every plan is free right now. No card required, no charges until Beta ends.
+              </p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
               {PLANS.map((plan) => (
                 <div
                   key={plan.name}
-                  className={`rounded-xl border p-5 text-left ${
+                  className={`relative rounded-xl border p-5 text-left ${
                     plan.highlight
                       ? 'border-primary/50 bg-primary/5'
                       : 'border-border/70 bg-card'
                   }`}
                 >
+                  {IS_BETA_MODE && plan.price !== '$0' && (
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-green-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                      Free during Beta
+                    </div>
+                  )}
                   <p className="text-sm font-medium text-muted-foreground">{plan.name}</p>
                   <p className="text-2xl font-bold my-1">{plan.price}</p>
                   <p className="text-xs text-muted-foreground mb-4">{plan.description}</p>
