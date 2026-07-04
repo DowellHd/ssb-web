@@ -18,6 +18,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    subsystem: 'Platform',
+    version: '1.5.0',
+    date: '2026-07-03',
+    changes: [
+      'Pricing now clearly flags Beta status — the landing page pricing preview and the standalone /pricing page show a "we\'re in Beta, nothing is being charged" banner plus a Free during Beta badge on paid plan cards',
+    ],
+  },
+  {
     subsystem: 'Signal Feed (Assisted Trading)',
     version: '1.1.0',
     date: '2026-05-27',
