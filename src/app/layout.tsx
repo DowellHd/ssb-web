@@ -5,6 +5,7 @@ import './globals.css';
 import { Providers } from './providers';
 import { SWRegister } from '@/components/sw-register';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
+import { BACK_SOON } from '@/lib/back-soon';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
@@ -140,7 +141,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           {children}
-          <PWAInstallPrompt />
+          {!BACK_SOON && <PWAInstallPrompt />}
         </Providers>
         <SWRegister />
         {process.env.NEXT_PUBLIC_GA_ID && (
