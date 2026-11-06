@@ -15,9 +15,19 @@
  *   same-origin request to Next.js.
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { BACK_SOON } from '@/lib/back-soon';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Back Soon mode: serve one page for every route (URL is preserved).
+  if (BACK_SOON) {
+    if (pathname === '/back-soon') return NextResponse.next();
+    const url = request.nextUrl.clone();
+    url.pathname = '/back-soon';
+    url.search = '';
+    return NextResponse.rewrite(url);
+  }
 
   // Only gate /app/* routes.
   if (!pathname.startsWith('/app')) {
@@ -40,10 +50,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all /app/* routes.
-     * Exclude Next.js internals and static assets so the middleware does
-     * not fire on every _next/static or _next/image request.
+     * Match every page route. Exclude Next.js internals, the health check, and
+     * anything with a file extension (static assets, robots.txt, sitemap.xml,
+     * manifest, service worker, icons) so those keep working unchanged.
+     * Outside Back Soon mode the handler above only acts on /app/*.
      */
-    '/app/:path*',
+    '/((?!_next/|api/health|.*\\..*).*)',
   ],
 };
