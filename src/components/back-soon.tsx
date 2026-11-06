@@ -25,7 +25,13 @@ const CAPABILITIES = [
   },
 ];
 
-const REGIMES = ['Bullish', 'Sideways', 'Bearish', 'Crisis'];
+// rgb triplets: --c is the pill accent, --t the lighter text shade
+const REGIMES = [
+  { label: 'Bullish', c: '52 211 153', t: '110 231 183' },
+  { label: 'Sideways', c: '251 191 36', t: '252 211 77' },
+  { label: 'Bearish', c: '251 146 60', t: '253 186 116' },
+  { label: 'Crisis', c: '248 113 113', t: '252 165 165' },
+];
 
 const STRESS = [
   { label: '2008', width: '86%' },
@@ -50,7 +56,7 @@ export function BackSoon() {
         @keyframes bs-pulse { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.4); } }
         @keyframes bs-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         @keyframes bs-regime {
-          0%, 22% { background-color: rgb(52 211 153 / .18); border-color: rgb(52 211 153 / .7); color: rgb(110 231 183); }
+          0%, 22% { background-color: rgb(var(--c) / .18); border-color: rgb(var(--c) / .7); color: rgb(var(--t)); }
           28%, 100% { background-color: transparent; border-color: hsl(var(--border)); color: hsl(var(--muted-foreground)); }
         }
         .bs-line { stroke-dasharray: 1; stroke-dashoffset: 0; }
@@ -125,11 +131,17 @@ export function BackSoon() {
                 <div className="flex flex-wrap gap-2">
                   {REGIMES.map((r, i) => (
                     <span
-                      key={r}
-                      className="bs-regime rounded-full border px-3 py-1 text-xs font-semibold text-muted-foreground"
-                      style={{ animationDelay: `${i * 2}s` }}
+                      key={r.label}
+                      className="bs-regime inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold text-muted-foreground"
+                      style={
+                        { animationDelay: `${i * 2}s`, '--c': r.c, '--t': r.t } as React.CSSProperties
+                      }
                     >
-                      {r}
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: `rgb(${r.c})` }}
+                      />
+                      {r.label}
                     </span>
                   ))}
                 </div>
