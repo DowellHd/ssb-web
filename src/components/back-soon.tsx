@@ -47,7 +47,7 @@ const AREA = `${LINE} L 560 180 L 0 180 Z`;
 
 export function BackSoon() {
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-background px-4 py-16 sm:py-20">
+    <main className="relative isolate min-h-screen bg-background px-4 py-16 sm:py-20">
       <style>{`
         @keyframes bs-draw { to { stroke-dashoffset: 0; } }
         @keyframes bs-reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
@@ -76,7 +76,7 @@ export function BackSoon() {
       `}</style>
 
       {/* Ambient glow + fading grid */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute left-1/2 top-[-12%] h-[560px] w-[900px] -translate-x-1/2 rounded-full bg-emerald-500/20 blur-[130px]" />
         <div className="absolute right-[-12%] top-[30%] h-[460px] w-[560px] rounded-full bg-sky-500/20 blur-[130px]" />
         <div className="absolute bottom-[-15%] left-[-10%] h-[420px] w-[520px] rounded-full bg-violet-500/15 blur-[130px]" />
