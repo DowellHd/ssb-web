@@ -60,7 +60,55 @@ const STATUS_CONFIG: Record<string, { icon: React.ElementType; label: string; co
 
 // ── Plaid Link button ──────────────────────────────────────────────────────────
 
+/** Local demo build: there is no backend and Plaid's script must not load. */
+const IS_DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
+/**
+ * Demo-mode stand-in for Plaid Link. `usePlaidLink` injects Plaid's CDN script
+ * on mount even without a token, so this component deliberately never calls it;
+ * it "completes" a link through the (mocked) link-token / exchange endpoints.
+ */
+function DemoConnectButton({ onSuccess }: { onSuccess: () => void }) {
+  const [connecting, setConnecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function connect() {
+    setConnecting(true);
+    setError(null);
+    try {
+      await createPlaidLinkToken();
+      await exchangePlaidToken({
+        public_token: 'public-demo-token',
+        institution_name: 'Sample Brokerage',
+        institution_id: 'ins_demo',
+      });
+      onSuccess();
+    } catch {
+      setError('Failed to complete connection. Please try again.');
+    } finally {
+      setConnecting(false);
+    }
+  }
+
+  return (
+    <div>
+      <Button onClick={connect} disabled={connecting} size="sm">
+        {connecting ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Plus className="h-4 w-4 mr-1.5" />}
+        Connect a broker (demo)
+      </Button>
+      <p className="text-xs text-muted-foreground mt-2">
+        Demo mode adds a sample account instead of opening Plaid.
+      </p>
+      {error && <p className="text-xs text-destructive mt-2">{error}</p>}
+    </div>
+  );
+}
+
 function PlaidConnectButton({ onSuccess }: { onSuccess: () => void }) {
+  return IS_DEMO_MODE ? <DemoConnectButton onSuccess={onSuccess} /> : <PlaidLinkConnectButton onSuccess={onSuccess} />;
+}
+
+function PlaidLinkConnectButton({ onSuccess }: { onSuccess: () => void }) {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loadingToken, setLoadingToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
