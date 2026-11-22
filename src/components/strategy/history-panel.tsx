@@ -42,9 +42,18 @@ function HistoryRow({ item, onDeleted }: { item: StrategyHistoryItem; onDeleted:
 
   return (
     <div className="border-b last:border-b-0">
-      <button
+      {/* A div with button semantics: the row contains a real delete <button>, and buttons cannot nest. */}
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setExpanded((p) => !p)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-accent/30 transition-colors"
+        onKeyDown={(e) => {
+          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setExpanded((p) => !p);
+          }
+        }}
+        className="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left hover:bg-accent/30 transition-colors"
         aria-expanded={expanded}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -76,7 +85,7 @@ function HistoryRow({ item, onDeleted }: { item: StrategyHistoryItem; onDeleted:
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           )}
         </div>
-      </button>
+      </div>
 
       {expanded && (
         <div className="px-4 pb-4 space-y-3">
