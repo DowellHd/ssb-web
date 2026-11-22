@@ -610,16 +610,8 @@ export default function SettingsPage() {
                         Scan this QR code with Google Authenticator, Authy, or another TOTP app.
                       </p>
                       <div className="flex justify-center p-4 bg-white rounded-lg">
-                        {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? (
-                          // Demo build: render the QR locally instead of calling a third-party service.
-                          <QRCodeSVG value={mfaSetupData.qr_code_uri} size={192} />
-                        ) : (
-                          <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mfaSetupData.qr_code_uri)}`}
-                            alt="MFA QR Code"
-                            className="w-48 h-48"
-                          />
-                        )}
+                        {/* Rendered locally: the TOTP secret must never be sent to a third-party QR service. */}
+                        <QRCodeSVG value={mfaSetupData.qr_code_uri} size={192} />
                       </div>
                       <p className="text-xs text-muted-foreground mt-2 text-center break-all">
                         Manual entry: {mfaSetupData.secret}
