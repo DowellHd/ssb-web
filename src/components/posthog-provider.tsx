@@ -6,7 +6,9 @@ import posthog from 'posthog-js';
 import { PostHogProvider as PHProvider } from 'posthog-js/react';
 import { getCookieConsent, type ConsentDecision } from '@/lib/cookie-consent';
 
-const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+// Demo mode never sends analytics, even if a key is present in the environment.
+const POSTHOG_KEY =
+  process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? undefined : process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://app.posthog.com';
 
 // Track whether posthog.init() has been called. init() must only run once per
@@ -40,7 +42,7 @@ export function initPostHog(): void {
  * Called when the user declines consent or revokes it in settings.
  */
 export function teardownPostHog(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !POSTHOG_KEY) return;
   try {
     posthog.opt_out_capturing();
     posthog.reset();
