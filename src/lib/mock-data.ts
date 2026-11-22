@@ -1,7 +1,26 @@
 /**
- * Mock data generator for demo mode.
- * Generates realistic-looking trading data without backend connection.
+ * Mock data generators for demo mode.
+ *
+ * Deterministic: every value is derived from the seeded PRNG / market module in
+ * `./demo-api`, so the demo looks identical on every run and a symbol has the
+ * same price in quotes, charts, positions and orders.
  */
+import {
+  dailyBars,
+  lastPrice,
+  quoteFor,
+  simpleMovingAverage,
+} from './demo-api/market';
+import {
+  daysAgo,
+  hoursAgo,
+  iso,
+  pick,
+  randBetween,
+  randInt,
+  round,
+  seededRng,
+} from './demo-api/prng';
 
 export interface MockSignal {
   id: string;
@@ -65,114 +84,94 @@ export interface MockQuote {
   timestamp: string;
 }
 
+const SIGNAL_SYMBOLS = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'META', 'AMD', 'NFLX', 'SPY'];
+
 /**
- * Generate mock trading signals.
+ * Generate mock trading signals. Direction is derived from the symbol's actual
+ * 50/200-day averages so the explanation text always agrees with the numbers.
  */
 export function generateMockSignals(count: number = 20, delayed: boolean = false): MockSignal[] {
-  const symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'META', 'AMD', 'NFLX', 'SPY'];
-  const actions: Array<'buy' | 'sell' | 'hold'> = ['buy', 'sell', 'hold'];
-  const strategies = ['sma_crossover'];
-
   return Array.from({ length: count }, (_, i) => {
-    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-    const action = actions[Math.floor(Math.random() * actions.length)];
-    const confidence = 0.55 + Math.random() * 0.4; // 0.55 to 0.95
-    const currentPrice = 50 + Math.random() * 450;
-    const sma50 = currentPrice * (0.95 + Math.random() * 0.1);
-    const sma200 = currentPrice * (0.90 + Math.random() * 0.15);
+    const rng = seededRng(`legacy-signal:${i}`);
+    const symbol = SIGNAL_SYMBOLS[i % SIGNAL_SYMBOLS.length];
+    const price = lastPrice(symbol);
+    const sma50 = simpleMovingAverage(symbol, 50);
+    const sma200 = simpleMovingAverage(symbol, 200);
+    const spread = (sma50 - sma200) / sma200;
+    const fresh = i < SIGNAL_SYMBOLS.length; // newest batch = fresh crossovers
+    const action: MockSignal['action'] = !fresh ? 'hold' : spread > 0 ? 'buy' : 'sell';
+    const confidence = round(0.55 + Math.min(0.4, Math.abs(spread) * 4) + rng() * 0.05, 2);
 
-    const timestamp = new Date(Date.now() - i * 3600000); // Hours ago
-    const availableAt = delayed
-      ? new Date(timestamp.getTime() + 15 * 60000) // +15 min for free users
-      : timestamp;
+    const timestamp = hoursAgo(i + 1);
+    const availableAt = delayed ? new Date(timestamp.getTime() + 15 * 60000) : timestamp;
 
-    let reason = '';
+    let reason: string;
     if (action === 'buy') {
       reason = `Golden cross detected: 50-day SMA ($${sma50.toFixed(2)}) crossed above 200-day SMA ($${sma200.toFixed(2)})`;
     } else if (action === 'sell') {
       reason = `Death cross detected: 50-day SMA ($${sma50.toFixed(2)}) crossed below 200-day SMA ($${sma200.toFixed(2)})`;
     } else {
-      reason = sma50 > sma200
-        ? `Uptrend continues: 50-day SMA ($${sma50.toFixed(2)}) above 200-day SMA ($${sma200.toFixed(2)})`
-        : `Downtrend continues: 50-day SMA ($${sma50.toFixed(2)}) below 200-day SMA ($${sma200.toFixed(2)})`;
+      reason =
+        sma50 > sma200
+          ? `Uptrend continues: 50-day SMA ($${sma50.toFixed(2)}) above 200-day SMA ($${sma200.toFixed(2)})`
+          : `Downtrend continues: 50-day SMA ($${sma50.toFixed(2)}) below 200-day SMA ($${sma200.toFixed(2)})`;
     }
 
     return {
       id: `mock-signal-${i}`,
       symbol,
       action,
-      confidence: parseFloat(confidence.toFixed(2)),
+      confidence: Math.min(confidence, 0.95),
       reason,
-      strategy: strategies[0],
-      current_price: parseFloat(currentPrice.toFixed(2)),
-      sma_50: parseFloat(sma50.toFixed(2)),
-      sma_200: parseFloat(sma200.toFixed(2)),
-      timestamp: timestamp.toISOString(),
-      available_at: availableAt.toISOString(),
+      strategy: 'sma_crossover',
+      current_price: price,
+      sma_50: sma50,
+      sma_200: sma200,
+      timestamp: iso(timestamp),
+      available_at: iso(availableAt),
       delayed,
       delay_minutes: delayed ? 15 : 0,
     };
   });
 }
 
-/**
- * Generate mock portfolio with positions.
- */
+/** [symbol, quantity, average entry price as a fraction of today's price] */
+const PORTFOLIO_LOTS: Array<[string, number, number]> = [
+  ['AAPL', 50, 0.93],
+  ['MSFT', 30, 0.9],
+  ['GOOGL', 25, 1.04],
+  ['NVDA', 15, 0.72],
+];
+
+/** Mock brokerage portfolio. Marks come from the shared market module. */
 export function generateMockPortfolio(): MockPortfolio {
-  const positions: MockPosition[] = [
-    {
-      symbol: 'AAPL',
-      quantity: 50,
-      avg_entry_price: 180.50,
-      current_price: 185.25,
-      market_value: 9262.50,
-      cost_basis: 9025.00,
-      unrealized_pl: 237.50,
-      unrealized_pl_percent: 2.63,
-    },
-    {
-      symbol: 'MSFT',
-      quantity: 30,
-      avg_entry_price: 350.00,
-      current_price: 360.75,
-      market_value: 10822.50,
-      cost_basis: 10500.00,
-      unrealized_pl: 322.50,
-      unrealized_pl_percent: 3.07,
-    },
-    {
-      symbol: 'GOOGL',
-      quantity: 25,
-      avg_entry_price: 140.00,
-      current_price: 138.50,
-      market_value: 3462.50,
-      cost_basis: 3500.00,
-      unrealized_pl: -37.50,
-      unrealized_pl_percent: -1.07,
-    },
-    {
-      symbol: 'NVDA',
-      quantity: 15,
-      avg_entry_price: 480.00,
-      current_price: 525.30,
-      market_value: 7879.50,
-      cost_basis: 7200.00,
-      unrealized_pl: 679.50,
-      unrealized_pl_percent: 9.44,
-    },
-  ];
+  const positions: MockPosition[] = PORTFOLIO_LOTS.map(([symbol, quantity, costRatio]) => {
+    const current = lastPrice(symbol);
+    const avg = round(current * costRatio);
+    const marketValue = round(current * quantity);
+    const costBasis = round(avg * quantity);
+    const pl = round(marketValue - costBasis);
+    return {
+      symbol,
+      quantity,
+      avg_entry_price: avg,
+      current_price: current,
+      market_value: marketValue,
+      cost_basis: costBasis,
+      unrealized_pl: pl,
+      unrealized_pl_percent: round((pl / costBasis) * 100, 2),
+    };
+  });
 
-  const totalMarketValue = positions.reduce((sum, p) => sum + p.market_value, 0);
-  const totalUnrealizedPL = positions.reduce((sum, p) => sum + p.unrealized_pl, 0);
-  const totalUnrealizedPLPercent = (totalUnrealizedPL / (totalMarketValue - totalUnrealizedPL)) * 100;
-
-  const cash = 8573.00;
-  const portfolioValue = totalMarketValue + cash;
+  const totalMarketValue = round(positions.reduce((s, p) => s + p.market_value, 0));
+  const totalPL = round(positions.reduce((s, p) => s + p.unrealized_pl, 0));
+  const cash = 8573.0;
+  const portfolioValue = round(totalMarketValue + cash);
 
   return {
     account: {
       cash,
-      buying_power: cash * 2, // 2x margin
+      buying_power: cash * 2,
       equity: portfolioValue,
       portfolio_value: portfolioValue,
       currency: 'USD',
@@ -182,156 +181,101 @@ export function generateMockPortfolio(): MockPortfolio {
     positions,
     total_positions: positions.length,
     total_market_value: totalMarketValue,
-    total_unrealized_pl: totalUnrealizedPL,
-    total_unrealized_pl_percent: parseFloat(totalUnrealizedPLPercent.toFixed(2)),
+    total_unrealized_pl: totalPL,
+    total_unrealized_pl_percent: round((totalPL / (totalMarketValue - totalPL)) * 100, 2),
   };
 }
 
-/**
- * Generate mock OHLCV historical data for charting.
- */
+/** Historical OHLCV bars for charting (oldest first). */
 export function generateMockOHLCV(symbol: string, days: number = 100): MockOHLCVBar[] {
-  const data: MockOHLCVBar[] = [];
-  let basePrice = 150 + Math.random() * 200; // Random starting price
-
-  for (let i = 0; i < days; i++) {
-    const time = Date.now() - (days - i) * 86400000; // Days ago in ms
-
-    // Random walk with slight upward bias
-    const change = (Math.random() - 0.48) * 10; // Slight upward bias
-    const open = basePrice;
-    const close = basePrice + change;
-
-    // Generate high and low
-    const dayRange = Math.abs(change) + Math.random() * 5;
-    const high = Math.max(open, close) + Math.random() * dayRange;
-    const low = Math.min(open, close) - Math.random() * dayRange;
-
-    // Random volume
-    const volume = Math.floor(1000000 + Math.random() * 5000000);
-
-    data.push({
-      time: Math.floor(time / 1000), // Unix timestamp in seconds
-      open: parseFloat(open.toFixed(2)),
-      high: parseFloat(high.toFixed(2)),
-      low: parseFloat(low.toFixed(2)),
-      close: parseFloat(close.toFixed(2)),
-      volume,
-    });
-
-    basePrice = close; // Next day starts where previous closed
-  }
-
-  return data;
+  return dailyBars(symbol, days).map((b) => ({ ...b }));
 }
 
-/**
- * Generate mock quote data.
- */
+/** Quote for any symbol; consistent with the symbol's chart and positions. */
 export function generateMockQuote(symbol: string): MockQuote {
-  const midPrice = 100 + Math.random() * 400;
-  const spread = 0.05 + Math.random() * 0.20;
-
-  return {
-    symbol,
-    bid_price: parseFloat((midPrice - spread / 2).toFixed(2)),
-    ask_price: parseFloat((midPrice + spread / 2).toFixed(2)),
-    bid_size: Math.floor(100 + Math.random() * 900),
-    ask_size: Math.floor(100 + Math.random() * 900),
-    timestamp: new Date().toISOString(),
-  };
+  return quoteFor(symbol);
 }
 
-/**
- * Generate mock subscription plans.
- */
+/** Subscription plans. Matches `PlanListResponse.plans` (see lib/api/billing.ts). */
 export function generateMockPlans() {
+  const feature = (id: string, name: string, value = 'Included') => ({
+    id,
+    name,
+    value,
+    is_enabled: true,
+  });
   return [
     {
       id: 'mock-free-plan',
       name: 'free',
-      display_name: 'Free Plan',
+      display_name: 'Free',
       description: '15-minute delayed signals, perfect for learning',
       price_monthly: 0,
       price_yearly: 0,
-      is_active: true,
+      is_popular: false,
       features: [
-        '15-minute delayed signals',
-        'Paper trading only',
-        'Up to 5 watchlist symbols',
-        '100 API requests/day',
-        'Basic analytics',
+        feature('f-free-1', '15-minute delayed signals'),
+        feature('f-free-2', 'Paper trading'),
+        feature('f-free-3', 'Watchlist', 'Up to 5 symbols'),
+        feature('f-free-4', 'Basic analytics'),
       ],
     },
     {
       id: 'mock-starter-plan',
       name: 'starter',
-      display_name: 'Starter Plan',
+      display_name: 'Starter',
       description: 'Real-time signals and enhanced features for active traders',
-      price_monthly: 9.00,
-      price_yearly: 90.00,
-      stripe_price_id_monthly: 'starter_monthly',
-      stripe_price_id_yearly: 'starter_yearly',
-      is_active: true,
+      price_monthly: 9.0,
+      price_yearly: 90.0,
+      is_popular: false,
       features: [
-        'Real-time signals',
-        'Paper trading',
-        'Up to 20 watchlist symbols',
-        '1,000 API requests/day',
-        'Advanced analytics',
-        'Email alerts',
+        feature('f-st-1', 'Real-time signals'),
+        feature('f-st-2', 'Paper trading'),
+        feature('f-st-3', 'Watchlist', 'Up to 20 symbols'),
+        feature('f-st-4', 'Advanced analytics'),
+        feature('f-st-5', 'Email alerts'),
       ],
     },
     {
       id: 'mock-pro-plan',
       name: 'pro',
-      display_name: 'Pro Plan',
-      description: 'Full access with live trading and premium features',
-      price_monthly: 79.00,
-      price_yearly: 790.00,
-      stripe_price_id_monthly: 'pro_monthly',
-      stripe_price_id_yearly: 'pro_yearly',
-      is_active: true,
+      display_name: 'Pro',
+      description: 'Full access to risk analytics, stress testing and backtesting',
+      price_monthly: 79.0,
+      price_yearly: 790.0,
+      is_popular: true,
       features: [
-        'Real-time signals',
-        'Live trading (admin approval required)',
-        'Unlimited watchlist symbols',
-        '10,000 API requests/day',
-        'Premium analytics',
-        'Real-time alerts',
-        'Backtesting tools',
+        feature('f-pro-1', 'Real-time signals'),
+        feature('f-pro-2', 'Full risk analytics suite'),
+        feature('f-pro-3', 'Stress testing'),
+        feature('f-pro-4', 'Backtesting tools'),
+        feature('f-pro-5', 'Watchlist', 'Unlimited'),
+        feature('f-pro-6', 'Real-time alerts'),
       ],
     },
     {
       id: 'mock-institutional-plan',
       name: 'institutional',
-      display_name: 'Institutional Plan',
+      display_name: 'Institutional',
       description: 'Full platform access for professionals and institutions',
-      price_monthly: 299.00,
-      price_yearly: 2990.00,
-      stripe_price_id_monthly: 'institutional_monthly',
-      stripe_price_id_yearly: 'institutional_yearly',
-      is_active: true,
+      price_monthly: 299.0,
+      price_yearly: 2990.0,
+      is_popular: false,
       features: [
-        'Real-time + priority data',
-        'Full risk analytics suite',
-        'Unlimited paper trading',
-        'Institutional API keys',
-        'Webhooks (unlimited)',
-        'Advisor CRM platform',
-        'Unlimited algo strategies',
-        'Compliance & audit reports',
+        feature('f-in-1', 'Real-time + priority data'),
+        feature('f-in-2', 'Institutional API keys'),
+        feature('f-in-3', 'Webhooks', 'Unlimited'),
+        feature('f-in-4', 'Advisor CRM platform'),
+        feature('f-in-5', 'Compliance & audit reports'),
       ],
     },
   ];
 }
 
-/**
- * Generate mock user data.
- */
-export function generateMockUser(plan: 'free' | 'starter' | 'pro' = 'free') {
+/** The demo account's user record. */
+export function generateMockUser(plan: 'free' | 'starter' | 'pro' = 'pro') {
   return {
-    id: 'mock-user-id',
+    id: 'demo-user-001',
     email: 'demo@example.com',
     full_name: 'Demo User',
     email_verified: true,
@@ -340,44 +284,46 @@ export function generateMockUser(plan: 'free' | 'starter' | 'pro' = 'free') {
     paper_trading_approved: true,
     live_trading_approved: plan === 'pro',
     preferences: {},
-    created_at: new Date(Date.now() - 30 * 86400000).toISOString(), // 30 days ago
-    last_login_at: new Date().toISOString(),
+    created_at: iso(daysAgo(30)),
+    last_login_at: iso(hoursAgo(2)),
+    is_founder: false,
+    avatar_url: null,
   };
 }
 
-/**
- * Generate mock orders.
- */
+/** Recent brokerage orders (newest first). */
 export function generateMockOrders(count: number = 10) {
   const symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA'];
-  const sides = ['buy', 'sell'];
-  const statuses = ['filled', 'pending', 'canceled', 'partially_filled'];
+  const statuses = ['filled', 'filled', 'filled', 'pending', 'canceled', 'partially_filled'];
 
   return Array.from({ length: count }, (_, i) => {
-    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-    const side = sides[Math.floor(Math.random() * sides.length)];
-    const quantity = Math.floor(1 + Math.random() * 50);
-    const price = 50 + Math.random() * 450;
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const rng = seededRng(`legacy-order:${i}`);
+    const symbol = symbols[i % symbols.length];
+    const side = pick(rng, ['buy', 'sell'] as const);
+    const quantity = randInt(rng, 5, 50);
+    const status = statuses[i % statuses.length];
+    const price = round(lastPrice(symbol) * randBetween(rng, 0.97, 1.03));
+    const when = hoursAgo(i * 7 + 2);
 
     return {
       id: `mock-order-${i}`,
-      user_id: 'mock-user-id',
+      user_id: 'demo-user-001',
       mode: 'paper',
       symbol,
       side,
       quantity,
       order_type: 'market',
       status,
-      filled_quantity: status === 'filled' ? quantity : status === 'partially_filled' ? Math.floor(quantity / 2) : 0,
+      filled_quantity:
+        status === 'filled' ? quantity : status === 'partially_filled' ? Math.floor(quantity / 2) : 0,
       filled_avg_price: status === 'filled' || status === 'partially_filled' ? price : null,
       broker_order_id: `mock-broker-${i}`,
       broker_name: 'alpaca',
       time_in_force: 'gtc',
       extended_hours: false,
-      created_at: new Date(Date.now() - i * 3600000).toISOString(),
-      updated_at: new Date(Date.now() - i * 3600000).toISOString(),
-      filled_at: status === 'filled' ? new Date(Date.now() - i * 3600000).toISOString() : null,
+      created_at: iso(when),
+      updated_at: iso(when),
+      filled_at: status === 'filled' ? iso(when) : null,
     };
   });
 }
