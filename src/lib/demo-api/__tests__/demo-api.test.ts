@@ -62,3 +62,30 @@ describe('demo-api', () => {
     expect(res.user.email).toBe('demo@example.com');
   });
 });
+
+describe('portfolio analytics', () => {
+  const holdings = [
+    { symbol: 'AAPL', weight: 0.4, sector: 'Technology' },
+    { symbol: 'JPM', weight: 0.3, sector: 'Financials' },
+    { symbol: 'XOM', weight: 0.3, sector: 'Energy' },
+  ];
+
+  it('attribution effects reconcile with the active return', async () => {
+    const a: any = await call('post', '/portfolio/attribution', { holdings, benchmark_symbol: 'SPY', period_days: 30 });
+    const sum = a.allocation_effect + a.selection_effect + a.interaction_effect;
+    expect(Math.abs(sum - a.active_return)).toBeLessThan(0.0006);
+  });
+
+  it('stress test ranks scenarios worst-first and reports the worst one', async () => {
+    const s: any = await call('post', '/portfolio/stress-test', { holdings, portfolio_value: 100000 });
+    const impacts = s.scenarios.map((x: any) => x.portfolio_impact_pct);
+    expect([...impacts].sort((a: number, b: number) => a - b)).toEqual(impacts);
+    expect(s.max_drawdown_scenario).toBe(s.scenarios[0].scenario);
+  });
+
+  it('correlation matrix is symmetric with a unit diagonal', async () => {
+    const c: any = await call('post', '/portfolio/correlation', { symbols: ['AAPL', 'MSFT', 'XOM'] });
+    expect(c.correlation_matrix.AAPL.AAPL).toBe(1);
+    expect(c.correlation_matrix.AAPL.XOM).toBe(c.correlation_matrix.XOM.AAPL);
+  });
+});
