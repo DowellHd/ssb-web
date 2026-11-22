@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CreditCard, RefreshCw, AlertCircle, CheckCircle, Zap, Crown, Building, ExternalLink, Loader2, X, Check, FlaskConical, PartyPopper, Gift } from 'lucide-react';
 
@@ -815,9 +815,9 @@ export default function BillingPage() {
           </thead>
           <tbody>
             {COMPARISON_SECTIONS.map((section) => (
-              <>
+              <Fragment key={section.section}>
                 {/* Section Header Row */}
-                <tr key={section.section} className="bg-muted/50">
+                <tr className="bg-muted/50">
                   <td colSpan={5} className="font-semibold text-xs uppercase tracking-wide text-muted-foreground py-2">
                     {section.section}
                   </td>
@@ -856,7 +856,7 @@ export default function BillingPage() {
                     </td>
                   </tr>
                 ))}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
