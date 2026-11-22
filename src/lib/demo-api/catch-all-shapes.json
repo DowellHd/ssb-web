@@ -1,0 +1,2575 @@
+{
+  "DELETE /alternatives/positions/:p0": {
+    "success": true
+  },
+  "DELETE /assistant/thread/:p0": {
+    "success": false,
+    "message": ""
+  },
+  "DELETE /backtests/:p0": {
+    "success": true
+  },
+  "DELETE /brokers/:p0": {
+    "success": true
+  },
+  "DELETE /community/clubs/:p0/leave": {
+    "success": true
+  },
+  "DELETE /community/comments/:p0": {
+    "success": true
+  },
+  "DELETE /community/follows/:p0": {
+    "is_following": false
+  },
+  "DELETE /community/ideas/:p0": {
+    "success": true
+  },
+  "DELETE /community/posts/:p0": {
+    "success": true
+  },
+  "DELETE /community/reports/:p0": {
+    "success": true
+  },
+  "DELETE /community/watchlists/:p0": {
+    "success": true
+  },
+  "DELETE /community/watchlists/:p0/follow": {
+    "success": true
+  },
+  "DELETE /crypto/portfolio/:p0": {
+    "success": true
+  },
+  "DELETE /crypto/watchlist/:p0": {
+    "success": true
+  },
+  "DELETE /enterprise/advisor/clients/:p0": {
+    "success": true
+  },
+  "DELETE /enterprise/advisor/clients/:p0/notes/:p1": {
+    "success": true
+  },
+  "DELETE /enterprise/advisor/clients/:p0/portfolio-link": {
+    "success": true
+  },
+  "DELETE /enterprise/advisor/clients/:p0/tasks/:p1": {
+    "success": true
+  },
+  "DELETE /enterprise/alternatives/:p0": {
+    "success": true
+  },
+  "DELETE /enterprise/api-keys/:p0": {
+    "success": true
+  },
+  "DELETE /enterprise/strategies/:p0": {
+    "success": true
+  },
+  "DELETE /enterprise/webhooks/:p0": {
+    "success": true
+  },
+  "DELETE /fixed-income/positions/:p0": {
+    "success": true
+  },
+  "DELETE /global-markets/watchlist/:p0": {
+    "success": true
+  },
+  "DELETE /investment-compliance/journal/:p0": {
+    "success": true
+  },
+  "DELETE /paper/orders/:p0": {
+    "success": false,
+    "message": ""
+  },
+  "DELETE /portfolio/benchmarks/:p0": {
+    "success": true
+  },
+  "DELETE /portfolio/manual/:p0": {
+    "success": true
+  },
+  "DELETE /privacy/account": {
+    "message": ""
+  },
+  "DELETE /strategy/history/:p0": {
+    "success": true
+  },
+  "DELETE /trade-ideas/:p0": {
+    "success": true
+  },
+  "GET /admin/link-checks": {
+    "items": [],
+    "total": 0,
+    "broken_count": 0,
+    "active_count": 0,
+    "unchecked_count": 0
+  },
+  "GET /admin/user-analytics": {
+    "total_users": 0,
+    "paid_users": 0,
+    "unpaid_users": 0,
+    "users_without_subscription": 0,
+    "new_users_last_30_days": 0,
+    "new_users_last_7_days": 0,
+    "user_status": {
+      "total_ever_registered": 0,
+      "total_current": 0,
+      "total_active": 0,
+      "total_inactive": 0,
+      "total_deleted": 0,
+      "total_email_verified": 0,
+      "total_mfa_enabled": 0
+    },
+    "plan_breakdown": [],
+    "subscription_lifecycle": [],
+    "monthly_registrations": [],
+    "revenue_estimate": {
+      "mrr_usd": 0,
+      "arr_usd": 0,
+      "paying_plan_breakdown": []
+    },
+    "activity": {
+      "dau": 0,
+      "mau": 0,
+      "dau_mau_ratio": 0,
+      "users_never_logged_in": 0
+    },
+    "churn": {
+      "subscriptions_canceled_30d": 0,
+      "subscriptions_canceled_90d": 0,
+      "users_deleted_30d": 0,
+      "users_deleted_90d": 0
+    },
+    "cached": false,
+    "as_of": ""
+  },
+  "GET /alternatives/categories": {
+    "categories": []
+  },
+  "GET /alternatives/commodities": {
+    "commodities": []
+  },
+  "GET /alternatives/commodities/etfs": {
+    "etfs": [],
+    "count": 0
+  },
+  "GET /alternatives/commodities/price/:p0": {
+    "symbol": "",
+    "name": "",
+    "unit": "",
+    "current_price": null,
+    "as_of": null,
+    "mom_change_pct": null,
+    "history": [],
+    "disclaimer": ""
+  },
+  "GET /alternatives/etfs": {
+    "etfs": [],
+    "count": 0
+  },
+  "GET /alternatives/positions": {
+    "positions": [],
+    "count": 0,
+    "total_value_usd": 0
+  },
+  "GET /alternatives/reits": {
+    "reits": [],
+    "count": 0,
+    "sectors": []
+  },
+  "GET /analytics/earnings-calendar": {
+    "events": [],
+    "total_count": 0,
+    "horizon": ""
+  },
+  "GET /assistant/account-summary": {
+    "plan_name": "",
+    "plan_display_name": "",
+    "billing_portal_url": null,
+    "last_invoice_date": null,
+    "last_invoice_amount": null,
+    "subscription_status": null,
+    "current_period_end": null
+  },
+  "GET /auth/me": {
+    "success": true
+  },
+  "GET /auth/mfa/status": {
+    "mfa_enabled": false,
+    "backup_codes_remaining": 0
+  },
+  "GET /auth/sessions": {
+    "sessions": []
+  },
+  "GET /backtests": {
+    "backtests": [],
+    "total": 0
+  },
+  "GET /backtests/:p0": {
+    "id": "",
+    "name": "",
+    "status": "pending",
+    "symbols": [],
+    "start_date": "",
+    "end_date": "",
+    "initial_capital": 0,
+    "strategy_type": "",
+    "strategy_params": {},
+    "fill_price": "",
+    "slippage_bps": 0,
+    "commission_bps": 0,
+    "created_at": ""
+  },
+  "GET /backtests/:p0/benchmark": {
+    "symbol": "",
+    "points": []
+  },
+  "GET /backtests/:p0/equity-curve": {
+    "backtest_id": "",
+    "curve": [],
+    "start_date": "",
+    "end_date": "",
+    "data_points": 0
+  },
+  "GET /backtests/:p0/trades": {
+    "trades": [],
+    "total": 0
+  },
+  "GET /backtests/entitlements": {
+    "monthly_limit": 0,
+    "monthly_used": 0,
+    "monthly_remaining": 0,
+    "max_date_range_days": 0,
+    "allowed_asset_classes": [],
+    "can_use_limit_orders": false,
+    "can_export": false
+  },
+  "GET /backtests/shared/:p0": {
+    "id": "",
+    "name": "",
+    "strategy_type": "",
+    "status": "",
+    "start_date": "",
+    "end_date": "",
+    "metrics": {
+      "total_return_pct": null,
+      "max_drawdown": null,
+      "sharpe_ratio": null,
+      "sortino_ratio": null,
+      "volatility": null,
+      "total_trades": null,
+      "winning_trades": null,
+      "losing_trades": null,
+      "final_equity": null,
+      "initial_capital": 0
+    },
+    "equity_curve": []
+  },
+  "GET /billing/plans": {
+    "plans": []
+  },
+  "GET /billing/subscription": {},
+  "GET /brokers": [],
+  "GET /brokers/:p0/balances": {
+    "total_balance": 0,
+    "accounts": [],
+    "disclaimer": ""
+  },
+  "GET /brokers/:p0/holdings": {
+    "holdings": [],
+    "accounts": [],
+    "disclaimer": ""
+  },
+  "GET /brokers/portfolio-summary": {
+    "total_value": 0,
+    "total_cost_basis": 0,
+    "unrealized_pl": 0,
+    "unrealized_pl_pct": 0,
+    "period": "all",
+    "sector_allocation": [],
+    "connections": [],
+    "holding_count": 0,
+    "disclaimer": ""
+  },
+  "GET /brokers/supported": {
+    "brokers": [],
+    "disclaimer": ""
+  },
+  "GET /brokers/wash-sale-scan": {
+    "flagged_holdings": [],
+    "total_flagged": 0,
+    "total_unrealized_loss": 0,
+    "disclaimer": ""
+  },
+  "GET /community/clubs": {
+    "clubs": [],
+    "total": 0
+  },
+  "GET /community/clubs/:p0": {
+    "id": "",
+    "creator_id": "",
+    "name": "",
+    "description": null,
+    "is_private": false,
+    "member_count": 0,
+    "tags": null,
+    "created_at": "",
+    "updated_at": "",
+    "viewer_role": null
+  },
+  "GET /community/clubs/:p0/members": [],
+  "GET /community/comments": [],
+  "GET /community/entitlements": {
+    "can_access_community": false,
+    "can_post": false,
+    "can_create_trade_ideas": false,
+    "can_create_watchlists": false,
+    "can_join_clubs": false,
+    "can_rate_stocks": false,
+    "tier": ""
+  },
+  "GET /community/follows/:p0/status": {
+    "is_following": false
+  },
+  "GET /community/ideas": {
+    "ideas": [],
+    "total": 0,
+    "page": 0,
+    "page_size": 0
+  },
+  "GET /community/ideas/:p0": {
+    "id": "",
+    "user_id": "",
+    "symbol": "",
+    "direction": "long",
+    "thesis": "",
+    "target_price": null,
+    "stop_loss": null,
+    "entry_price": null,
+    "time_horizon": "",
+    "status": "",
+    "tags": null,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "",
+    "updated_at": "",
+    "closed_at": null,
+    "author_display_name": null,
+    "viewer_has_liked": false
+  },
+  "GET /community/posts": {
+    "posts": [],
+    "total": 0,
+    "page": 0,
+    "page_size": 0
+  },
+  "GET /community/posts/:p0": {
+    "id": "",
+    "user_id": "",
+    "post_type": "",
+    "title": null,
+    "body": "",
+    "ticker_symbols": null,
+    "tags": null,
+    "likes_count": 0,
+    "comments_count": 0,
+    "is_pinned": false,
+    "created_at": "",
+    "updated_at": "",
+    "author_display_name": null,
+    "viewer_has_liked": false
+  },
+  "GET /community/profiles/:p0": {
+    "id": "",
+    "user_id": "",
+    "display_name": null,
+    "bio": null,
+    "avatar_url": null,
+    "is_public": false,
+    "followers_count": 0,
+    "following_count": 0,
+    "trade_ideas_count": 0,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "GET /community/profiles/me": {
+    "id": "",
+    "user_id": "",
+    "display_name": null,
+    "bio": null,
+    "avatar_url": null,
+    "is_public": false,
+    "followers_count": 0,
+    "following_count": 0,
+    "trade_ideas_count": 0,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "GET /community/ratings/:p0": {
+    "symbol": "",
+    "average_rating": 0,
+    "total_ratings": 0,
+    "distribution": {},
+    "viewer_rating": null
+  },
+  "GET /community/reports": {
+    "reports": [],
+    "total": 0
+  },
+  "GET /community/watchlists": {
+    "watchlists": [],
+    "total": 0
+  },
+  "GET /community/watchlists/:p0": {
+    "id": "",
+    "user_id": "",
+    "name": "",
+    "description": null,
+    "symbols": [],
+    "is_public": false,
+    "followers_count": 0,
+    "created_at": "",
+    "updated_at": "",
+    "owner_display_name": null,
+    "viewer_follows": false
+  },
+  "GET /crypto/entitlements": {
+    "fullListEnabled": false,
+    "watchlistEnabled": false,
+    "portfolioEnabled": false,
+    "maxWatchlistItems": 0,
+    "accessTier": "none",
+    "planName": ""
+  },
+  "GET /crypto/gainers-losers": {
+    "gainers": [],
+    "losers": []
+  },
+  "GET /crypto/market-overview": {
+    "total_market_cap_usd": null,
+    "total_volume_usd": null,
+    "market_cap_change_pct_24h": null,
+    "btc_dominance": null,
+    "eth_dominance": null,
+    "active_cryptocurrencies": null,
+    "markets": null
+  },
+  "GET /crypto/portfolio": {
+    "holdings": [],
+    "total_holdings": 0,
+    "total_cost_basis_usd": 0,
+    "total_current_value_usd": 0,
+    "total_unrealized_pl_usd": 0,
+    "total_unrealized_pl_pct": 0
+  },
+  "GET /crypto/prices": {
+    "coins": [],
+    "total": 0,
+    "page": 0,
+    "per_page": 0
+  },
+  "GET /crypto/search": {
+    "results": [],
+    "query": ""
+  },
+  "GET /crypto/watchlist": {
+    "items": [],
+    "total": 0
+  },
+  "GET /data/bars/:p0": {
+    "symbol": "",
+    "asset_class": "",
+    "timeframe": "",
+    "bars": [],
+    "source": "",
+    "quality_score": 0
+  },
+  "GET /enterprise/advisor/clients": [],
+  "GET /enterprise/advisor/clients/:p0": {
+    "id": "",
+    "name": "",
+    "email": null,
+    "phone": null,
+    "external_ref": null,
+    "risk_tolerance": null,
+    "investment_horizon_years": null,
+    "aum_usd": null,
+    "tags": [],
+    "status": "active",
+    "notes": null,
+    "date_of_birth": null,
+    "occupation": null,
+    "employer": null,
+    "annual_income_usd": null,
+    "net_worth_usd": null,
+    "kyc_status": "pending",
+    "onboarding_completed_at": null,
+    "next_review_date": null,
+    "fee_type": null,
+    "fee_value": null,
+    "segment": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "GET /enterprise/advisor/clients/:p0/notes": [],
+  "GET /enterprise/advisor/clients/:p0/portfolio-link": {
+    "id": "",
+    "advisor_client_id": "",
+    "model_portfolio_id": "",
+    "allocation_override_pct": null,
+    "notes": null,
+    "linked_at": ""
+  },
+  "GET /enterprise/advisor/clients/:p0/tasks": [],
+  "GET /enterprise/advisor/dashboard": {
+    "total_clients": 0,
+    "by_status": {},
+    "by_segment": {},
+    "by_kyc_status": {},
+    "total_aum_usd": "",
+    "avg_aum_usd": "",
+    "open_tasks": 0,
+    "overdue_tasks": 0,
+    "clients_due_review": 0
+  },
+  "GET /enterprise/advisor/portfolios": [],
+  "GET /enterprise/alternatives": [],
+  "GET /enterprise/alternatives/:p0": {
+    "id": "",
+    "asset_class": "reit",
+    "name": "",
+    "ticker": null,
+    "description": null,
+    "quantity": "",
+    "cost_basis_usd": "",
+    "current_value_usd": null,
+    "currency": "",
+    "acquisition_date": null,
+    "maturity_date": null,
+    "annual_yield_pct": null,
+    "extra": {},
+    "last_updated_at": "",
+    "created_at": ""
+  },
+  "GET /enterprise/alternatives/summary": {
+    "total_holdings": 0,
+    "total_cost_basis_usd": "",
+    "total_current_value_usd": "",
+    "total_unrealized_gain_usd": "",
+    "total_unrealized_gain_pct": 0,
+    "by_asset_class": {},
+    "holdings": []
+  },
+  "GET /enterprise/api-keys": [],
+  "GET /enterprise/api-keys/:p0/usage": {
+    "key_id": "",
+    "key_prefix": "",
+    "requests_last_24h": 0,
+    "requests_last_7d": 0,
+    "last_used_at": null,
+    "top_endpoints_7d": []
+  },
+  "GET /enterprise/compliance/audit-report": {
+    "report_type": "",
+    "generated_at": "",
+    "user_id": "",
+    "period_days": 0,
+    "total_events": 0,
+    "events": []
+  },
+  "GET /enterprise/strategies": [],
+  "GET /enterprise/strategies/:p0": {
+    "id": "",
+    "name": "",
+    "description": null,
+    "template": "",
+    "parameters": {},
+    "symbols": [],
+    "asset_class": "",
+    "max_position_pct": "",
+    "stop_loss_pct": null,
+    "take_profit_pct": null,
+    "status": "active",
+    "last_backtest_id": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "GET /enterprise/strategies/templates": {
+    "templates": []
+  },
+  "GET /enterprise/webhooks": [],
+  "GET /enterprise/webhooks/:p0/deliveries": [],
+  "GET /feedback/nps/admin/responses": {
+    "success": true
+  },
+  "GET /feedback/nps/admin/summary": {
+    "success": true
+  },
+  "GET /feedback/nps/eligibility": {
+    "success": true
+  },
+  "GET /fixed-income/credit-spreads": {
+    "hy_spread": 0,
+    "ig_spread": 0,
+    "t10y2y": 0,
+    "t10yie": 0,
+    "hy_ig_differential": 0,
+    "data_source": "",
+    "disclaimer": ""
+  },
+  "GET /fixed-income/etfs": {
+    "etfs": [],
+    "count": 0,
+    "categories": []
+  },
+  "GET /fixed-income/positions": {
+    "positions": [],
+    "count": 0
+  },
+  "GET /fixed-income/yield-curve": {
+    "maturities": [],
+    "curve_shape": "flat",
+    "data_source": "",
+    "disclaimer": ""
+  },
+  "GET /global-markets/adrs": {
+    "adrs": [],
+    "count": 0
+  },
+  "GET /global-markets/country-risk": {},
+  "GET /global-markets/exchanges": {
+    "exchanges": [],
+    "count": 0
+  },
+  "GET /global-markets/fx-rates": {
+    "base": "",
+    "rates": {},
+    "disclaimer": ""
+  },
+  "GET /global-markets/quote/:p0": {
+    "symbol": "",
+    "open": null,
+    "high": null,
+    "low": null,
+    "price": null,
+    "volume": null,
+    "previous_close": null,
+    "change": null,
+    "change_pct": "",
+    "latest_trading_day": null
+  },
+  "GET /global-markets/search": {
+    "results": []
+  },
+  "GET /global-markets/watchlist": {
+    "items": [],
+    "count": 0
+  },
+  "GET /integrations/ibkr/audit": [],
+  "GET /integrations/ibkr/founder/market-pulse": {
+    "regime_label": "",
+    "regime_confidence": 0,
+    "regime_description": "",
+    "regime_strategy_hint": "",
+    "vix_value": null,
+    "vix_level": "low",
+    "vix_interpretation": "",
+    "top_signals": [],
+    "total_active_signals": 0,
+    "signal_bias": "",
+    "last_updated": "",
+    "from_cache": false
+  },
+  "GET /integrations/ibkr/founder/portfolio-snapshot": {
+    "total_value": 0,
+    "cash": 0,
+    "invested_value": 0,
+    "daily_pnl": 0,
+    "daily_pnl_pct": 0,
+    "total_pnl": 0,
+    "total_pnl_pct": 0,
+    "var_95": null,
+    "sharpe_ratio": null,
+    "beta": null,
+    "holdings": [],
+    "concentration_warning": false,
+    "top_holding_ticker": null,
+    "top_holding_pct": null,
+    "risk_alerts": [],
+    "regime_context": "",
+    "last_updated": "",
+    "from_cache": false
+  },
+  "GET /integrations/ibkr/intents": [],
+  "GET /integrations/ibkr/policy": {
+    "ibkr_enabled": false,
+    "kill_switch_active": false,
+    "execution_mode": "live",
+    "live_trading_enabled": false,
+    "paper_only": false,
+    "require_manual_approval": false,
+    "allowed_strategies": [],
+    "allowed_symbols": [],
+    "max_contracts_per_trade": 0,
+    "max_trades_per_day": 0,
+    "max_risk_per_day_usd": "",
+    "paper_trade_count": 0,
+    "shadow_live_complete": false,
+    "trading_hours_start": "",
+    "trading_hours_end": ""
+  },
+  "GET /intelligence/entitlements": {
+    "user_id": "",
+    "plan_name": "",
+    "plan_display_name": "",
+    "regime_insights_delay_days": 0,
+    "risk_analytics_level": "",
+    "asset_classes": [],
+    "simulation_limit": 0,
+    "stress_test_enabled": false,
+    "stress_test_tier": "",
+    "api_access_level": "",
+    "daily_api_requests_limit": 0,
+    "daily_api_requests_used": 0,
+    "can_upgrade": false,
+    "upgrade_benefits": [],
+    "is_founder": false
+  },
+  "GET /intelligence/v2/regime": {
+    "success": true
+  },
+  "GET /intelligence/v2/regime/model-info": {
+    "model_type": "",
+    "version": "",
+    "description": "",
+    "last_updated": "",
+    "limitations": []
+  },
+  "GET /investment-compliance/journal": [],
+  "GET /learn/entitlements": {
+    "can_access_learn": false,
+    "can_access_premium_modules": false,
+    "can_track_progress": false,
+    "available_categories": [],
+    "max_difficulty": "",
+    "tier": ""
+  },
+  "GET /learn/glossary": {
+    "terms": [],
+    "total_count": 0,
+    "categories": [],
+    "letters": []
+  },
+  "GET /learn/glossary/:p0": {
+    "id": "",
+    "term": "",
+    "definition": "",
+    "category": "fundamentals",
+    "difficulty": "beginner",
+    "related_terms": [],
+    "see_also": []
+  },
+  "GET /learn/glossary/search": {
+    "terms": [],
+    "query": "",
+    "total_matches": 0
+  },
+  "GET /learn/meta": {
+    "total_modules": 0,
+    "total_paths": 0,
+    "total_glossary_terms": 0,
+    "catalog_last_updated": ""
+  },
+  "GET /learn/meta/categories": [],
+  "GET /learn/modules": {
+    "modules": [],
+    "total_count": 0,
+    "categories": []
+  },
+  "GET /learn/modules/:p0": {
+    "module": {
+      "id": "",
+      "title": "",
+      "description": "",
+      "category": "fundamentals",
+      "difficulty": "beginner",
+      "format": "article",
+      "duration_minutes": 0,
+      "content": "",
+      "key_takeaways": [],
+      "prerequisites": [],
+      "is_premium": false,
+      "order": 0,
+      "created_at": "",
+      "updated_at": "",
+      "topics": [],
+      "related_features": [],
+      "videos": [],
+      "external_resources": []
+    }
+  },
+  "GET /learn/paths": {
+    "paths": [],
+    "total_count": 0
+  },
+  "GET /learn/paths/:p0": {
+    "path": {
+      "id": "",
+      "title": "",
+      "description": "",
+      "difficulty": "beginner",
+      "modules": [],
+      "estimated_hours": 0,
+      "is_premium": false
+    },
+    "modules": []
+  },
+  "GET /market-data/option/chain/:p0": [],
+  "GET /market-data/option/expirations/:p0": [],
+  "GET /market-data/option/snapshot": {
+    "success": true
+  },
+  "GET /meta/audit-logs": {
+    "logs": [],
+    "total": 0,
+    "page": 0,
+    "page_size": 0,
+    "has_more": false
+  },
+  "GET /meta/capabilities": {
+    "email_enabled": false,
+    "billing_enabled": false,
+    "mfa_enabled": false,
+    "live_trading_enabled": false,
+    "backtests_enabled": false
+  },
+  "GET /meta/dashboard": {
+    "user_id": "",
+    "email": "",
+    "email_verified": false,
+    "mfa_enabled": false,
+    "plan_name": "",
+    "plan_display_name": "",
+    "backtests_count": 0,
+    "recent_login_count": 0,
+    "member_since": ""
+  },
+  "GET /news": {
+    "articles": [],
+    "total_count": 0,
+    "page": 0,
+    "page_size": 0,
+    "has_more": false,
+    "filters_applied": {}
+  },
+  "GET /news/:p0": {
+    "id": "",
+    "headline": "",
+    "summary": "",
+    "source": "seeded",
+    "category": "forex",
+    "sentiment": "neutral",
+    "sentiment_score": 0,
+    "symbols": [],
+    "published_at": "",
+    "priority": "low",
+    "is_premium": false
+  },
+  "GET /news/entitlements": {
+    "can_access_news": false,
+    "can_access_premium_news": false,
+    "news_delay_minutes": 0,
+    "daily_news_limit": 0,
+    "daily_news_used": 0,
+    "can_access_market_summary": false,
+    "can_access_sentiment": false,
+    "categories_available": [],
+    "tier": ""
+  },
+  "GET /news/meta/categories": [],
+  "GET /news/summary/daily": {
+    "summary": {
+      "summary_date": "",
+      "market_status": "",
+      "headline": "",
+      "overview": "",
+      "key_events": [],
+      "top_gainers": [],
+      "top_losers": [],
+      "sector_performance": [],
+      "sentiment_overview": "neutral",
+      "sentiment_score": 0,
+      "analysis_note": "",
+      "tier": ""
+    },
+    "is_delayed": false,
+    "delay_minutes": 0
+  },
+  "GET /nps/status": {
+    "has_responded": false,
+    "days_since_signup": 0,
+    "should_show": false
+  },
+  "GET /options/entitlements": {
+    "chainViewerEnabled": false,
+    "paperTradingEnabled": false,
+    "analyticsEnabled": false,
+    "maxContracts": 0,
+    "accessTier": "none"
+  },
+  "GET /options/orders": {
+    "orders": [],
+    "total": 0
+  },
+  "GET /options/positions": {
+    "positions": [],
+    "total": 0,
+    "total_positions_value": 0,
+    "total_unrealized_pl": 0
+  },
+  "GET /order-prep/broker-links/:p0": {
+    "symbol": "",
+    "broker_links": {},
+    "disclaimer": ""
+  },
+  "GET /order-prep/tickets": [],
+  "GET /paper/account": {
+    "id": "",
+    "name": "",
+    "starting_balance": 0,
+    "current_cash": 0,
+    "positions_value": 0,
+    "equity": 0,
+    "total_value": 0,
+    "total_return": 0,
+    "total_return_pct": 0,
+    "positions_count": 0,
+    "is_active": false,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "GET /paper/leaderboard": {
+    "leaderboard": [],
+    "total": 0,
+    "disclaimer": ""
+  },
+  "GET /paper/limits": {
+    "plan_name": "",
+    "max_positions": 0,
+    "current_positions": 0,
+    "positions_remaining": 0,
+    "orders_per_day": 0,
+    "orders_today": 0,
+    "orders_remaining_today": 0,
+    "history_days": 0,
+    "is_unlimited": false,
+    "max_portfolios": 0,
+    "max_chart_overlays": 0,
+    "allowed_overlays": [],
+    "reset_cooldown_hours": 0,
+    "can_reset": false,
+    "hours_until_reset": null
+  },
+  "GET /paper/orders": {
+    "orders": [],
+    "total": 0,
+    "limit": 0,
+    "offset": 0
+  },
+  "GET /paper/performance": {
+    "account_id": "",
+    "period": "",
+    "start_date": "",
+    "end_date": "",
+    "start_value": 0,
+    "end_value": 0,
+    "total_return": 0,
+    "total_return_pct": 0,
+    "max_drawdown": null,
+    "max_drawdown_pct": null,
+    "sharpe_ratio": null,
+    "win_rate": null,
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "daily_snapshots": []
+  },
+  "GET /paper/positions": {
+    "positions": [],
+    "total": 0,
+    "total_value": 0,
+    "total_cost": 0,
+    "total_unrealized_pl": 0,
+    "total_unrealized_pl_pct": 0
+  },
+  "GET /portfolio/benchmarks": [],
+  "GET /portfolio/benchmarks/:p0/comparison": {
+    "benchmark_name": "",
+    "benchmark_type": "",
+    "total_portfolio_value": 0,
+    "comparisons": [],
+    "disclaimer": ""
+  },
+  "GET /portfolio/manual": [],
+  "GET /portfolio/real-vs-paper": {
+    "real_portfolio": {
+      "total_value": 0,
+      "total_cost_basis": 0,
+      "unrealized_pl": 0,
+      "unrealized_pl_pct": 0,
+      "holding_count": 0
+    },
+    "paper_portfolio": {
+      "total_equity": 0,
+      "positions_value": 0,
+      "cash_balance": 0,
+      "total_cost_basis": 0,
+      "unrealized_pl": 0,
+      "unrealized_pl_pct": 0,
+      "position_count": 0,
+      "account_count": 0
+    },
+    "shared_symbols": [],
+    "disclaimer": ""
+  },
+  "GET /privacy/export": {
+    "export_metadata": {
+      "exported_at": "",
+      "user_id": "",
+      "format_version": ""
+    },
+    "profile": {
+      "email": "",
+      "full_name": null,
+      "phone_number": null,
+      "email_verified": false,
+      "role": "",
+      "is_active": false,
+      "is_locked": false,
+      "created_at": "",
+      "updated_at": "",
+      "last_login_at": null
+    },
+    "security": {
+      "mfa_enabled": false,
+      "unused_backup_codes_count": 0,
+      "failed_login_attempts": 0,
+      "locked_until": null
+    },
+    "permissions": {
+      "paper_trading_approved": false,
+      "live_trading_approved": false
+    },
+    "preferences": {
+      "analytics_consent": false,
+      "email_notifications": false,
+      "trade_confirmations": false,
+      "marketing_emails": false,
+      "theme": "light"
+    },
+    "sessions": [],
+    "audit_logs": []
+  },
+  "GET /privacy/preferences": {
+    "analytics_consent": false,
+    "email_notifications": false,
+    "trade_confirmations": false,
+    "marketing_emails": false,
+    "theme": "light"
+  },
+  "GET /referrals/my-code": {
+    "referral_code": null,
+    "total_referrals": 0,
+    "converted": 0,
+    "pending": 0
+  },
+  "GET /screening/fields": {},
+  "GET /settings/notifications": {
+    "email_security_alerts": false,
+    "email_billing": false,
+    "email_portfolio_summary": false,
+    "email_signal_alerts": false,
+    "email_price_alerts": false,
+    "email_news_digest": false,
+    "email_paper_trade_fills": false,
+    "email_product_updates": false,
+    "push_signal_alerts": false,
+    "push_portfolio_alerts": false,
+    "push_paper_trade_fills": false,
+    "push_earnings_reminders": false,
+    "push_community_activity": false,
+    "thresholds": {
+      "portfolio_drawdown_pct": 0,
+      "position_loss_pct": 0,
+      "paper_drawdown_pct": 0
+    },
+    "updated_at": ""
+  },
+  "GET /signals": {
+    "items": [],
+    "total": 0,
+    "page": 0,
+    "per_page": 0
+  },
+  "GET /signals/:p0": {
+    "signal_strength": 0,
+    "supporting_data": {},
+    "entry_zone_low": null,
+    "entry_zone_high": null,
+    "stop_loss": null,
+    "take_profit": null,
+    "risk_reward_ratio": null,
+    "historical_accuracy": null,
+    "id": "",
+    "ticker": "",
+    "signal_type": "",
+    "confidence_score": 0,
+    "trend_bias": "",
+    "time_horizon": "",
+    "asset_class": "",
+    "plain_english_summary": "",
+    "generated_at": "",
+    "expires_at": ""
+  },
+  "GET /signals/:p0/intraday-refinement": {
+    "ticker": "",
+    "refined_entry_low": 0,
+    "refined_entry_high": 0,
+    "nearest_support": null,
+    "nearest_resistance": null,
+    "intraday_momentum": "trending_up",
+    "vwap": null,
+    "vwap_position": null,
+    "current_price": 0,
+    "bars_used": 0,
+    "timeframe": "",
+    "note": ""
+  },
+  "GET /signals/performance": {
+    "total_logged": 0,
+    "open_trades": 0,
+    "closed_trades": 0,
+    "win_rate": null,
+    "avg_return_pct": null,
+    "avg_risk_reward": null,
+    "best_trade_pct": null,
+    "worst_trade_pct": null
+  },
+  "GET /strategy/agreement/status": {
+    "has_agreed": false,
+    "agreed_at": null,
+    "agreement_version": null
+  },
+  "GET /strategy/history": {
+    "items": [],
+    "total": 0,
+    "page": 0,
+    "per_page": 0
+  },
+  "GET /strategy/history/:p0": {
+    "id": "",
+    "requested_at": "",
+    "risk_level": "low",
+    "confidence_score": 0,
+    "diversification_score": 0,
+    "key_themes": [],
+    "analysis_text": "",
+    "model_used": "",
+    "is_cached": false,
+    "portfolio_snapshot": null
+  },
+  "GET /trade-ideas": [],
+  "GET /user/disclaimer-status": {
+    "has_accepted": false,
+    "accepted_at": null,
+    "disclaimer_version": null
+  },
+  "GET /user/trading-preferences": {
+    "user_id": "",
+    "preferred_broker": null,
+    "risk_tolerance": "",
+    "max_position_pct": 0,
+    "min_confidence_threshold": 0,
+    "alert_email": false,
+    "alert_push": false,
+    "updated_at": null
+  },
+  "PATCH /auth/me/avatar": {
+    "id": "",
+    "email": "",
+    "email_verified": false,
+    "mfa_enabled": false,
+    "role": "",
+    "paper_trading_approved": false,
+    "live_trading_approved": false,
+    "preferences": {},
+    "created_at": ""
+  },
+  "PATCH /enterprise/advisor/clients/:p0": {
+    "id": "",
+    "name": "",
+    "email": null,
+    "phone": null,
+    "external_ref": null,
+    "risk_tolerance": null,
+    "investment_horizon_years": null,
+    "aum_usd": null,
+    "tags": [],
+    "status": "active",
+    "notes": null,
+    "date_of_birth": null,
+    "occupation": null,
+    "employer": null,
+    "annual_income_usd": null,
+    "net_worth_usd": null,
+    "kyc_status": "pending",
+    "onboarding_completed_at": null,
+    "next_review_date": null,
+    "fee_type": null,
+    "fee_value": null,
+    "segment": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "PATCH /enterprise/advisor/clients/:p0/tasks/:p1": {
+    "id": "",
+    "advisor_client_id": "",
+    "title": "",
+    "description": null,
+    "priority": "low",
+    "status": "pending",
+    "due_date": null,
+    "completed_at": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "PATCH /enterprise/alternatives/:p0": {
+    "id": "",
+    "asset_class": "reit",
+    "name": "",
+    "ticker": null,
+    "description": null,
+    "quantity": "",
+    "cost_basis_usd": "",
+    "current_value_usd": null,
+    "currency": "",
+    "acquisition_date": null,
+    "maturity_date": null,
+    "annual_yield_pct": null,
+    "extra": {},
+    "last_updated_at": "",
+    "created_at": ""
+  },
+  "PATCH /enterprise/strategies/:p0": {
+    "id": "",
+    "name": "",
+    "description": null,
+    "template": "",
+    "parameters": {},
+    "symbols": [],
+    "asset_class": "",
+    "max_position_pct": "",
+    "stop_loss_pct": null,
+    "take_profit_pct": null,
+    "status": "active",
+    "last_backtest_id": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "PATCH /enterprise/webhooks/:p0": {
+    "id": "",
+    "url": "",
+    "description": null,
+    "events": [],
+    "status": "active",
+    "consecutive_failures": 0,
+    "last_success_at": null,
+    "last_failure_at": null,
+    "created_at": ""
+  },
+  "PATCH /settings/profile": {
+    "success": true
+  },
+  "POST /admin/link-checks/:p0/recheck": {
+    "id": "",
+    "url": "",
+    "link_status": "active",
+    "http_status_code": null,
+    "error_message": null,
+    "checked_at": ""
+  },
+  "POST /admin/link-checks/run": {
+    "checked": 0,
+    "active": 0,
+    "broken": 0,
+    "redirected": 0,
+    "timeout": 0,
+    "errors": 0
+  },
+  "POST /alternatives/allocation": {
+    "target_alt_allocation_pct": 0,
+    "alt_dollar_value": 0,
+    "allocations": [],
+    "disclaimer": ""
+  },
+  "POST /alternatives/positions": {
+    "id": "",
+    "category": "",
+    "name": "",
+    "ticker": null,
+    "value_usd": null,
+    "cost_basis_usd": null,
+    "allocation_pct": null,
+    "metadata": null,
+    "notes": null,
+    "created_at": null,
+    "added": false
+  },
+  "POST /analytics/benchmark": {
+    "benchmark_symbol": "",
+    "analysis_date": "",
+    "period_days": 0,
+    "metrics": {
+      "portfolio_annual_return": 0,
+      "benchmark_annual_return": 0,
+      "active_return": 0,
+      "alpha": 0,
+      "beta": 0,
+      "r_squared": 0,
+      "tracking_error": 0,
+      "max_drawdown": 0
+    },
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    },
+    "tier": ""
+  },
+  "POST /analytics/dcf": {
+    "valuation_date": "",
+    "stage1_flows": [],
+    "stage2_flows": [],
+    "terminal_value": 0,
+    "terminal_value_pv": 0,
+    "enterprise_value": 0,
+    "equity_value": 0,
+    "intrinsic_value_per_share": 0,
+    "current_price": 0,
+    "margin_of_safety": 0,
+    "upside_downside_pct": 0,
+    "sensitivity": {}
+  },
+  "POST /analytics/factors": {
+    "analysis_date": "",
+    "portfolio_factor_exposures": [],
+    "asset_profiles": [],
+    "portfolio_r_squared": 0,
+    "dominant_factors": [],
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    },
+    "tier": ""
+  },
+  "POST /analytics/fundamentals": {
+    "data": {},
+    "fetched_count": 0,
+    "failed_symbols": []
+  },
+  "POST /analytics/optimize": {
+    "analysis_date": "",
+    "symbols": [],
+    "efficient_frontier": [],
+    "max_sharpe_portfolio": {
+      "weights": {},
+      "expected_return": 0,
+      "volatility": 0,
+      "sharpe_ratio": 0
+    },
+    "min_variance_portfolio": {
+      "weights": {},
+      "expected_return": 0,
+      "volatility": 0,
+      "sharpe_ratio": 0
+    },
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    },
+    "tier": ""
+  },
+  "POST /analytics/sector-rotation": {
+    "analysis_date": "",
+    "sectors_analyzed": 0,
+    "leading_sectors": [],
+    "lagging_sectors": [],
+    "improving_sectors": [],
+    "sector_rankings": [],
+    "market_cycle_phase": "",
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    },
+    "tier": ""
+  },
+  "POST /analytics/simulate": {
+    "analysis_date": "",
+    "horizon_days": 0,
+    "n_simulations": 0,
+    "initial_value": 0,
+    "checkpoints": [],
+    "paths": [],
+    "prob_of_loss": 0,
+    "expected_final_value": 0,
+    "expected_return": 0,
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    },
+    "tier": ""
+  },
+  "POST /analytics/technical": {
+    "symbol": "",
+    "analysis_date": "",
+    "indicators": [],
+    "trend_bias": "",
+    "signal_strength": 0,
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    },
+    "tier": ""
+  },
+  "POST /assistant/chat": {
+    "reply": "",
+    "thread_id": "",
+    "citations": [],
+    "safety_flags": [],
+    "disclaimer": ""
+  },
+  "POST /auth/change-password": {
+    "message": "",
+    "success": false
+  },
+  "POST /auth/forgot-password": {
+    "message": "",
+    "success": false
+  },
+  "POST /auth/login": {
+    "access_token": "",
+    "token_type": "",
+    "expires_in": 0,
+    "user": {
+      "id": "",
+      "email": "",
+      "email_verified": false,
+      "mfa_enabled": false,
+      "role": "",
+      "paper_trading_approved": false,
+      "live_trading_approved": false,
+      "preferences": {},
+      "created_at": ""
+    },
+    "requires_mfa": false
+  },
+  "POST /auth/logout": {
+    "message": "",
+    "success": false
+  },
+  "POST /auth/mfa/confirm": {
+    "message": "",
+    "success": false
+  },
+  "POST /auth/mfa/disable": {
+    "message": "",
+    "success": false
+  },
+  "POST /auth/mfa/enable": {
+    "secret": "",
+    "qr_code_uri": "",
+    "backup_codes": [],
+    "message": ""
+  },
+  "POST /auth/mfa/verify": {
+    "access_token": "",
+    "token_type": "",
+    "expires_in": 0,
+    "user": {
+      "id": "",
+      "email": "",
+      "email_verified": false,
+      "mfa_enabled": false,
+      "role": "",
+      "paper_trading_approved": false,
+      "live_trading_approved": false,
+      "preferences": {},
+      "created_at": ""
+    },
+    "requires_mfa": false
+  },
+  "POST /auth/refresh": {
+    "access_token": "",
+    "expires_in": 0
+  },
+  "POST /auth/register": {
+    "access_token": "",
+    "token_type": "",
+    "expires_in": 0,
+    "user": {
+      "id": "",
+      "email": "",
+      "email_verified": false,
+      "mfa_enabled": false,
+      "role": "",
+      "paper_trading_approved": false,
+      "live_trading_approved": false,
+      "preferences": {},
+      "created_at": ""
+    },
+    "message": ""
+  },
+  "POST /auth/resend-verification": {
+    "message": "",
+    "success": false
+  },
+  "POST /auth/resend-verification-me": {
+    "success": true
+  },
+  "POST /auth/reset-password": {
+    "message": "",
+    "success": false
+  },
+  "POST /auth/sessions/:p0/revoke": {
+    "message": "",
+    "success": false
+  },
+  "POST /auth/verify-email": {
+    "message": "",
+    "success": false
+  },
+  "POST /backtests": {
+    "id": "",
+    "name": "",
+    "status": "pending",
+    "symbols": [],
+    "start_date": "",
+    "end_date": "",
+    "initial_capital": 0,
+    "strategy_type": "",
+    "strategy_params": {},
+    "fill_price": "",
+    "slippage_bps": 0,
+    "commission_bps": 0,
+    "created_at": ""
+  },
+  "POST /backtests/:p0/run": {
+    "id": "",
+    "name": "",
+    "status": "pending",
+    "symbols": [],
+    "start_date": "",
+    "end_date": "",
+    "initial_capital": 0,
+    "strategy_type": "",
+    "strategy_params": {},
+    "fill_price": "",
+    "slippage_bps": 0,
+    "commission_bps": 0,
+    "created_at": ""
+  },
+  "POST /backtests/:p0/share": {
+    "share_token": "",
+    "share_url": ""
+  },
+  "POST /billing/cancel": {
+    "message": "",
+    "subscription": {
+      "id": "",
+      "user_id": "",
+      "plan": {
+        "id": "",
+        "name": "",
+        "display_name": "",
+        "price_monthly": 0,
+        "features": []
+      },
+      "status": "canceled",
+      "billing_cycle": "monthly",
+      "cancel_at_period_end": false,
+      "created_at": ""
+    }
+  },
+  "POST /billing/checkout": {
+    "checkout_url": "",
+    "session_id": ""
+  },
+  "POST /billing/portal": {
+    "portal_url": ""
+  },
+  "POST /brokers/:p0/sync": {
+    "synced_at": "",
+    "total_balance": 0,
+    "holding_count": 0
+  },
+  "POST /brokers/plaid/exchange": {
+    "id": "",
+    "display_name": "",
+    "connection_status": "",
+    "connected": false
+  },
+  "POST /brokers/plaid/link-token": {
+    "link_token": ""
+  },
+  "POST /community/clubs": {
+    "id": "",
+    "creator_id": "",
+    "name": "",
+    "description": null,
+    "is_private": false,
+    "member_count": 0,
+    "tags": null,
+    "created_at": "",
+    "updated_at": "",
+    "viewer_role": null
+  },
+  "POST /community/clubs/:p0/join": {
+    "success": true
+  },
+  "POST /community/comments": {
+    "id": "",
+    "user_id": "",
+    "parent_type": "",
+    "parent_id": "",
+    "body": "",
+    "likes_count": 0,
+    "created_at": "",
+    "updated_at": "",
+    "author_display_name": null
+  },
+  "POST /community/follows/:p0": {
+    "is_following": false
+  },
+  "POST /community/ideas": {
+    "id": "",
+    "user_id": "",
+    "symbol": "",
+    "direction": "long",
+    "thesis": "",
+    "target_price": null,
+    "stop_loss": null,
+    "entry_price": null,
+    "time_horizon": "",
+    "status": "",
+    "tags": null,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "",
+    "updated_at": "",
+    "closed_at": null,
+    "author_display_name": null,
+    "viewer_has_liked": false
+  },
+  "POST /community/posts": {
+    "id": "",
+    "user_id": "",
+    "post_type": "",
+    "title": null,
+    "body": "",
+    "ticker_symbols": null,
+    "tags": null,
+    "likes_count": 0,
+    "comments_count": 0,
+    "is_pinned": false,
+    "created_at": "",
+    "updated_at": "",
+    "author_display_name": null,
+    "viewer_has_liked": false
+  },
+  "POST /community/ratings": {
+    "id": "",
+    "user_id": "",
+    "symbol": "",
+    "rating": 0,
+    "rationale": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /community/reactions": {
+    "reacted": false,
+    "likes_count": 0
+  },
+  "POST /community/reports": {
+    "id": "",
+    "reporter_id": "",
+    "content_type": "",
+    "content_id": "",
+    "reason": "",
+    "notes": null,
+    "status": "",
+    "reviewed_by": null,
+    "created_at": "",
+    "reviewed_at": null
+  },
+  "POST /community/watchlists": {
+    "id": "",
+    "user_id": "",
+    "name": "",
+    "description": null,
+    "symbols": [],
+    "is_public": false,
+    "followers_count": 0,
+    "created_at": "",
+    "updated_at": "",
+    "owner_display_name": null,
+    "viewer_follows": false
+  },
+  "POST /community/watchlists/:p0/follow": {
+    "success": true
+  },
+  "POST /crypto/portfolio": {
+    "holdings": [],
+    "total_holdings": 0,
+    "total_cost_basis_usd": 0,
+    "total_current_value_usd": 0,
+    "total_unrealized_pl_usd": 0,
+    "total_unrealized_pl_pct": 0
+  },
+  "POST /crypto/watchlist": {
+    "items": [],
+    "total": 0
+  },
+  "POST /enterprise/advisor/clients": {
+    "id": "",
+    "name": "",
+    "email": null,
+    "phone": null,
+    "external_ref": null,
+    "risk_tolerance": null,
+    "investment_horizon_years": null,
+    "aum_usd": null,
+    "tags": [],
+    "status": "active",
+    "notes": null,
+    "date_of_birth": null,
+    "occupation": null,
+    "employer": null,
+    "annual_income_usd": null,
+    "net_worth_usd": null,
+    "kyc_status": "pending",
+    "onboarding_completed_at": null,
+    "next_review_date": null,
+    "fee_type": null,
+    "fee_value": null,
+    "segment": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /enterprise/advisor/clients/:p0/notes": {
+    "id": "",
+    "advisor_client_id": "",
+    "note_type": "call",
+    "content": "",
+    "created_at": ""
+  },
+  "POST /enterprise/advisor/clients/:p0/portfolio-link": {
+    "id": "",
+    "advisor_client_id": "",
+    "model_portfolio_id": "",
+    "allocation_override_pct": null,
+    "notes": null,
+    "linked_at": ""
+  },
+  "POST /enterprise/advisor/clients/:p0/tasks": {
+    "id": "",
+    "advisor_client_id": "",
+    "title": "",
+    "description": null,
+    "priority": "low",
+    "status": "pending",
+    "due_date": null,
+    "completed_at": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /enterprise/advisor/clients/bulk-status": {
+    "updated_count": 0
+  },
+  "POST /enterprise/advisor/portfolios": {
+    "id": "",
+    "name": "",
+    "description": null,
+    "risk_level": "",
+    "allocations": {},
+    "rebalance_frequency": "",
+    "drift_threshold_pct": "",
+    "benchmark_symbol": null,
+    "is_public": false,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /enterprise/alternatives": {
+    "id": "",
+    "asset_class": "reit",
+    "name": "",
+    "ticker": null,
+    "description": null,
+    "quantity": "",
+    "cost_basis_usd": "",
+    "current_value_usd": null,
+    "currency": "",
+    "acquisition_date": null,
+    "maturity_date": null,
+    "annual_yield_pct": null,
+    "extra": {},
+    "last_updated_at": "",
+    "created_at": ""
+  },
+  "POST /enterprise/api-keys": {
+    "raw_key": "",
+    "id": "",
+    "name": "",
+    "key_prefix": "",
+    "scopes": [],
+    "allowed_ips": [],
+    "is_active": false,
+    "last_used_at": null,
+    "expires_at": null,
+    "created_at": ""
+  },
+  "POST /enterprise/strategies": {
+    "id": "",
+    "name": "",
+    "description": null,
+    "template": "",
+    "parameters": {},
+    "symbols": [],
+    "asset_class": "",
+    "max_position_pct": "",
+    "stop_loss_pct": null,
+    "take_profit_pct": null,
+    "status": "active",
+    "last_backtest_id": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /enterprise/webhooks": {
+    "signing_secret": "",
+    "id": "",
+    "url": "",
+    "description": null,
+    "events": [],
+    "status": "active",
+    "consecutive_failures": 0,
+    "last_success_at": null,
+    "last_failure_at": null,
+    "created_at": ""
+  },
+  "POST /feedback/nps": {
+    "success": true
+  },
+  "POST /fixed-income/analyze": {
+    "face_value": 0,
+    "coupon_rate_pct": 0,
+    "years_to_maturity": 0,
+    "current_price": 0,
+    "ytm_pct": 0,
+    "current_yield_pct": 0,
+    "macaulay_duration_years": 0,
+    "modified_duration": 0,
+    "convexity": 0,
+    "dv01": 0,
+    "price_change_up50bp": 0,
+    "price_change_down50bp": 0,
+    "is_premium": false,
+    "is_discount": false,
+    "disclaimer": ""
+  },
+  "POST /fixed-income/ladder": {
+    "total_investment": 0,
+    "rungs": 0,
+    "avg_maturity_years": 0,
+    "annual_income": 0,
+    "annual_yield_pct": 0,
+    "ladder": [],
+    "disclaimer": ""
+  },
+  "POST /fixed-income/positions": {
+    "id": "",
+    "bond_type": "",
+    "name": "",
+    "cusip": null,
+    "isin": null,
+    "face_value": null,
+    "coupon_rate": null,
+    "maturity_date": null,
+    "purchase_price": null,
+    "quantity": null,
+    "currency": "",
+    "credit_rating": null,
+    "notes": null,
+    "created_at": null,
+    "added": false
+  },
+  "POST /global-markets/watchlist": {
+    "id": "",
+    "symbol": "",
+    "added": false
+  },
+  "POST /integrations/ibkr/founder/ai-recommend": {
+    "ticker": "",
+    "recommendation": "BUY",
+    "confidence": 0,
+    "entry_zone_low": null,
+    "entry_zone_high": null,
+    "stop_loss": null,
+    "take_profit": null,
+    "position_size_pct": 0,
+    "risk_reward_ratio": null,
+    "reasoning": "",
+    "key_risks": [],
+    "signal_type": null,
+    "signal_strength": null,
+    "trend_bias": null,
+    "regime_context": "",
+    "generated_at": "",
+    "from_cache": false
+  },
+  "POST /integrations/ibkr/founder/analyze-trade": {
+    "ticker": "",
+    "action": "",
+    "quantity": 0,
+    "estimated_value": null,
+    "position_size_pct": null,
+    "concentration_warning": false,
+    "signal_alignment": "aligned",
+    "regime_alignment": "aligned",
+    "current_signal_type": null,
+    "current_signal_confidence": null,
+    "current_trend_bias": null,
+    "risk_score": 0,
+    "risk_label": "",
+    "proceed": false,
+    "warnings": [],
+    "recommendation": ""
+  },
+  "POST /integrations/ibkr/intents": {
+    "id": "",
+    "user_id": "",
+    "broker": "",
+    "mode": "live",
+    "strategy_type": "",
+    "symbol": "",
+    "expiry": null,
+    "legs": [],
+    "pricing_policy": "mid",
+    "max_debit_usd": "",
+    "max_loss_usd": "",
+    "time_in_force": "DAY",
+    "regime_snapshot_hash": null,
+    "risk_snapshot_hash": null,
+    "status": "rejected",
+    "signature": null,
+    "signature_expires_at": null,
+    "rejection_reason": null,
+    "claimed_at": null,
+    "claimed_by": null,
+    "executor_execution_id": null,
+    "broker_order_ids": null,
+    "execution_metadata": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /integrations/ibkr/intents/:p0/approve": {
+    "id": "",
+    "user_id": "",
+    "broker": "",
+    "mode": "live",
+    "strategy_type": "",
+    "symbol": "",
+    "expiry": null,
+    "legs": [],
+    "pricing_policy": "mid",
+    "max_debit_usd": "",
+    "max_loss_usd": "",
+    "time_in_force": "DAY",
+    "regime_snapshot_hash": null,
+    "risk_snapshot_hash": null,
+    "status": "rejected",
+    "signature": null,
+    "signature_expires_at": null,
+    "rejection_reason": null,
+    "claimed_at": null,
+    "claimed_by": null,
+    "executor_execution_id": null,
+    "broker_order_ids": null,
+    "execution_metadata": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /intelligence/simulation": {
+    "analysis_date": "",
+    "horizon_days": 0,
+    "simulations_run": 0,
+    "initial_value": 0,
+    "results": {
+      "percentile_5": 0,
+      "percentile_25": 0,
+      "percentile_50": 0,
+      "percentile_75": 0,
+      "percentile_95": 0,
+      "mean_value": 0,
+      "probability_of_loss": 0,
+      "expected_shortfall": 0
+    },
+    "simulation_limit": 0,
+    "insights": [],
+    "plan_tier": ""
+  },
+  "POST /intelligence/v2/risk": {
+    "portfolio_id": "",
+    "analysis_date": "",
+    "holdings_count": 0,
+    "total_value": "",
+    "risk_metrics": {
+      "volatility_annual": 0
+    },
+    "risk_level": "",
+    "analytics_level": "",
+    "tier": ""
+  },
+  "POST /investment-compliance/journal": {
+    "id": "",
+    "symbol": null,
+    "entry_type": "",
+    "emotional_state": null,
+    "technical_notes": null,
+    "emotional_notes": null,
+    "lessons_learned": null,
+    "rating": null,
+    "tags": [],
+    "trade_date": null,
+    "created_at": ""
+  },
+  "POST /investment-compliance/wash-sale": {},
+  "POST /nps": {
+    "success": true
+  },
+  "POST /options/orders": {
+    "id": "",
+    "account_id": "",
+    "symbol": "",
+    "option_type": "call",
+    "expiration": "",
+    "strike": 0,
+    "contracts": 0,
+    "action": "buy_to_open",
+    "estimated_premium": 0,
+    "filled_premium": null,
+    "status": "pending",
+    "position_id": null,
+    "created_at": "",
+    "updated_at": "",
+    "filled_at": null,
+    "canceled_at": null,
+    "is_simulated": false
+  },
+  "POST /order-prep/tickets": {
+    "id": "",
+    "symbol": "",
+    "order_type": "",
+    "direction": "",
+    "quantity": 0,
+    "limit_price": null,
+    "stop_price": null,
+    "tca_estimate": {},
+    "compliance_check": {},
+    "broker_links": {},
+    "status": "",
+    "notes": null,
+    "created_at": ""
+  },
+  "POST /paper/account": {
+    "id": "",
+    "name": "",
+    "starting_balance": 0,
+    "current_cash": 0,
+    "positions_value": 0,
+    "equity": 0,
+    "total_value": 0,
+    "total_return": 0,
+    "total_return_pct": 0,
+    "positions_count": 0,
+    "is_active": false,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /paper/import-portfolio": {
+    "imported": [],
+    "skipped": [],
+    "failed": [],
+    "summary": {
+      "imported_count": 0,
+      "skipped_count": 0,
+      "failed_count": 0
+    },
+    "disclaimer": ""
+  },
+  "POST /paper/orders": {
+    "id": "",
+    "symbol": "",
+    "side": "",
+    "quantity": 0,
+    "order_type": "",
+    "limit_price": null,
+    "status": "",
+    "filled_quantity": 0,
+    "avg_fill_price": null,
+    "created_at": "",
+    "filled_at": null,
+    "canceled_at": null
+  },
+  "POST /paper/orders/dismiss": {
+    "success": false,
+    "dismissed": 0
+  },
+  "POST /paper/reset": {
+    "success": false,
+    "message": "",
+    "account": null
+  },
+  "POST /portfolio/attribution": {
+    "portfolio_return": 0,
+    "benchmark_return": 0,
+    "active_return": 0,
+    "allocation_effect": 0,
+    "selection_effect": 0,
+    "interaction_effect": 0,
+    "sector_attribution": [],
+    "disclaimer": ""
+  },
+  "POST /portfolio/benchmarks": {
+    "id": "",
+    "name": "",
+    "description": null,
+    "components": [],
+    "benchmark_type": "",
+    "is_active": false,
+    "created_at": ""
+  },
+  "POST /portfolio/correlation": {
+    "correlation_matrix": {},
+    "diversification_score": 0,
+    "highly_correlated_pairs": [],
+    "concentration_risk": "",
+    "disclaimer": ""
+  },
+  "POST /portfolio/manual": {
+    "id": "",
+    "user_id": "",
+    "symbol": "",
+    "quantity": 0,
+    "avg_cost": 0,
+    "asset_type": "crypto",
+    "notes": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "POST /portfolio/rebalance": {
+    "trades": [],
+    "total_turnover_pct": 0,
+    "estimated_cost": 0,
+    "disclaimer": ""
+  },
+  "POST /portfolio/stress-test": {
+    "scenarios": [],
+    "max_drawdown_scenario": "",
+    "disclaimer": ""
+  },
+  "POST /portfolio/tax-loss": {
+    "opportunities": [],
+    "total_harvestable_loss": 0,
+    "total_potential_savings": 0,
+    "disclaimer": ""
+  },
+  "POST /predictive/anomalies": {
+    "analysis_date": "",
+    "symbol": "",
+    "anomaly_count": 0,
+    "severity_summary": {},
+    "anomaly_rate_pct": 0,
+    "overall_risk_flag": "normal",
+    "anomalies": [],
+    "rolling_z_scores": [],
+    "model_metadata": {
+      "model_type": "",
+      "version": "",
+      "assumptions": []
+    },
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    }
+  },
+  "POST /predictive/earnings-surprise": {
+    "symbol": "",
+    "beat_probability": 0,
+    "miss_probability": 0,
+    "in_line_probability": 0,
+    "implied_move_pct": 0,
+    "pre_earnings_momentum": "neutral",
+    "vol_regime": "",
+    "historical_beat_rate": null,
+    "analysis_notes": [],
+    "model_metadata": {
+      "model_type": "",
+      "version": "",
+      "assumptions": []
+    },
+    "disclaimer": ""
+  },
+  "POST /predictive/esg": {
+    "analysis_date": "",
+    "symbol": "",
+    "sector": "",
+    "scores": {
+      "environmental": 0,
+      "social": 0,
+      "governance": 0,
+      "composite": 0,
+      "rating": "",
+      "percentile": 0
+    },
+    "controversies": [],
+    "strengths": [],
+    "improvement_areas": [],
+    "provider": "",
+    "is_simulated": false,
+    "model_metadata": {
+      "model_type": "",
+      "version": "",
+      "assumptions": []
+    },
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    }
+  },
+  "POST /predictive/esg/portfolio": {
+    "analysis_date": "",
+    "portfolio_scores": {
+      "environmental": 0,
+      "social": 0,
+      "governance": 0,
+      "composite": 0,
+      "rating": "",
+      "percentile": 0
+    },
+    "holdings": [],
+    "is_simulated": false
+  },
+  "POST /predictive/sentiment/headlines": {
+    "analysis_date": "",
+    "subject": "",
+    "aggregate_score": 0,
+    "aggregate_label": "neutral",
+    "confidence": 0,
+    "dominant_themes": [],
+    "top_risks": [],
+    "top_catalysts": [],
+    "source_count": 0,
+    "ai_available": false,
+    "model_metadata": {
+      "model_type": "",
+      "version": "",
+      "assumptions": []
+    },
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    }
+  },
+  "POST /predictive/sentiment/text": {
+    "analysis_date": "",
+    "subject": "",
+    "aggregate_score": 0,
+    "aggregate_label": "neutral",
+    "confidence": 0,
+    "dominant_themes": [],
+    "top_risks": [],
+    "top_catalysts": [],
+    "source_count": 0,
+    "ai_available": false,
+    "model_metadata": {
+      "model_type": "",
+      "version": "",
+      "assumptions": []
+    },
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    }
+  },
+  "POST /predictive/volatility": {
+    "analysis_date": "",
+    "symbol": "",
+    "parameters": {
+      "omega": 0,
+      "alpha": 0,
+      "beta": 0,
+      "persistence": 0,
+      "long_run_annualized_vol": 0
+    },
+    "forecast": {
+      "horizon_days": 0,
+      "current_annualized_vol_pct": 0,
+      "long_run_annualized_vol_pct": 0,
+      "annualized_vol_forecast_pct": [],
+      "var_95_pct": 0,
+      "var_99_pct": 0,
+      "vol_regime": "low",
+      "forecast_dates": []
+    },
+    "model_metadata": {
+      "model_type": "",
+      "version": "",
+      "assumptions": []
+    },
+    "explanation": {
+      "summary": "",
+      "key_factors": [],
+      "model_info": {
+        "model_type": "",
+        "version": "",
+        "assumptions": []
+      },
+      "limitations": []
+    },
+    "converged": false,
+    "sample_size": 0
+  },
+  "POST /referrals/apply": {
+    "success": true
+  },
+  "POST /screening/screen": {
+    "screened_at": "",
+    "universe_size": 0,
+    "matched_count": 0,
+    "results": [],
+    "criteria_applied": [],
+    "data_source": "live"
+  },
+  "POST /signals/:p0/log": {
+    "id": "",
+    "ticker": "",
+    "entry_price": 0,
+    "logged_at": "",
+    "status": ""
+  },
+  "POST /strategy/agreement": {
+    "has_agreed": false,
+    "agreed_at": null,
+    "agreement_version": null
+  },
+  "POST /strategy/analyze": {
+    "id": "",
+    "requested_at": "",
+    "risk_level": "low",
+    "confidence_score": 0,
+    "diversification_score": 0,
+    "key_themes": [],
+    "analysis_text": "",
+    "model_used": "",
+    "tokens_used": null,
+    "is_cached": false,
+    "has_portfolio_data": false
+  },
+  "POST /trade-ideas/:p0/status": {
+    "success": true
+  },
+  "POST /trade-ideas/generate": [],
+  "POST /user/disclaimer-acceptance": {
+    "has_accepted": false,
+    "accepted_at": null,
+    "disclaimer_version": null
+  },
+  "PUT /community/clubs/:p0": {
+    "id": "",
+    "creator_id": "",
+    "name": "",
+    "description": null,
+    "is_private": false,
+    "member_count": 0,
+    "tags": null,
+    "created_at": "",
+    "updated_at": "",
+    "viewer_role": null
+  },
+  "PUT /community/ideas/:p0": {
+    "id": "",
+    "user_id": "",
+    "symbol": "",
+    "direction": "long",
+    "thesis": "",
+    "target_price": null,
+    "stop_loss": null,
+    "entry_price": null,
+    "time_horizon": "",
+    "status": "",
+    "tags": null,
+    "likes_count": 0,
+    "comments_count": 0,
+    "created_at": "",
+    "updated_at": "",
+    "closed_at": null,
+    "author_display_name": null,
+    "viewer_has_liked": false
+  },
+  "PUT /community/posts/:p0": {
+    "id": "",
+    "user_id": "",
+    "post_type": "",
+    "title": null,
+    "body": "",
+    "ticker_symbols": null,
+    "tags": null,
+    "likes_count": 0,
+    "comments_count": 0,
+    "is_pinned": false,
+    "created_at": "",
+    "updated_at": "",
+    "author_display_name": null,
+    "viewer_has_liked": false
+  },
+  "PUT /community/profiles/me": {
+    "id": "",
+    "user_id": "",
+    "display_name": null,
+    "bio": null,
+    "avatar_url": null,
+    "is_public": false,
+    "followers_count": 0,
+    "following_count": 0,
+    "trade_ideas_count": 0,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "PUT /community/watchlists/:p0": {
+    "id": "",
+    "user_id": "",
+    "name": "",
+    "description": null,
+    "symbols": [],
+    "is_public": false,
+    "followers_count": 0,
+    "created_at": "",
+    "updated_at": "",
+    "owner_display_name": null,
+    "viewer_follows": false
+  },
+  "PUT /portfolio/manual/:p0": {
+    "id": "",
+    "user_id": "",
+    "symbol": "",
+    "quantity": 0,
+    "avg_cost": 0,
+    "asset_type": "crypto",
+    "notes": null,
+    "created_at": "",
+    "updated_at": ""
+  },
+  "PUT /privacy/preferences": {
+    "analytics_consent": false,
+    "email_notifications": false,
+    "trade_confirmations": false,
+    "marketing_emails": false,
+    "theme": "light"
+  },
+  "PUT /settings/notifications": {
+    "email_security_alerts": false,
+    "email_billing": false,
+    "email_portfolio_summary": false,
+    "email_signal_alerts": false,
+    "email_price_alerts": false,
+    "email_news_digest": false,
+    "email_paper_trade_fills": false,
+    "email_product_updates": false,
+    "push_signal_alerts": false,
+    "push_portfolio_alerts": false,
+    "push_paper_trade_fills": false,
+    "push_earnings_reminders": false,
+    "push_community_activity": false,
+    "thresholds": {
+      "portfolio_drawdown_pct": 0,
+      "position_loss_pct": 0,
+      "paper_drawdown_pct": 0
+    },
+    "updated_at": ""
+  },
+  "PUT /user/trading-preferences": {
+    "user_id": "",
+    "preferred_broker": null,
+    "risk_tolerance": "",
+    "max_position_pct": 0,
+    "min_confidence_threshold": 0,
+    "alert_email": false,
+    "alert_push": false,
+    "updated_at": null
+  }
+}
