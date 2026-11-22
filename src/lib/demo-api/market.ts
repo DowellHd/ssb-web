@@ -118,6 +118,13 @@ export interface DailyBar {
   volume: number;
 }
 
+/**
+ * Seed for the synthetic price paths. Current prices are fixed (see UNIVERSE);
+ * this only chooses *how the history got there*, so the demo's charts, paper
+ * account and P&L tell a coherent, presentable story. Any integer works.
+ */
+export const SERIES_SEED = 1;
+
 const barCache = new Map<string, DailyBar[]>();
 
 function isWeekend(d: Date): boolean {
@@ -137,7 +144,7 @@ export function dailyBars(symbol: string, count = 252): DailyBar[] {
   if (cached) return cached;
 
   const inst = getInstrument(sym);
-  const rng = seededRng(`bars:${sym}`);
+  const rng = seededRng(`bars:${sym}:${SERIES_SEED}`);
 
   // Trading days, newest first.
   const dates: Date[] = [];
