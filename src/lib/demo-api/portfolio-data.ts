@@ -88,12 +88,15 @@ export const getConnections = (): ConnState[] => (connections ??= seedConnection
 /** Add a freshly "linked" institution (used by the Plaid stub). */
 export function addConnection(displayName: string): ConnState {
   const list = getConnections();
-  const n = list.length + 1;
+  const n = Math.max(0, ...list.map((c) => Number(c.conn.id.split('-')[1]))) + 1;
+  // Keep names unique when "Connect a broker" is clicked more than once.
+  let name = displayName;
+  for (let k = 2; list.some((c) => c.conn.display_name === name); k++) name = `${displayName} ${k}`;
   const state: ConnState = {
     conn: {
       id: `conn-${String(n).padStart(3, '0')}`,
       broker_name: 'plaid',
-      display_name: displayName,
+      display_name: name,
       connection_status: 'connected',
       account_ids: [`acct-${String(n).padStart(3, '0')}`],
       last_sync_at: iso(daysAgo(0)),
