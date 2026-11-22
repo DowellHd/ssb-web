@@ -3,8 +3,15 @@ import shapes from '../catch-all-shapes.json';
 import { resolveDemoRequest } from '../index';
 import { dailyBars, lastPrice } from '../market';
 
-const call = (method: string, url: string, data?: unknown, params?: Record<string, unknown>) =>
-  resolveDemoRequest({ method, url, data, params });
+const call = async (method: string, url: string, data?: unknown, params?: Record<string, unknown>) => {
+  try {
+    return await resolveDemoRequest({ method, url, data, params });
+  } catch (err: any) {
+    // A route deliberately simulating an HTTP error (e.g. unknown order id) still counts as handled.
+    if (err?.name === 'DemoHttpError') return { detail: err.detail };
+    throw err;
+  }
+};
 
 /** Fill `:p0`-style params so shape keys become concrete URLs. */
 const concrete = (pattern: string) => pattern.replace(/:p\d+/g, 'demo-id');

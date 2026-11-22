@@ -36,7 +36,27 @@ class APIClient {
       async (config) => {
         // Demo mode: intercept and return mock data
         if (this.isDemoMode) {
-          const mockResponse = await this.handleDemoRequest(config);
+          let mockResponse: any;
+          try {
+            mockResponse = await this.handleDemoRequest(config);
+          } catch (err: any) {
+            if (err?.name !== 'DemoHttpError') throw err;
+            // A demo route simulated an HTTP error (e.g. insufficient funds).
+            return Promise.reject({
+              config,
+              response: {
+                data: { detail: err.detail },
+                status: err.status,
+                statusText: 'Error',
+                headers: {},
+                config,
+              },
+              isAxiosError: true,
+              toJSON: () => ({}),
+              name: 'AxiosError',
+              message: err.detail,
+            });
+          }
           if (mockResponse) {
             // Return a rejected promise with mock response attached
             // This will be caught by response interceptor

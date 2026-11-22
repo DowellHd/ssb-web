@@ -3,6 +3,7 @@ import { accountRoutes } from './account';
 import { assistantRoutes } from './assistant';
 import { authRoutes } from './auth';
 import { marketDataRoutes } from './market-data';
+import { paperRoutes } from './paper';
 import { signalRoutes } from './signals';
 import { tradingRoutes } from './trading';
 
@@ -13,5 +14,6 @@ export const ROUTES: DemoRoute[] = [
   ...marketDataRoutes,
   ...signalRoutes,
   ...tradingRoutes,
+  ...paperRoutes,
   ...assistantRoutes,
 ];
