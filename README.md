@@ -6,6 +6,54 @@ SSB is a risk-first, explainable financial intelligence platform. This repositor
 
 > **Note:** SSB does NOT execute trades, generate buy/sell recommendations, or promise returns. It provides educational insights and risk analytics only.
 
+## Demo
+
+**[▶ Watch Demo Video](#)** <!-- TODO: replace # with the demo video URL -->
+
+![Next.js](https://img.shields.io/badge/Next.js-14-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?logo=tailwindcss&logoColor=white)
+![Zustand](https://img.shields.io/badge/State-Zustand-433E38)
+![React Query](https://img.shields.io/badge/Data-React_Query-FF4154?logo=reactquery&logoColor=white)
+![Playwright](https://img.shields.io/badge/E2E-Playwright-2EAD33?logo=playwright&logoColor=white)
+
+The whole app runs locally with **no backend, database, Redis or API keys**. In demo mode every API request is answered in the browser by a deterministic mock layer, so the app looks the same on every run.
+
+### Run the demo
+
+```bash
+# 1. Clone
+git clone https://github.com/DowellHd/ssb-web.git
+cd ssb-web
+
+# 2. Install (Node.js 20+)
+cp .env.demo .env.local && npm install
+
+# 3. Run
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000), click **Try It Free — No Signup** (or log in with any email and password) and explore.
+
+**What you get**
+
+- Market regime detection, portfolio risk analytics (VaR, CVaR, drawdown, correlation) and stress testing, computed from the holdings you enter
+- A linked-brokerage portfolio, trade ideas, tax-loss harvesting and an order-prep workflow
+- A paper-trading account with a live ledger: place, cancel and reset orders, plus options paper trading
+- A signal feed, news, crypto prices, and the learning library
+- The account is on the Pro plan so every feature is visible
+
+**What demo mode is, and isn't**
+
+- All data is synthetic and deterministic. Prices are consistent across charts, quotes and positions, but they are not real market data and the "performance" shown is fictional.
+- Changes you make (orders, watchlists, journal entries) live in memory and reset when the page reloads.
+- Community, enterprise, backtesting and a few other areas return valid but empty responses rather than detailed data.
+- Plaid, Stripe, analytics and error reporting are switched off. "Connect a broker" adds a sample account instead of opening Plaid, and checkout stays on-site.
+- Demo mode works with `npm run dev` only. Production builds refuse to start with it enabled.
+
+**Switching back to production:** delete `.env.local` (or set `NEXT_PUBLIC_DEMO_MODE=false`). No code changes are needed; the real API client and services are untouched, just bypassed. See [docs/DEMO_MODE.md](docs/DEMO_MODE.md) for how it works and how to extend the mock data.
+
 ## Features
 
 - **Market Regime Detection** — Understand if the market is bullish, bearish, sideways, or in crisis mode
@@ -50,17 +98,7 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 ### Demo Mode (No Backend Required)
 
-Perfect for showcasing the UI without any infrastructure:
-
-```bash
-# Set demo mode in .env.local
-echo "NEXT_PUBLIC_DEMO_MODE=true" >> .env.local
-
-# Start the app
-npm run dev
-```
-
-All API calls will return realistic mock data. See [docs/DEMO_MODE.md](docs/DEMO_MODE.md) for details.
+See the [Demo](#demo) section above: `cp .env.demo .env.local && npm install && npm run dev`.
 
 ## Available Scripts
 
@@ -78,7 +116,8 @@ All API calls will return realistic mock data. See [docs/DEMO_MODE.md](docs/DEMO
 |----------|-------------|----------|
 | `NEXT_PUBLIC_API_URL` | Backend API URL | Yes (unless demo mode) |
 | `NEXT_PUBLIC_API_PREFIX` | API path prefix | Yes (unless demo mode) |
-| `NEXT_PUBLIC_DEMO_MODE` | Enable demo mode | No |
+| `NEXT_PUBLIC_DEMO_MODE` | Serve mock data locally (dev only) | No |
+| `NEXT_PUBLIC_BACK_SOON` | Show the "Back Soon" page for every route (defaults to on; set `false` to render the app) | No |
 | `NEXT_PUBLIC_GA_ID` | Google Analytics ID | No |
 
 See `.env.example` for all available options.
@@ -95,6 +134,7 @@ ssb-web/
 │   │   └── ui/           # shadcn/ui components
 │   └── lib/
 │       ├── api/          # API client utilities
+│       ├── demo-api/     # Demo mode: route table, mock data, catch-all, tests
 │       └── mock-data.ts  # Demo mode data generators
 ├── docs/                 # Documentation
 └── public/               # Static assets
