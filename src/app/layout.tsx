@@ -144,7 +144,7 @@ export default function RootLayout({
           {!BACK_SOON && <PWAInstallPrompt />}
         </Providers>
         <SWRegister />
-        {process.env.NEXT_PUBLIC_GA_ID && (
+        {process.env.NEXT_PUBLIC_GA_ID && process.env.NEXT_PUBLIC_DEMO_MODE !== 'true' && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
       </body>

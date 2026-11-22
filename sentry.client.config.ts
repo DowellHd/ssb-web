@@ -6,5 +6,6 @@ Sentry.init({
   // Replays add significant bundle weight — enable post-launch if needed
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 0,
-  enabled: process.env.NODE_ENV === 'production',
+  // Never report from a demo build, even with a DSN set.
+  enabled: process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_DEMO_MODE !== 'true',
 });
