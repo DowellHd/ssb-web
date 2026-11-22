@@ -3,6 +3,7 @@ import { accountRoutes } from './account';
 import { assistantRoutes } from './assistant';
 import { authRoutes } from './auth';
 import { cryptoRoutes } from './crypto';
+import { feedbackRoutes } from './feedback';
 import { intelligenceRoutes } from './intelligence';
 import { learnRoutes } from './learn';
 import { marketDataRoutes } from './market-data';
@@ -26,4 +27,5 @@ export const ROUTES: DemoRoute[] = [
   ...newsRoutes,
   ...learnRoutes,
   ...assistantRoutes,
+  ...feedbackRoutes,
 ];
