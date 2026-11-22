@@ -5,6 +5,8 @@
  * DEMO DATA - FOR DEMONSTRATION PURPOSES ONLY
  */
 
+import { seededRng } from '../demo-api/prng';
+
 export interface SimulationMetrics {
   total_return: number;
   cagr: number;
@@ -56,6 +58,7 @@ function generateEquityCurve(
   days: number
 ): EquityPoint[] {
   const points: EquityPoint[] = [];
+  const rng = seededRng('demo-simulation:equity-curve');
   const growthRate = (finalValue / initialValue) ** (1 / days) - 1;
   const benchmarkGrowthRate = 0.0004; // ~10% annual for SPY
 
@@ -65,8 +68,8 @@ function generateEquityCurve(
 
   for (let i = 0; i < days; i++) {
     // Add some volatility
-    const dailyReturn = growthRate + (Math.random() - 0.5) * 0.02;
-    const benchmarkReturn = benchmarkGrowthRate + (Math.random() - 0.5) * 0.015;
+    const dailyReturn = growthRate + (rng() - 0.5) * 0.02;
+    const benchmarkReturn = benchmarkGrowthRate + (rng() - 0.5) * 0.015;
 
     currentValue *= 1 + dailyReturn;
     benchmarkValue *= 1 + benchmarkReturn;
@@ -91,14 +94,15 @@ function generateEquityCurve(
 function generateTrades(count: number): Trade[] {
   const symbols = ['AAPL', 'MSFT', 'GOOGL', 'JPM', 'XOM', 'JNJ'];
   const trades: Trade[] = [];
+  const rng = seededRng('demo-simulation:trades');
   const baseDate = new Date('2024-01-01');
 
   for (let i = 0; i < count; i++) {
-    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-    const side = Math.random() > 0.5 ? 'buy' : 'sell';
-    const quantity = Math.floor(Math.random() * 50) + 10;
-    const price = 100 + Math.random() * 200;
-    const pnl = side === 'sell' ? (Math.random() - 0.4) * 1000 : undefined;
+    const symbol = symbols[Math.floor(rng() * symbols.length)];
+    const side = rng() > 0.5 ? 'buy' : 'sell';
+    const quantity = Math.floor(rng() * 50) + 10;
+    const price = 100 + rng() * 200;
+    const pnl = side === 'sell' ? (rng() - 0.4) * 1000 : undefined;
 
     const tradeDate = new Date(baseDate);
     tradeDate.setDate(tradeDate.getDate() + i * 3);

@@ -55,6 +55,7 @@ import { ESGScores } from '@/components/analytics/esg-scores';
 import { EarningsSurpriseView } from '@/components/analytics/earnings-surprise-view';
 import { SectorHeatmap, getDemoSectorData } from '@/components/analytics/sector-heatmap';
 import { cn } from '@/lib/utils';
+import { gaussian, seededRng } from '@/lib/demo-api/prng';
 
 // ============================================================================
 // Section wrapper
@@ -251,13 +252,11 @@ export default function AnalyticsPage() {
 
   /** Generate demo daily returns (GBM simulation for UI testing) */
   function genDemoReturns(n = 252, mu = 0.0003, sigma = 0.012): number[] {
+    // Seeded so the demo returns (and the forecasts built from them) are identical every run.
+    const rng = seededRng(`analytics-demo-returns:${n}`);
     const returns: number[] = [];
     for (let i = 0; i < n; i++) {
-      // Box-Muller transform for normal random
-      const u1 = Math.random();
-      const u2 = Math.random();
-      const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-      returns.push(mu + sigma * z);
+      returns.push(mu + sigma * gaussian(rng));
     }
     return returns;
   }
