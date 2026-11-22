@@ -1,267 +1,122 @@
-# Demo Mode Documentation
+# Demo Mode
 
-## Overview
+Demo mode runs the whole frontend locally with no backend, database, Redis or API keys. Every request the app would send to the API is answered in the browser by a deterministic mock layer in `src/lib/demo-api/`.
 
-Demo Mode allows the Smart Strategies Builder frontend to run completely standalone without requiring a backend API connection. This is perfect for:
-
-- **Portfolio showcases** - Demonstrate the UI/UX without infrastructure
-- **Development** - Work on frontend features without backend dependencies
-- **Testing** - Verify UI behavior with predictable mock data
-- **Presentations** - Show the platform to potential investors or users
-
-## How It Works
-
-When `NEXT_PUBLIC_DEMO_MODE=true`, the API client intercepts all outgoing requests and returns realistic mock data instead of calling the backend. This happens transparently - your components make the same API calls, but get instant responses with generated data.
-
-### Architecture
-
-```
-┌─────────────────────────────────────────┐
-│         React Components                │
-│  (make normal API calls via apiClient)  │
-└──────────────────┬──────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────┐
-│          API Client Layer               │
-│  ┌───────────────────────────────────┐  │
-│  │  Is DEMO_MODE enabled?            │  │
-│  │  ├─ Yes → Return mock data        │  │
-│  │  └─ No  → Forward to backend      │  │
-│  └───────────────────────────────────┘  │
-└─────────────────────────────────────────┘
-                   │
-         ┌─────────┴─────────┐
-         ▼                   ▼
-   ┌──────────┐      ┌──────────────┐
-   │ Mock Data│      │ Real Backend │
-   │Generator │      │   API (8000) │
-   └──────────┘      └──────────────┘
-```
-
-## Enabling Demo Mode
-
-### Quick Start
+## Quick start
 
 ```bash
-# Create .env.local in apps/web/
-echo "NEXT_PUBLIC_DEMO_MODE=true" > apps/web/.env.local
-
-# Start the frontend
+cp .env.demo .env.local
+npm install
 npm run dev
 ```
 
-Visit http://localhost:3000 - the app will work with zero backend dependencies!
+Open http://localhost:3000, click **Try It Free — No Signup**, or log in with any email and password.
 
-### Configuration
+To return to production behaviour, delete `.env.local` (or set `NEXT_PUBLIC_DEMO_MODE=false`). Nothing else changes: the real API client and every real service integration are still in the code, just bypassed while the flag is on.
 
-**apps/web/.env.local**
-```bash
-# Enable demo mode
-NEXT_PUBLIC_DEMO_MODE=true
+## The two flags
 
-# These are not used in demo mode but keep them for when you disable it
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_API_PREFIX=/api/v1
-```
+| Variable | Demo value | Effect |
+|----------|-----------|--------|
+| `NEXT_PUBLIC_DEMO_MODE` | `true` | `api-client.ts` answers requests from `demo-api` instead of the network |
+| `NEXT_PUBLIC_BACK_SOON` | `false` | Bypasses the "Back Soon" page so the real app renders. It defaults to **on** in production |
 
-## Mock Data Features
+`next.config.js` deliberately refuses to build for production with `NEXT_PUBLIC_DEMO_MODE=true`, so demo mode only runs with `npm run dev`. `.env.demo` holds both flags plus blank values for every external service key; do not put real keys in it, because it is committed.
 
-### Authentication
-- Any email/password combination will "log in" successfully
-- Returns a mock JWT token (not validated, just for state management)
-- Mock user profile with free plan
-
-### Market Data
-- **Quotes**: Realistic bid/ask spreads for any symbol
-- **Historical Data**: Generated OHLCV bars with random walk + volatility
-- **Market Status**: Returns mock market hours
-
-### Trading Signals
-- **SMA Crossover**: Generates buy/sell/hold signals with explanations
-- **Bulk Signals**: Supports multiple symbols
-- **Delayed Signals**: Free plan users get 15-minute delay (as in production)
-
-### Portfolio & Trading
-- **Positions**: 4 mock positions (AAPL, MSFT, GOOGL, NVDA) with P&L
-- **Account Balance**: ~$40K total portfolio value
-- **Orders**: Recent order history with various statuses
-- **Paper Trading**: All orders are marked as "paper" mode
-
-### Billing
-- **Plans**: Free ($0), Starter ($19.99), Pro ($49.99)
-- **Subscription**: Mock subscription showing free plan status
-
-## Customizing Mock Data
-
-All mock data generators are in `apps/web/src/lib/mock-data.ts`:
-
-### Example: Change Mock Portfolio
-
-```typescript
-// apps/web/src/lib/mock-data.ts
-export function generateMockPortfolio(): MockPortfolio {
-  const positions: MockPosition[] = [
-    {
-      symbol: 'YOUR_SYMBOL',
-      quantity: 100,
-      avg_entry_price: 50.00,
-      current_price: 55.00,
-      // ... calculate market_value, unrealized_pl, etc
-    },
-    // Add more positions
-  ];
-  // ... rest of portfolio calculation
-}
-```
-
-### Example: Add New Mock Endpoint
-
-```typescript
-// apps/web/src/lib/api-client.ts
-private async handleDemoRequest(config: InternalAxiosRequestConfig): Promise<any> {
-  // ... existing handlers
-
-  // Add your new endpoint
-  if (url.includes('/your-new-endpoint')) {
-    return {
-      your: 'mock data',
-    };
-  }
-}
-```
-
-## Network Simulation
-
-Demo mode includes realistic network delays:
-
-```typescript
-// Simulates 300ms - 1000ms latency
-await new Promise((resolve) => setTimeout(resolve, 300 + Math.random() * 700));
-```
-
-This makes the demo feel like a real application with network requests.
-
-## Demo Mode Indicators
-
-**Recommended**: Add a visual indicator when in demo mode:
-
-```typescript
-// components/DemoModeBanner.tsx
-export function DemoModeBanner() {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE !== 'true') return null;
-
-  return (
-    <div className="bg-yellow-500 text-black px-4 py-2 text-center font-semibold">
-      🎭 Demo Mode - All data is simulated
-    </div>
-  );
-}
-```
-
-## Testing Demo Mode
-
-### Verify It's Working
-
-1. **Check Console**: Look for network requests in DevTools
-   - In demo mode: Requests complete instantly (no actual HTTP)
-   - In production: Real HTTP requests to localhost:8000
-
-2. **Check Data**: Look for mock IDs in responses
-   - Demo: `id: "mock-signal-0"`, `id: "mock-order-1"`
-   - Production: Real UUIDs from database
-
-3. **Test Login**: Try logging in with fake credentials
-   - Demo: Any email/password works
-   - Production: Only valid credentials work
-
-### Common Issues
-
-**Issue**: Demo mode not working, getting CORS errors
-
-**Solution**: Check `.env.local` has `NEXT_PUBLIC_DEMO_MODE=true` (must be NEXT_PUBLIC_ prefix!)
-
----
-
-**Issue**: Mock data not realistic enough
-
-**Solution**: Update generators in `mock-data.ts` with better algorithms or real historical patterns
-
----
-
-**Issue**: Some pages still need backend
-
-**Solution**: Check `handleDemoRequest()` in `api-client.ts` - you may need to add mock handlers for new endpoints
-
-## Deployment with Demo Mode
-
-### Vercel / Netlify
-
-Add environment variable in your hosting dashboard:
+## How it works
 
 ```
-NEXT_PUBLIC_DEMO_MODE=true
+React components ──> apiClient (axios)
+                        │
+        NEXT_PUBLIC_DEMO_MODE=true ?
+          ├─ yes ─> import('./demo-api')  (lazy, code-split)
+          │           ├─ route table: hand-written mocks
+          │           └─ catch-all:   empty-but-valid response
+          └─ no ──> real HTTP request to the backend
 ```
 
-This creates a public demo site requiring zero backend infrastructure!
+- **`src/lib/api-client.ts`** intercepts each request in demo mode. The demo layer is imported lazily, so it is never loaded when the flag is off.
+- **No request reaches the network.** Anything without a hand-written mock falls through to the catch-all, which returns a value shaped like the endpoint's declared TypeScript return type (arrays are `[]`, counts are `0`, required objects are filled in). Pages render their empty states instead of failing.
+- **Simulated errors.** A route can `throw new DemoHttpError(400, 'Insufficient buying power')`. The client turns it into an axios-style rejection, so the UI's normal error handling runs.
 
-### GitHub Pages
+## Layout of `src/lib/demo-api/`
 
-Demo mode is perfect for GitHub Pages since it's static-only:
+| File | Purpose |
+|------|---------|
+| `index.ts` | Entry points: `resolveDemoRequest` (no latency, used by tests) and `handleDemoRequest` (adds a short deterministic delay) |
+| `router.ts` | Route table: patterns like `/paper/orders/:id`. The match with the fewest `:params` wins |
+| `routes/*.ts` | Hand-written mocks, one file per area (see below) |
+| `catch-all.ts`, `catch-all-shapes.json` | Fallback responses for every endpoint without a mock |
+| `prng.ts` | Seeded random numbers, the demo clock, id helpers |
+| `market.ts` | The single source of truth for prices, bars, quotes and correlations |
+| `analytics.ts` | Real calculations: risk, stress scenarios, correlation, attribution |
+| `paper-state.ts`, `portfolio-data.ts`, `signals-data.ts`, `options-math.ts` | Shared state and data for the routes |
+| `__tests__/` | Vitest tests |
+
+Areas with detailed mocks: auth, billing and entitlements, settings, market data, signals, trading and paper trading, options, portfolio and stress testing, linked brokers, trade ideas, order prep, compliance, regime, risk, simulation, strategy, crypto, news, and learn. Everything else (community, enterprise, backtests, analytics, alternatives, fixed income, global markets, screening and so on) uses the catch-all and shows empty states.
+
+## Determinism
+
+Demo data is identical on every run, so screenshots and recordings are repeatable.
+
+- No `Math.random()` in demo data. Values come from a PRNG seeded by a string key (`seededRng('bars:AAPL')`).
+- Dates are anchored to the **start of the current UTC day**, so relative timestamps are stable within a day and never in the future. Values do not change; date labels roll forward daily.
+- **Prices:** `market.ts` pins each symbol's current price (the `UNIVERSE` table) and synthesises history backwards from it with a factor model: market + sector + idiosyncratic noise. A symbol therefore has one price in quotes, charts, positions and orders, and correlations and betas behave like real markets.
+- **`SERIES_SEED`** in `market.ts` selects *how* history got to today's prices. It was chosen so the demo account tells a presentable story (positive paper return, mixed winners and losers, a bull regime). Changing it changes every chart and the paper account's P&L. The numbers are fictional.
+- **State.** Paper trading, watchlists, journals, trade ideas and similar records are mutable in memory and reset on page reload. Newly created records get sequential ids (`order-1001`, …).
+
+## Customising
+
+**Change the demo plan.** `DEMO_PLAN` in `routes/account.ts` sets the plan labels (default `pro`). The entitlement values in that file are hardcoded as Pro, so showing gated states also means editing them.
+
+**Change prices or add a symbol.** Edit the `UNIVERSE` table in `market.ts`. Unknown symbols a user types still get a stable synthetic profile.
+
+**Give an endpoint real data.** Add a route; real routes always win over the catch-all:
+
+```ts
+// src/lib/demo-api/routes/community.ts
+import { get, type DemoRoute } from '../router';
+
+export const communityRoutes: DemoRoute[] = [
+  get('/community/ideas', () => ({ ideas: [/* … */], total: 0, page: 1, page_size: 20 })),
+];
+```
+
+Then spread it into `ROUTES` in `routes/index.ts`. Match the shape declared in `src/lib/api/*.ts` — the TypeScript return type is the contract.
+
+**Regenerate the catch-all shapes.** `catch-all-shapes.json` was produced by a one-off script that walks `src/lib/api/*.ts` with the TypeScript compiler and emits an empty value for each endpoint's return type. The file is safe to edit by hand. New endpoints added to the API client need a new entry (or a real route); until then the catch-all returns `{}` for reads, and logs a `[demo] no mock for …` line in the dev console.
+
+## External services in demo mode
+
+| Service | Behaviour |
+|---------|-----------|
+| Backend API | Replaced by `demo-api` |
+| Plaid Link | The brokers page renders a "Connect a broker (demo)" button that adds a sample account. `usePlaidLink` is never called, because it loads Plaid's script from its CDN even without a token |
+| Stripe | `/billing/checkout` returns an on-site success URL; the billing portal link points back to the billing page |
+| Sentry, PostHog, GA4 | Explicitly off when the demo flag is set, even if keys exist in the environment |
+| WebSocket | `NEXT_PUBLIC_WS_URL` is not used anywhere in `src/`, so there is nothing to disable |
+| MFA setup QR code | Rendered locally with `qrcode.react` (in production as well) |
+
+Still network-dependent: the Inter font is fetched from Google Fonts by `next/font` when the dev server starts, and YouTube embeds on learn module pages load only when such a page is opened.
+
+## Testing
 
 ```bash
-# Build with demo mode
-NEXT_PUBLIC_DEMO_MODE=true npm run build
-
-# Deploy to gh-pages
-npm run deploy
+npx vitest run src/lib/demo-api
 ```
 
-## Disabling Demo Mode
+The tests check that every known endpoint resolves, that no mock calls `Math.random`, that reads are deterministic, that prices agree across quotes, bars and positions, and that the paper ledger, analytics and market model behave. There is no `test` script in `package.json`.
 
-Simply remove or set to false:
+## Troubleshooting
 
-```bash
-# apps/web/.env.local
-NEXT_PUBLIC_DEMO_MODE=false
-```
+| Symptom | Cause / fix |
+|---------|-------------|
+| The "Back Soon" page appears for every route | `NEXT_PUBLIC_BACK_SOON` is not `false`. Copy `.env.demo` to `.env.local` and restart `npm run dev` |
+| Real network requests / CORS errors | `NEXT_PUBLIC_DEMO_MODE` is not `true`. Next.js reads env files at startup, so restart after editing |
+| Build fails with a demo-mode error | Expected: production builds refuse demo mode. Use `npm run dev` |
+| A page is empty | It uses the catch-all. Add a route as shown above |
+| `[demo] no mock for GET /…` in the console | An endpoint has no shape entry. Add a route or a catch-all entry |
 
-The app will immediately switch to making real API calls to the backend.
+## Security
 
-## Security Considerations
-
-- Demo mode is **client-side only** - never use for real user authentication
-- Mock tokens are not validated and should never reach a real backend
-- Always disable demo mode in production environments handling real data
-- Demo mode data is randomly generated each time - no persistence
-
-## Use Cases
-
-### 1. Job Applications / Portfolio
-
-Deploy on Vercel with demo mode enabled:
-- Recruiters can interact with the full platform
-- No backend/database costs
-- Instant page loads
-- Professional demonstration of UI/UX skills
-
-### 2. Investor Presentations
-
-Run locally with demo mode:
-- Show platform capabilities without live trading risk
-- Consistent, predictable data for demos
-- No API dependencies during presentations
-
-### 3. Frontend Development
-
-Develop UI features without backend:
-- No need to run Docker containers
-- Faster iteration cycles
-- Work offline
-- Test edge cases with controlled mock data
-
-## Further Reading
-
-- `apps/web/src/lib/mock-data.ts` - All mock data generators
-- `apps/web/src/lib/api-client.ts` - Demo mode interceptor logic
-- Project README - Full project documentation
+Demo mode is client-side only. Its tokens are placeholders that no backend validates; never enable it in an environment that handles real users or data.
