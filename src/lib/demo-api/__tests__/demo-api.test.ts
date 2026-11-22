@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import shapes from '../catch-all-shapes.json';
 import { resolveDemoRequest } from '../index';
-import { dailyBars, lastPrice } from '../market';
+import { correlation, dailyBars, lastPrice } from '../market';
 
 const call = async (method: string, url: string, data?: unknown, params?: Record<string, unknown>) => {
   try {
@@ -87,5 +87,26 @@ describe('portfolio analytics', () => {
     const c: any = await call('post', '/portfolio/correlation', { symbols: ['AAPL', 'MSFT', 'XOM'] });
     expect(c.correlation_matrix.AAPL.AAPL).toBe(1);
     expect(c.correlation_matrix.AAPL.XOM).toBe(c.correlation_matrix.XOM.AAPL);
+  });
+});
+
+describe('market model', () => {
+  it('returns identical bars for the same date regardless of request length', () => {
+    const short = dailyBars('MSFT', 30);
+    const long = dailyBars('MSFT', 120);
+    expect(long.slice(-30)).toEqual(short);
+  });
+
+  it('keeps bars internally valid (low ≤ open/close ≤ high)', () => {
+    for (const b of dailyBars('NVDA', 250)) {
+      expect(b.low).toBeLessThanOrEqual(Math.min(b.open, b.close));
+      expect(b.high).toBeGreaterThanOrEqual(Math.max(b.open, b.close));
+    }
+  });
+
+  it('correlations behave: same-sector > cross-sector, bonds diversify equities', () => {
+    expect(correlation('AAPL', 'MSFT')).toBeGreaterThan(correlation('AAPL', 'XOM'));
+    expect(correlation('AAPL', 'SPY')).toBeGreaterThan(0.3);
+    expect(correlation('SPY', 'TLT')).toBeLessThan(0.3);
   });
 });
