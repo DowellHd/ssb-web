@@ -110,3 +110,54 @@ describe('market model', () => {
     expect(correlation('SPY', 'TLT')).toBeLessThan(0.3);
   });
 });
+
+describe('crypto, news and learn', () => {
+  it('crypto prices are ranked by market cap and the overview adds up', async () => {
+    const prices: any = await call('get', '/crypto/prices', undefined, { page: 1, per_page: 20 });
+    const caps = prices.coins.map((c: any) => c.market_cap);
+    expect([...caps].sort((a: number, b: number) => b - a)).toEqual(caps);
+    expect(prices.coins[0].coin_id).toBe('bitcoin');
+    const overview: any = await call('get', '/crypto/market-overview');
+    expect(overview.total_market_cap_usd).toBe(caps.reduce((a: number, b: number) => a + b, 0));
+    expect(overview.btc_dominance).toBeGreaterThan(30);
+  });
+
+  it('crypto watchlist add/remove round-trips', async () => {
+    const before: any = await call('get', '/crypto/watchlist');
+    const after: any = await call('post', '/crypto/watchlist', { coin_id: 'cardano', symbol: 'ADA', name: 'Cardano' });
+    expect(after.total).toBe(before.total + 1);
+    await call('delete', '/crypto/watchlist/cardano');
+    const final: any = await call('get', '/crypto/watchlist');
+    expect(final.total).toBe(before.total);
+  });
+
+  it('news filters by category, sentiment and symbol, and paginates', async () => {
+    const all: any = await call('get', '/news', undefined, { page_size: 100 });
+    expect(all.total_count).toBeGreaterThan(20);
+    const crypto: any = await call('get', '/news', undefined, { categories: 'crypto' });
+    expect(crypto.articles.every((a: any) => a.category === 'crypto')).toBe(true);
+    const aapl: any = await call('get', '/news', undefined, { symbols: 'AAPL' });
+    expect(aapl.articles.every((a: any) => a.symbols.includes('AAPL'))).toBe(true);
+    const page1: any = await call('get', '/news', undefined, { page: 1, page_size: 5 });
+    expect(page1.articles).toHaveLength(5);
+    expect(page1.has_more).toBe(true);
+    const one: any = await call('get', `/news/${page1.articles[0].id}`);
+    expect(one.content.length).toBeGreaterThan(20);
+    const summary: any = await call('get', '/news/summary/daily');
+    expect(summary.summary.top_gainers[0].change_percent).toBeGreaterThanOrEqual(summary.summary.top_losers[0].change_percent);
+  });
+
+  it('learn modules, paths and glossary resolve with consistent ids', async () => {
+    const mods: any = await call('get', '/learn/modules');
+    expect(mods.modules.length).toBe(mods.total_count);
+    const detail: any = await call('get', `/learn/modules/${mods.modules[0].id}`);
+    expect(detail.module.id).toBe(mods.modules[0].id);
+    const paths: any = await call('get', '/learn/paths');
+    const path: any = await call('get', `/learn/paths/${paths.paths[0].id}`);
+    expect(path.modules.length).toBe(paths.paths[0].modules.length);
+    const gloss: any = await call('get', '/learn/glossary');
+    expect(gloss.terms.length).toBeGreaterThan(30);
+    const found: any = await call('get', '/learn/glossary/search', undefined, { q: 'volatility' });
+    expect(found.total_matches).toBeGreaterThan(0);
+  });
+});
