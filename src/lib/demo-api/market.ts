@@ -6,13 +6,13 @@
  * Series are deterministic: seeded by symbol, rescaled so the last close equals
  * the instrument's current price.
  */
-import { gaussian, hashString, round, seededRng, demoNow, clamp } from './prng';
+import { clamp, demoNow, gaussian, hashString, mulberry32, round, seededRng } from './prng';
 
 export interface Instrument {
   symbol: string;
   name: string;
   sector: string;
-  assetClass: 'equity' | 'etf' | 'bond_etf' | 'commodity_etf';
+  assetClass: 'equity' | 'etf' | 'bond_etf' | 'commodity_etf' | 'crypto';
   price: number;
   /** Annualised volatility (decimal). */
   vol: number;
@@ -80,6 +80,18 @@ export const UNIVERSE: Instrument[] = [
   I('GLD', 'SPDR Gold Shares', 'Commodities', 247.8, 0.15, 0.05, 'commodity_etf', 0.12),
   I('SLV', 'iShares Silver Trust', 'Commodities', 28.4, 0.28, 0.3, 'commodity_etf', 0.08),
   I('USO', 'United States Oil Fund', 'Commodities', 72.8, 0.32, 0.8, 'commodity_etf', 0.0),
+  // Crypto (24/7 in reality; synthesised on the same trading-day calendar here).
+  I('BTC', 'Bitcoin', 'Crypto', 98420, 0.55, 1.8, 'crypto', 0.25),
+  I('ETH', 'Ethereum', 'Crypto', 3560, 0.7, 2.2, 'crypto', 0.2),
+  I('SOL', 'Solana', 'Crypto', 214, 0.85, 2.6, 'crypto', 0.3),
+  I('XRP', 'XRP', 'Crypto', 2.31, 0.9, 2.2, 'crypto', 0.2),
+  I('BNB', 'BNB', 'Crypto', 612, 0.6, 1.9, 'crypto', 0.18),
+  I('DOGE', 'Dogecoin', 'Crypto', 0.382, 1.0, 2.8, 'crypto', 0.1),
+  I('ADA', 'Cardano', 'Crypto', 0.97, 0.9, 2.3, 'crypto', 0.1),
+  I('AVAX', 'Avalanche', 'Crypto', 41.2, 0.85, 2.5, 'crypto', 0.1),
+  I('LINK', 'Chainlink', 'Crypto', 17.6, 0.8, 2.3, 'crypto', 0.15),
+  I('DOT', 'Polkadot', 'Crypto', 7.9, 0.85, 2.3, 'crypto', 0.0),
+  I('LTC', 'Litecoin', 'Crypto', 104.3, 0.7, 1.9, 'crypto', 0.05),
 ];
 
 const BY_SYMBOL = new Map(UNIVERSE.map((i) => [i.symbol, i]));
@@ -123,9 +135,69 @@ export interface DailyBar {
  * this only chooses *how the history got there*, so the demo's charts, paper
  * account and P&L tell a coherent, presentable story. Any integer works.
  */
-export const SERIES_SEED = 1;
+export const SERIES_SEED = 118;
 
 const barCache = new Map<string, DailyBar[]>();
+
+// ── Return model ────────────────────────────────────────────────────────────
+// Every instrument's daily return = drift + beta × market factor + sector
+// factor + idiosyncratic noise. Because the factors are shared, correlations,
+// betas and portfolio volatility computed from these series behave like the
+// real thing (stocks move together; bonds and gold diversify).
+
+/** Trading days of history that can be synthesised (≈ 6 years). */
+const SERIES_LEN = 1600;
+const MARKET_VOL = 0.13;
+const SECTOR_VOL: Record<string, number> = {
+  Technology: 0.07,
+  Financials: 0.07,
+  'Health Care': 0.05,
+  'Consumer Staples': 0.04,
+  'Consumer Discretionary': 0.06,
+  'Communication Services': 0.06,
+  Energy: 0.09,
+  'Fixed Income': 0.03,
+  Commodities: 0.07,
+  Crypto: 0.45,
+};
+
+const normalsCache = new Map<string, number[]>();
+/** Deterministic standard normals; index 0 is the most recent trading day. */
+function normals(key: string): number[] {
+  const hit = normalsCache.get(key);
+  if (hit) return hit;
+  const rng = seededRng(`${key}:${SERIES_SEED}`);
+  const out = Array.from({ length: SERIES_LEN }, () => gaussian(rng));
+  normalsCache.set(key, out);
+  return out;
+}
+
+const returnCache = new Map<string, number[]>();
+/** Daily log returns for a symbol, index 0 = most recent day. */
+function returnSeries(symbol: string): number[] {
+  const hit = returnCache.get(symbol);
+  if (hit) return hit;
+  const inst = getInstrument(symbol);
+  const sd = Math.sqrt(252);
+  const secVol = SECTOR_VOL[inst.sector] ?? 0;
+  const idioVol = Math.sqrt(
+    Math.max((0.25 * inst.vol) ** 2, inst.vol ** 2 - (inst.beta * MARKET_VOL) ** 2 - secVol ** 2),
+  );
+  const m = normals('mkt');
+  const s = normals(`sec:${inst.sector}`);
+  const z = normals(`idio:${symbol}`);
+  const out = Array.from(
+    { length: SERIES_LEN },
+    (_, i) => inst.drift / 252 + (inst.beta * MARKET_VOL * m[i] + secVol * s[i] + idioVol * z[i]) / sd,
+  );
+  returnCache.set(symbol, out);
+  return out;
+}
+
+/** Daily log returns for the last `days` sessions, oldest first. */
+export function recentReturns(symbol: string, days = 252): number[] {
+  return returnSeries(symbol.toUpperCase()).slice(0, days).reverse();
+}
 
 function isWeekend(d: Date): boolean {
   const dow = d.getUTCDay();
@@ -144,7 +216,6 @@ export function dailyBars(symbol: string, count = 252): DailyBar[] {
   if (cached) return cached;
 
   const inst = getInstrument(sym);
-  const rng = seededRng(`bars:${sym}:${SERIES_SEED}`);
 
   // Trading days, newest first.
   const dates: Date[] = [];
@@ -155,32 +226,31 @@ export function dailyBars(symbol: string, count = 252): DailyBar[] {
   }
   dates.reverse();
 
-  const dailyVol = inst.vol / Math.sqrt(252);
-  const dailyDrift = inst.drift / 252;
-  // Log-price path; the series is *index-seeded from the end* so a longer
-  // request is a superset of a shorter one.
-  const rets: number[] = [];
-  for (let i = 0; i < count; i++) rets.push(dailyDrift + dailyVol * gaussian(rng));
-  rets.reverse(); // rets[0] = most recent day
+  // Log-price path walking back from today's fixed price. `k` counts trading
+  // days back from the latest bar (k = 0), so every request length sees the
+  // same history, and OHLC noise is seeded per (symbol, k) for the same reason.
+  const rets = returnSeries(sym);
   const logFromEnd: number[] = [0];
-  for (let i = 1; i < count; i++) logFromEnd.push(logFromEnd[i - 1] - rets[i - 1]);
-  logFromEnd.reverse(); // oldest first, last = 0
+  for (let k = 1; k <= count; k++) logFromEnd.push(logFromEnd[k - 1] - rets[k - 1]);
+  const dailyVol = inst.vol / Math.sqrt(252);
+  const volBase = 2_000_000 + (hashString(`vol:${sym}`) % 30_000_000);
 
   const bars: DailyBar[] = dates.map((d, i) => {
-    const close = inst.price * Math.exp(logFromEnd[i]);
-    const prevClose = i === 0 ? close * Math.exp(-rets[count - 1]) : inst.price * Math.exp(logFromEnd[i - 1]);
-    const open = prevClose * (1 + (rng() - 0.5) * dailyVol * 0.6);
-    const range = Math.abs(close - open) + close * dailyVol * (0.25 + rng() * 0.6);
-    const high = Math.max(open, close) + range * rng() * 0.6;
-    const low = Math.min(open, close) - range * rng() * 0.6;
-    const volBase = 2_000_000 + (hashString(`vol:${sym}`) % 30_000_000);
-    const volume = Math.floor(volBase * (0.6 + rng() * 0.9) * (1 + Math.abs(close - prevClose) / prevClose * 12));
+    const k = count - 1 - i;
+    const close = inst.price * Math.exp(logFromEnd[k]);
+    const prevClose = inst.price * Math.exp(logFromEnd[k + 1]);
+    const r = mulberry32(hashString(`ohlc:${sym}:${k}:${SERIES_SEED}`));
+    const open = prevClose * (1 + (r() - 0.5) * dailyVol * 0.6);
+    const range = Math.abs(close - open) + close * dailyVol * (0.25 + r() * 0.6);
+    const high = Math.max(open, close) + range * r() * 0.6;
+    const low = Math.min(open, close) - range * r() * 0.6;
+    const volume = Math.floor(volBase * (0.6 + r() * 0.9) * (1 + (Math.abs(close - prevClose) / prevClose) * 12));
     return {
       time: Math.floor(d.getTime() / 1000),
       open: round(open),
       high: round(high),
       low: round(Math.max(0.01, low)),
-      close: i === count - 1 ? inst.price : round(close),
+      close: k === 0 ? inst.price : round(close),
       volume,
     };
   });
@@ -241,17 +311,30 @@ export function quoteFor(symbol: string): DemoQuote {
   };
 }
 
-/** Annualised correlation proxy between two symbols (deterministic). */
+const corrCache = new Map<string, number>();
+
+/** Pearson correlation of the last year of daily returns of two symbols. */
 export function correlation(a: string, b: string): number {
-  if (a === b) return 1;
-  const A = getInstrument(a);
-  const B = getInstrument(b);
-  let base = 0.25;
-  if (A.sector === B.sector) base = 0.62;
-  else if (A.assetClass === 'bond_etf' || B.assetClass === 'bond_etf')
-    base = A.assetClass === B.assetClass ? 0.7 : -0.1;
-  else if (A.assetClass === 'commodity_etf' || B.assetClass === 'commodity_etf') base = 0.08;
-  else if (A.assetClass === 'etf' || B.assetClass === 'etf') base = 0.7;
-  const jitter = ((hashString([a, b].sort().join('|')) % 200) - 100) / 1000; // ±0.1
-  return round(clamp(base + jitter, -0.6, 0.95), 2);
+  const x = a.toUpperCase();
+  const y = b.toUpperCase();
+  if (x === y) return 1;
+  const key = [x, y].sort().join('|');
+  const hit = corrCache.get(key);
+  if (hit !== undefined) return hit;
+
+  const ra = recentReturns(x, 252);
+  const rb = recentReturns(y, 252);
+  const ma = ra.reduce((s, v) => s + v, 0) / ra.length;
+  const mb = rb.reduce((s, v) => s + v, 0) / rb.length;
+  let cov = 0;
+  let va = 0;
+  let vb = 0;
+  for (let i = 0; i < ra.length; i++) {
+    cov += (ra[i] - ma) * (rb[i] - mb);
+    va += (ra[i] - ma) ** 2;
+    vb += (rb[i] - mb) ** 2;
+  }
+  const out = round(clamp(cov / Math.sqrt(va * vb), -0.99, 0.99), 2);
+  corrCache.set(key, out);
+  return out;
 }

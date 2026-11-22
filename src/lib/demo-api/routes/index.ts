@@ -2,6 +2,7 @@ import type { DemoRoute } from '../router';
 import { accountRoutes } from './account';
 import { assistantRoutes } from './assistant';
 import { authRoutes } from './auth';
+import { intelligenceRoutes } from './intelligence';
 import { marketDataRoutes } from './market-data';
 import { paperRoutes } from './paper';
 import { portfolioRoutes } from './portfolio';
@@ -17,5 +18,6 @@ export const ROUTES: DemoRoute[] = [
   ...tradingRoutes,
   ...paperRoutes,
   ...portfolioRoutes,
+  ...intelligenceRoutes,
   ...assistantRoutes,
 ];
