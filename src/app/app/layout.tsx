@@ -856,8 +856,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {IS_DEMO_MODE && (
           <div
-            className="sticky lg:top-0 z-20 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-xs font-semibold text-amber-950"
-            style={{ top: 'calc(2.75rem + env(safe-area-inset-top, 0px))' }}
+            // The offset is a class (not an inline style) so `lg:top-0` can override it on desktop,
+            // where there is no mobile header to sit below.
+            className="sticky top-[calc(2.75rem+env(safe-area-inset-top,0px))] lg:top-0 z-20 flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-xs font-semibold text-amber-950"
           >
             <span>DEMO MODE — all data is simulated. No real trades or accounts.</span>
           </div>
