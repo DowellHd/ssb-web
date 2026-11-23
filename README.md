@@ -41,6 +41,7 @@ Open [http://localhost:3000](http://localhost:3000), click **Try It Free — No 
 - Market regime detection, portfolio risk analytics (VaR, CVaR, drawdown, correlation) and stress testing, computed from the holdings you enter
 - A linked-brokerage portfolio, trade ideas, tax-loss harvesting and an order-prep workflow
 - A paper-trading account with a live ledger: place, cancel and reset orders, plus options paper trading
+- Analytics tools (efficient frontier, technical indicators, factor analysis, Monte Carlo, sector rotation, GARCH volatility, anomaly detection, sentiment, ESG) and a stock screener with preset screens
 - A signal feed, news, crypto prices, and the learning library
 - The account is on the Pro plan so every feature is visible
 
@@ -48,7 +49,7 @@ Open [http://localhost:3000](http://localhost:3000), click **Try It Free — No 
 
 - All data is synthetic and deterministic. Prices are consistent across charts, quotes and positions, but they are not real market data and the "performance" shown is fictional.
 - Changes you make (orders, watchlists, journal entries) live in memory and reset when the page reloads.
-- Community, enterprise, backtests, the analytics tools, the screener, fixed income, global markets and alternatives return valid but empty responses rather than detailed data, so their pages show empty states and their "Run" buttons produce no results. Everything else above is fully populated.
+- Community, enterprise, backtests, fixed income, global markets and alternatives return valid but empty responses rather than detailed data, so their pages show empty states. Everything else above, including the analytics tools and the stock screener, is fully populated.
 - Plaid, Stripe, analytics and error reporting are switched off. "Connect a broker" adds a sample account instead of opening Plaid, and checkout stays on-site.
 - Demo mode works with `npm run dev` only. Production builds refuse to start with it enabled.
 
