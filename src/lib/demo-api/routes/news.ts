@@ -6,7 +6,7 @@
  * and never assert real-world events, earnings figures or quotes.
  */
 import { DemoHttpError } from '../errors';
-import { dayChange, getInstrument, lastPrice, periodReturnPct } from '../market';
+import { dayChange, getInstrument, lastPrice, periodReturnPct, UNIVERSE } from '../market';
 import { hashString, hoursAgo, iso, isoDay, demoNow, round, seedId } from '../prng';
 import { get, type DemoRoute } from '../router';
 
@@ -292,7 +292,8 @@ export const newsRoutes: DemoRoute[] = [
   get('/news/meta/categories', () => CATEGORIES),
 
   get('/news/summary/daily', () => {
-    const stocks = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'TSLA', 'JPM', 'XOM', 'UNH', 'NFLX', 'AMD', 'COST', 'KO', 'WMT'];
+    // Every large-cap equity in the universe, so the loser list has real decliners when any exist.
+    const stocks = UNIVERSE.filter((u) => u.assetClass === 'equity').map((u) => u.symbol);
     const movers = stocks
       .map((symbol) => ({ symbol, name: getInstrument(symbol).name, change_percent: dayChange(symbol).changePct, price: lastPrice(symbol) }))
       .sort((a, b) => b.change_percent - a.change_percent);
