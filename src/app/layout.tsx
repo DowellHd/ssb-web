@@ -6,6 +6,7 @@ import { Providers } from './providers';
 import { SWRegister } from '@/components/sw-register';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { BACK_SOON } from '@/lib/back-soon';
+import { HOSTED_DEMO } from '@/lib/hosted-demo';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
@@ -41,17 +42,19 @@ export const metadata: Metadata = {
   verification: {
     google: '1CweN4cqibeyiCgG7B91q5O7y9YV-TRo1NTY8AVCBb0',
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-snippet': -1,
-      'max-image-preview': 'large',
-      'max-video-preview': -1,
-    },
-  },
+  robots: HOSTED_DEMO
+    ? { index: false, follow: false }
+    : {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-snippet': -1,
+          'max-image-preview': 'large',
+          'max-video-preview': -1,
+        },
+      },
   openGraph: {
     type: 'website',
     locale: 'en_US',

@@ -1,6 +1,9 @@
 import { MetadataRoute } from 'next'
+import { HOSTED_DEMO } from '@/lib/hosted-demo'
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (HOSTED_DEMO) return []
+
   const baseUrl = 'https://www.smartstrategiesbuilder.ai'
 
   return [

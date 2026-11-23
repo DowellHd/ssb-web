@@ -2,12 +2,18 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { withSentryConfig } = require('@sentry/nextjs');
 
-// Guard: NEXT_PUBLIC_DEMO_MODE must never be set to 'true' in a production build.
-// Deploying with demo mode on would serve mock data to all real users.
-if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+// Guard: NEXT_PUBLIC_DEMO_MODE must never ship in the real site's production build — it would serve
+// mock data to all real users. The one exception is the separate hosted-demo deployment, which opts
+// in explicitly with NEXT_PUBLIC_HOSTED_DEMO=true (see docs/HOSTED_DEMO.md and `npm run build:demo`).
+if (
+  process.env.NODE_ENV === 'production' &&
+  process.env.NEXT_PUBLIC_DEMO_MODE === 'true' &&
+  process.env.NEXT_PUBLIC_HOSTED_DEMO !== 'true'
+) {
   throw new Error(
     'NEXT_PUBLIC_DEMO_MODE=true is set in a production build. ' +
-    'This would serve mock data to all users. Remove or set to false before deploying.'
+    'This would serve mock data to all users. Remove or set to false before deploying. ' +
+    'For the separate hosted demo, also set NEXT_PUBLIC_HOSTED_DEMO=true (npm run build:demo).'
   );
 }
 
