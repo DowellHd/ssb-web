@@ -48,7 +48,7 @@ Open [http://localhost:3000](http://localhost:3000), click **Try It Free — No 
 
 - All data is synthetic and deterministic. Prices are consistent across charts, quotes and positions, but they are not real market data and the "performance" shown is fictional.
 - Changes you make (orders, watchlists, journal entries) live in memory and reset when the page reloads.
-- Community, enterprise, backtesting and a few other areas return valid but empty responses rather than detailed data.
+- Community, enterprise, backtests, the analytics tools, the screener, fixed income, global markets and alternatives return valid but empty responses rather than detailed data, so their pages show empty states and their "Run" buttons produce no results. Everything else above is fully populated.
 - Plaid, Stripe, analytics and error reporting are switched off. "Connect a broker" adds a sample account instead of opening Plaid, and checkout stays on-site.
 - Demo mode works with `npm run dev` only. Production builds refuse to start with it enabled.
 
