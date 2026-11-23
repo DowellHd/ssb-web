@@ -1258,7 +1258,7 @@ export default function FounderTradingPage() {
     (async () => {
       try {
         const user = await getCurrentUser();
-        if (!user.is_founder) { router.replace('/app/dashboard'); return; }
+        if (!user.is_founder) { router.replace('/app'); return; }
         setAuthorized(true);
       } catch {
         router.replace('/auth/login');
