@@ -49,11 +49,12 @@ React components ──> apiClient (axios)
 | `catch-all.ts`, `catch-all-shapes.json` | Fallback responses for every endpoint without a mock |
 | `prng.ts` | Seeded random numbers, the demo clock, id helpers |
 | `market.ts` | The single source of truth for prices, bars, quotes and correlations |
-| `analytics.ts` | Real calculations: risk, stress scenarios, correlation, attribution |
+| `analytics.ts`, `quant.ts` | Real calculations: risk, stress scenarios, correlation, attribution, OLS, efficient frontier, indicators, Monte Carlo, GARCH |
+| `fundamentals.ts` | Sample fundamentals table behind the screener (synthetic, tuned so each preset screen has matches) |
 | `paper-state.ts`, `portfolio-data.ts`, `signals-data.ts`, `options-math.ts` | Shared state and data for the routes |
 | `__tests__/` | Vitest tests |
 
-Areas with detailed mocks: auth, billing and entitlements, settings, market data, signals, trading and paper trading, options, portfolio and stress testing, linked brokers, trade ideas, order prep, compliance, regime, risk, simulation, strategy, crypto, news, and learn. Everything else (community, enterprise, backtests, analytics, alternatives, fixed income, global markets, screening and so on) uses the catch-all and shows empty states.
+Areas with detailed mocks: auth, billing and entitlements, settings, market data, signals, trading and paper trading, options, portfolio and stress testing, linked brokers, trade ideas, order prep, compliance, regime, risk, simulation, strategy, crypto, news, learn, analytics (optimisation, technicals, factors, benchmarking, Monte Carlo, sector rotation, DCF, fundamentals, earnings calendar), the stock screener, and predictive analytics (GARCH, anomalies, sentiment, ESG, earnings surprise). Everything else (community, enterprise, backtests, alternatives, fixed income, global markets and so on) uses the catch-all and shows empty states.
 
 ## Determinism
 
