@@ -76,7 +76,7 @@ export function VolatilityForecast({ result, className }: VolatilityForecastProp
             <Tooltip
               formatter={(v: number) => [`${v.toFixed(1)}%`]}
               labelClassName="text-foreground"
-              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid var(--border)' }}
+              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
             />
             <ReferenceLine
               y={forecast.long_run_annualized_vol_pct}

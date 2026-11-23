@@ -78,7 +78,7 @@ export function AnomalyAlerts({ result, className }: AnomalyAlertsProps) {
               <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" />
               <Tooltip
                 formatter={(v: number) => [v.toFixed(2), 'Z-Score']}
-                contentStyle={{ background: 'hsl(var(--card))', border: '1px solid var(--border)' }}
+                contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
               />
               <ReferenceLine y={2}  stroke="#f59e0b" strokeDasharray="4 4" />
               <ReferenceLine y={-2} stroke="#f59e0b" strokeDasharray="4 4" />
