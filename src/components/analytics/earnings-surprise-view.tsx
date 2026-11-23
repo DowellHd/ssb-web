@@ -53,7 +53,7 @@ export function EarningsSurpriseView({ result, className }: EarningsSurpriseView
               </Pie>
               <Tooltip
                 formatter={(v: number) => [`${(v * 100).toFixed(1)}%`]}
-                contentStyle={{ background: 'hsl(var(--card))', border: '1px solid var(--border)' }}
+                contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
               />
               <Legend
                 iconSize={8}
