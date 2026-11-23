@@ -76,18 +76,18 @@ export function VolatilityForecast({ result, className }: VolatilityForecastProp
             <Tooltip
               formatter={(v: number) => [`${v.toFixed(1)}%`]}
               labelClassName="text-foreground"
-              contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid var(--border)' }}
             />
             <ReferenceLine
               y={forecast.long_run_annualized_vol_pct}
-              stroke="var(--muted-foreground)"
+              stroke="hsl(var(--muted-foreground))"
               strokeDasharray="4 4"
-              label={{ value: 'Long-run', fontSize: 10, fill: 'var(--muted-foreground)' }}
+              label={{ value: 'Long-run', fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
             />
             <Line
               type="monotone"
               dataKey="vol"
-              stroke="var(--primary)"
+              stroke="hsl(var(--primary))"
               strokeWidth={2}
               dot={false}
               name="Forecast Vol"
