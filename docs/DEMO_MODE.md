@@ -118,6 +118,10 @@ The tests check that every known endpoint resolves, that no mock calls `Math.ran
 | A page is empty | It uses the catch-all. Add a route as shown above |
 | `[demo] empty response: …` / `no mock at all: …` in the console (debug level) | The endpoint is served by the catch-all. Add a route to give it real data |
 
+## Hosting it
+
+Demo mode only runs with `npm run dev` on the real site. To publish it, see [HOSTED_DEMO.md](HOSTED_DEMO.md): a separate Vercel project built with `npm run build:demo`, on its own URL, marked `noindex`.
+
 ## Security
 
 Demo mode is client-side only. Its tokens are placeholders that no backend validates; never enable it in an environment that handles real users or data.

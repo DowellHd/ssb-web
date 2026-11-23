@@ -53,6 +53,8 @@ Open [http://localhost:3000](http://localhost:3000), click **Try It Free — No 
 - Plaid, Stripe, analytics and error reporting are switched off. "Connect a broker" adds a sample account instead of opening Plaid, and checkout stays on-site.
 - Demo mode works with `npm run dev` only. Production builds refuse to start with it enabled.
 
+**Hosted demo:** a separate deployment can serve this demo at its own URL with no backend; see [docs/HOSTED_DEMO.md](docs/HOSTED_DEMO.md).
+
 **Switching back to production:** delete `.env.local` (or set `NEXT_PUBLIC_DEMO_MODE=false`). No code changes are needed; the real API client and services are untouched, just bypassed. See [docs/DEMO_MODE.md](docs/DEMO_MODE.md) for how it works and how to extend the mock data.
 
 ## Features
