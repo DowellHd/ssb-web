@@ -84,7 +84,7 @@ export const communityRoutes: DemoRoute[] = [
 
 Then spread it into `ROUTES` in `routes/index.ts`. Match the shape declared in `src/lib/api/*.ts` — the TypeScript return type is the contract.
 
-**Regenerate the catch-all shapes.** `catch-all-shapes.json` was produced by a one-off script that walks `src/lib/api/*.ts` with the TypeScript compiler and emits an empty value for each endpoint's return type. The file is safe to edit by hand. New endpoints added to the API client need a new entry (or a real route); until then the catch-all returns `{}` for reads, and logs a `[demo] no mock for …` line in the dev console.
+**Regenerate the catch-all shapes.** `catch-all-shapes.json` was produced by a one-off script that walks `src/lib/api/*.ts` with the TypeScript compiler and emits an empty value for each endpoint's return type. The file is safe to edit by hand. New endpoints added to the API client need a new entry (or a real route); until then the catch-all returns `{}` for reads. Every catch-all response logs a `[demo] empty response: GET /path` line (or `no mock at all` when not even a shape exists) at debug level in the dev console, so you can see exactly which endpoints a click-through still serves empty.
 
 ## External services in demo mode
 
@@ -115,7 +115,7 @@ The tests check that every known endpoint resolves, that no mock calls `Math.ran
 | Real network requests / CORS errors | `NEXT_PUBLIC_DEMO_MODE` is not `true`. Next.js reads env files at startup, so restart after editing |
 | Build fails with a demo-mode error | Expected: production builds refuse demo mode. Use `npm run dev` |
 | A page is empty | It uses the catch-all. Add a route as shown above |
-| `[demo] no mock for GET /…` in the console | An endpoint has no shape entry. Add a route or a catch-all entry |
+| `[demo] empty response: …` / `no mock at all: …` in the console (debug level) | The endpoint is served by the catch-all. Add a route to give it real data |
 
 ## Security
 
