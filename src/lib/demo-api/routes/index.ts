@@ -1,5 +1,6 @@
 import type { DemoRoute } from '../router';
 import { accountRoutes } from './account';
+import { analyticsRoutes } from './analytics';
 import { assistantRoutes } from './assistant';
 import { authRoutes } from './auth';
 import { cryptoRoutes } from './crypto';
@@ -10,6 +11,7 @@ import { marketDataRoutes } from './market-data';
 import { newsRoutes } from './news';
 import { paperRoutes } from './paper';
 import { portfolioRoutes } from './portfolio';
+import { predictiveRoutes } from './predictive';
 import { signalRoutes } from './signals';
 import { tradingRoutes } from './trading';
 
@@ -28,4 +30,6 @@ export const ROUTES: DemoRoute[] = [
   ...learnRoutes,
   ...assistantRoutes,
   ...feedbackRoutes,
+  ...analyticsRoutes,
+  ...predictiveRoutes,
 ];
