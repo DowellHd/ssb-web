@@ -185,7 +185,8 @@ function ToolsTab() {
     async function loadRealHoldings() {
       try {
         const connections = await listBrokerConnections();
-        const active = connections.filter(c => c.connection_status === 'active');
+        // Brokers and order-prep use 'connected'; 'active' is kept for compatibility.
+        const active = connections.filter(c => c.connection_status === 'connected' || c.connection_status === 'active');
         if (active.length === 0) return;
         const results = await Promise.allSettled(active.map(c => getBrokerHoldings(c.id)));
         const allPlaid: PlaidHolding[] = [];
