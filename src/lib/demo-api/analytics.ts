@@ -19,7 +19,7 @@ export function normalizeWeights<T extends Weighted>(holdings: T[]): T[] {
 
 // ── Return series ───────────────────────────────────────────────────────────
 
-function dailyReturns(symbol: string, days: number): number[] {
+export function dailyReturns(symbol: string, days: number): number[] {
   const bars = dailyBars(symbol, days + 1);
   const out: number[] = [];
   for (let i = 1; i < bars.length; i++) out.push(bars[i].close / bars[i - 1].close - 1);
