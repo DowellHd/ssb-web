@@ -36,13 +36,20 @@ function polishWrite(value: unknown, method: HttpMethod): unknown {
   return v;
 }
 
+/** Dev-console breadcrumb so it is obvious which endpoints still lack a real mock. */
+function logEmpty(req: DemoRequest, why: string): void {
+  if (process.env.NODE_ENV === 'production') return;
+  // eslint-disable-next-line no-console
+  console.debug(`[demo] ${why}: ${req.method.toUpperCase()} ${req.path} (add a route in demo-api/routes for real data)`);
+}
+
 export function catchAll(req: DemoRequest): unknown {
   const hit = matchRoute(compiled, req.method, req.path);
-  if (hit) return polishWrite(hit.route.handler({ ...req, params: hit.params }), req.method);
-
-  if (process.env.NODE_ENV !== 'production') {
-    // eslint-disable-next-line no-console
-    console.debug(`[demo] no mock for ${req.method.toUpperCase()} ${req.path}; returning an empty response`);
+  if (hit) {
+    logEmpty(req, 'empty response');
+    return polishWrite(hit.route.handler({ ...req, params: hit.params }), req.method);
   }
+
+  logEmpty(req, 'no mock at all');
   return req.method === 'get' ? {} : { success: true };
 }
